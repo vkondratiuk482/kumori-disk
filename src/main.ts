@@ -5,16 +5,21 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
+import session from '@fastify/secure-session';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({ logger: true }),
   );
 
-  const configService = app.get(ConfigService);
+  const config = app.get(ConfigService);
 
-  const port = configService.get<number>('PORT');
+  await app.register(session, {
+    key: Buffer.from(config.get<string>('SESSION_SECRET'), 'hex'),
+  });
+
+  const port = config.get<number>('PORT');
 
   await app.listen(port);
 }
