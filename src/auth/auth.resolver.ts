@@ -5,27 +5,29 @@ import { Session as FastifySession } from '@fastify/secure-session';
 
 import { SignUpSchema } from './schema/sign-up.schema';
 
+import { User } from 'src/user/user.entity';
+
 import { AuthService } from './auth.service';
 
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Mutation(() => String, { name: 'signUp' })
+  @Mutation(() => User, { name: 'signUp' })
   public async signUp(
     @Args() schema: SignUpSchema,
     @Session() session: FastifySession,
-  ): Promise<string> {
-    const uuid = await this.authService.signUp(schema);
+  ): Promise<User> {
+    const user = await this.authService.signUp(schema);
 
-    if (!uuid) {
+    if (!user) {
       throw new BadRequestException(
         'An error occurred while creating the user',
       );
     }
 
-    session.set('uuid', uuid);
+    session.set('user_uuid', user.uuid);
 
-		return uuid;
+    return user;
   }
 }
