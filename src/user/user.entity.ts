@@ -5,8 +5,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   uuid: string;
 
-  @Column({ name: 'name', type: 'varchar', length: 20 })
-  name: string;
+  @Column({ name: 'username', type: 'varchar', length: 20 })
+  username: string;
 
   @Column({ name: 'password', type: 'varchar', length: 36 })
   password: string;

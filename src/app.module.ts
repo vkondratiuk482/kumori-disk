@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { GraphQLModule } from '@nestjs/graphql';
-import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
-import { join } from 'path';
+import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
+
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 
@@ -11,9 +11,9 @@ import { AuthModule } from './auth/auth.module';
     ConfigModule.forRoot({
       envFilePath: ['.env.development'],
     }),
-    GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/graphql/schema.gql'),
+    GraphQLModule.forRoot<MercuriusDriverConfig>({
+      driver: MercuriusDriver,
+      graphiql: true,
     }),
     UserModule,
     AuthModule,

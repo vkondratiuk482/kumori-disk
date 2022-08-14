@@ -35,19 +35,9 @@ export class UserRepository {
     return user;
   }
 
-  public async createSingle(value: CreateUser): Promise<User> {
-    const user = this.userRepository.create(value);
+  public async createSingle(data: CreateUser): Promise<User> {
+    const user = this.userRepository.create(data);
 
     return this.userRepository.save(user);
   }
-
-  public async createBulk(): Promise<User[]> {}
-
-  public async updateSingle(): Promise<User> {}
-
-  public async updateBulk(): Promise<User[]> {}
-
-  public async removeSingle(): Promise<boolean> {}
-
-  public async removeBulk(): Promise<boolean> {}
 }

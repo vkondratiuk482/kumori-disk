@@ -1,9 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsString } from 'class-validator';
-import { SignIn } from '../interfaces/sign-in.interface';
+import { CreateUser } from 'src/user/interfaces/create-user.interface';
 
 @InputType()
-export class SignInSchema implements SignIn {
+export class SignUpSchema implements CreateUser {
   @Field()
   @IsString()
   readonly username: string;
