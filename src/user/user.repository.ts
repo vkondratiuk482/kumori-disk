@@ -35,6 +35,21 @@ export class UserRepository {
     return user;
   }
 
+  public async findSingleByUsernameWithException(
+    username: string,
+  ): Promise<User> {
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('username = :username', { username })
+      .getOne();
+
+    if (!user) {
+      throw new Error('There is no user under this username');
+    }
+
+    return user;
+  }
+
   public async createSingle(data: CreateUser): Promise<User> {
     const user = this.userRepository.create(data);
 

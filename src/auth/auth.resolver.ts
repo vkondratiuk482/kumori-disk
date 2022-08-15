@@ -1,9 +1,16 @@
-import { BadRequestException, Session } from '@nestjs/common';
+import {
+  BadRequestException,
+  Session,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 
 import { Session as FastifySession } from '@fastify/secure-session';
 
+import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
+
 import { SignUpSchema } from './schema/sign-up.schema';
+import { SignInSchema } from './schema/sign-in.schema';
 
 import { User } from 'src/user/user.entity';
 
@@ -18,16 +25,47 @@ export class AuthResolver {
     @Args() schema: SignUpSchema,
     @Session() session: FastifySession,
   ): Promise<User> {
-    const user = await this.authService.signUp(schema);
+    try {
+      const user = await this.authService.signUp(schema);
 
-    if (!user) {
-      throw new BadRequestException(
-        'An error occurred while creating the user',
-      );
+      session.set('user_uuid', user.uuid);
+
+      return user;
+    } catch (err) {
+      throw new BadRequestException(err);
     }
+  }
 
-    session.set('user_uuid', user.uuid);
+  @Mutation(() => User, { name: 'signIn' })
+  public async signIn(
+    @Args() schema: SignInSchema,
+    @Session() session: FastifySession,
+  ): Promise<User> {
+    try {
+      const user = await this.authService.singIn(schema);
 
-    return user;
+      session.set('user_uuid', user.uuid);
+
+      return user;
+    } catch (err) {
+      if (err.name === PasswordsNotMatchingError.name) {
+        throw new UnauthorizedException(err);
+      }
+
+      throw new BadRequestException(err);
+    }
+  }
+
+  @Mutation(() => Boolean, { name: 'signOut' })
+  public async signOut(@Session() session: FastifySession): Promise<boolean> {
+    try {
+      session.delete();
+
+      const isSessionDeleted = session.deleted;
+
+      return isSessionDeleted;
+    } catch (err) {
+      throw new BadRequestException(err);
+    }
   }
 }

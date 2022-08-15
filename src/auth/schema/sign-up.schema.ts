@@ -6,9 +6,9 @@ import { CreateUser } from 'src/user/interfaces/create-user.interface';
 export class SignUpSchema implements CreateUser {
   @Field()
   @IsString()
-  readonly username: string;
+  public readonly username: string;
 
   @Field()
   @IsString()
-  readonly password: string;
+  public readonly password: string;
 }
