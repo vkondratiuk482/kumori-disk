@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 import { BCRYPT_SALT_ROUNDS } from './auth.constants';
 
 import { SignIn } from './interfaces/sign-in.interface';
-import { CreateUser } from 'src/user/interfaces/create-user.interface';
+import { CreateUser } from '../user/interfaces/create-user.interface';
 
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 
-import { User } from 'src/user/user.entity';
+import { User } from '../user/user.entity';
 
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AuthService {

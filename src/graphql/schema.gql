@@ -1,0 +1,28 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type User {
+  uuid: String!
+  username: String!
+}
+
+type Query {
+  testr2(id: Float!): Int!
+}
+
+type Mutation {
+  signUp(schema: SignUpSchema!): User!
+  signIn(schema: SignInSchema!): User!
+  signOut: Boolean!
+}
+
+input SignUpSchema {
+  username: String!
+  password: String!
+}
+
+input SignInSchema {
+  username: String!
+  password: String!
+}

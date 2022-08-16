@@ -1,34 +1,41 @@
 import {
   BadRequestException,
-  Session,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
-
-import { Session as FastifySession } from '@fastify/secure-session';
+import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
 
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
+
+import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
 
-import { User } from 'src/user/user.entity';
+import { User } from '../user/user.entity';
+
+import { SessionAuthGuard } from './guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
 
-@Resolver()
+@Resolver(() => User)
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
+  @Query(() => Int, { name: 'testr2' })
+  public async testqueryr2(@Args('id') args: number): Promise<number> {
+    return 1;
+  }
+
   @Mutation(() => User, { name: 'signUp' })
   public async signUp(
-    @Args() schema: SignUpSchema,
-    @Session() session: FastifySession,
+    @Args('schema') schema: SignUpSchema,
+    @Context() context: GraphQLContext,
   ): Promise<User> {
     try {
       const user = await this.authService.signUp(schema);
 
-      session.set('user_uuid', user.uuid);
+      context.req.session.set('user_uuid', user.uuid);
 
       return user;
     } catch (err) {
@@ -38,13 +45,13 @@ export class AuthResolver {
 
   @Mutation(() => User, { name: 'signIn' })
   public async signIn(
-    @Args() schema: SignInSchema,
-    @Session() session: FastifySession,
+    @Args('schema') schema: SignInSchema,
+    @Context() context: GraphQLContext,
   ): Promise<User> {
     try {
       const user = await this.authService.singIn(schema);
 
-      session.set('user_uuid', user.uuid);
+      context.req.session.set('user_uuid', user.uuid);
 
       return user;
     } catch (err) {
@@ -56,12 +63,13 @@ export class AuthResolver {
     }
   }
 
+  @UseGuards(SessionAuthGuard)
   @Mutation(() => Boolean, { name: 'signOut' })
-  public async signOut(@Session() session: FastifySession): Promise<boolean> {
+  public async signOut(@Context() context: GraphQLContext): Promise<boolean> {
     try {
-      session.delete();
+      context.req.session.delete();
 
-      const isSessionDeleted = session.deleted;
+      const isSessionDeleted = context.req.session.deleted;
 
       return isSessionDeleted;
     } catch (err) {

@@ -13,6 +13,6 @@ export class User {
   username: string;
 
   @HideField()
-  @Column({ name: 'password', type: 'varchar', length: 36 })
+  @Column({ name: 'password', type: 'varchar', length: 72 })
   password: string;
 }
