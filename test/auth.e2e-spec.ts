@@ -34,15 +34,15 @@ describe('AuthResolver (e2e)', () => {
     const password = 'pass123';
 
     const query = `
-			mutation {
-				signUp(schema: {
-					username: "${username}",
-					password: "${password}" 
-				}) {
-					uuid
-					username
-				}	
-			}
+		  mutation {
+		    signUp(schema: {
+		      username: "${username}",
+		      password: "${password}" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
 		`;
 
     const response = await app.inject({
@@ -74,15 +74,15 @@ describe('AuthResolver (e2e)', () => {
     const password = 'pass1234';
 
     const signUpQuery = `
-			mutation {
-				signUp(schema: {
-					username: "${username}",
-					password: "${password}" 
-				}) {
-					uuid
-					username
-				}	
-			}
+		  mutation {
+		    signUp(schema: {
+		      username: "${username}",
+		      password: "${password}" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
 		`;
 
     const signUpResponse = await app.inject({
@@ -94,15 +94,15 @@ describe('AuthResolver (e2e)', () => {
     });
 
     const signInQuery = `
-			mutation {
-				signIn(schema: {
-					username: "${username}",
-					password: "${password}" 
-				}) {
-					uuid
-					username
-				}	
-			}
+		  mutation {
+		    signIn(schema: {
+		      username: "${username}",
+		      password: "${password}" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
 		`;
 
     const signInResponse = await app.inject({
@@ -134,15 +134,15 @@ describe('AuthResolver (e2e)', () => {
     const password = 'pass12345';
 
     const signUpQuery = `
-			mutation {
-				signUp(schema: {
-					username: "${username}",
-					password: "${password}" 
-				}) {
-					uuid
-					username
-				}	
-			}
+		  mutation {
+		    signUp(schema: {
+		      username: "${username}",
+		      password: "${password}" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
 		`;
 
     const signUpResponse = await app.inject({
@@ -162,9 +162,9 @@ describe('AuthResolver (e2e)', () => {
     }
 
     const signOutQuery = `
-			mutation {
-				signOut 
-			}
+		  mutation {
+		    signOut 
+		  }
 		`;
 
     const signOutResponse = await app.inject({
@@ -182,5 +182,9 @@ describe('AuthResolver (e2e)', () => {
 
     expect(signOutResponse.statusCode).toBe(200);
     expect(body.data.signOut).toBeTruthy();
+  });
+
+  afterEach(async () => {
+    await app.close();
   });
 });
