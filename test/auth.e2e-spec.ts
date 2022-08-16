@@ -34,16 +34,15 @@ describe('AuthResolver (e2e)', () => {
     const password = 'pass123';
 
     const query = `
-		  mutation {
-		    signUp(schema: {
-		      username: "${username}",
-		      password: "${password}" 
-		    }) {
-		      uuid
-		      username
-		    }	
-		  }
-		`;
+		mutation { 
+			signUp(schema: { 
+				username: "${username}", 
+				password: "${password}" 
+			}) { 
+				uuid 
+				username 
+			} 
+		}`;
 
     const response = await app.inject({
       method: 'POST',
