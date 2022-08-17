@@ -55,7 +55,7 @@ export class AuthResolver {
 
       return user;
     } catch (err) {
-      if (err.name === PasswordsNotMatchingError.name) {
+      if (err instanceof PasswordsNotMatchingError) {
         throw new UnauthorizedException(err);
       }
 

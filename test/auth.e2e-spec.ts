@@ -6,6 +6,7 @@ import {
 import { AppModule } from './../src/app.module';
 import { ConfigService } from '@nestjs/config';
 import session from '@fastify/secure-session';
+import { PasswordsNotMatchingError } from '../src/auth/errors/passwords-not-matching.error';
 
 describe('AuthResolver (e2e)', () => {
   let app: NestFastifyApplication;
@@ -181,6 +182,63 @@ describe('AuthResolver (e2e)', () => {
 
     expect(signOutResponse.statusCode).toBe(200);
     expect(body.data.signOut).toBeTruthy();
+  });
+
+  it('singIn => create user and try to login with the wrong password', async () => {
+    const username = 'John4';
+    const password = 'pass123456';
+
+    const signUpQuery = `
+		  mutation {
+		    signUp(schema: {
+		      username: "${username}",
+		      password: "${password}" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
+		`;
+
+    const signUpResponse = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: {
+        query: signUpQuery,
+      },
+    });
+
+    const signInQuery = `
+		  mutation {
+		    signIn(schema: {
+		      username: "${username}",
+		      password: "wrongPassword" 
+		    }) {
+		      uuid
+		      username
+		    }	
+		  }
+		`;
+
+    const signInResponse = await app.inject({
+      method: 'POST',
+      url: '/graphql',
+      payload: {
+        query: signInQuery,
+      },
+    });
+
+    const body = JSON.parse(signInResponse.body);
+
+    let isPasswordsNotMatchingError = false;
+
+    for (const error of body.errors) {
+      if (error.message === new PasswordsNotMatchingError().message) {
+        isPasswordsNotMatchingError = true;
+      }
+    }
+
+    expect(isPasswordsNotMatchingError).toBeTruthy();
   });
 
   afterEach(async () => {
