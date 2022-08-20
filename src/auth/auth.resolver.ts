@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  ConflictException,
+  NotFoundException,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +19,8 @@ import { User } from '../user/user.entity';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
+import { MailIsInUseError } from './errors/mail-is-in-use.error';
+import { UserNotFoundByEmailError } from 'src/user/errors/user-not-found-by-email.error';
 
 @Resolver(() => User)
 export class AuthResolver {
@@ -39,6 +43,10 @@ export class AuthResolver {
 
       return user;
     } catch (err) {
+      if (err instanceof MailIsInUseError) {
+        throw new ConflictException(err);
+      }
+
       throw new BadRequestException(err);
     }
   }
@@ -57,6 +65,9 @@ export class AuthResolver {
     } catch (err) {
       if (err instanceof PasswordsNotMatchingError) {
         throw new UnauthorizedException(err);
+      }
+      if (err instanceof UserNotFoundByEmailError) {
+        throw new NotFoundException(err);
       }
 
       throw new BadRequestException(err);

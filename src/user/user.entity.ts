@@ -9,6 +9,10 @@ export class User {
   uuid: string;
 
   @Field()
+  @Column({ name: 'email', type: 'varchar', length: 321 })
+  email: string;
+
+  @Field()
   @Column({ name: 'username', type: 'varchar', length: 20 })
   username: string;
 

@@ -22,30 +22,20 @@ export class UserRepository {
     return user;
   }
 
-  public async findSingleByUuidWithException(uuid: string): Promise<User> {
-    const user = await this.userRepository
-      .createQueryBuilder('u')
-      .where('uuid = :uuid', { uuid })
-      .getOne();
-
-    if (!user) {
-      throw new Error('There is no user under this uuid');
-    }
-
-    return user;
-  }
-
-  public async findSingleByUsernameWithException(
-    username: string,
-  ): Promise<User> {
+  public async findSingleByUsername(username: string): Promise<User> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('username = :username', { username })
       .getOne();
 
-    if (!user) {
-      throw new Error('There is no user under this username');
-    }
+    return user;
+  }
+
+  public async findSingleByEmail(email: string): Promise<User> {
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('email = :email', { email })
+      .getOne();
 
     return user;
   }

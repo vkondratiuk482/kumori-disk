@@ -7,6 +7,7 @@ import { BCRYPT_SALT_ROUNDS } from './auth.constants';
 import { SignIn } from './interfaces/sign-in.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
 
+import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 
 import { User } from '../user/user.entity';
@@ -18,9 +19,16 @@ export class AuthService {
   constructor(private readonly userService: UserService) {}
 
   public async signUp(data: CreateUser): Promise<User> {
+    const isMailedUsed = await this.userService.isMailUsed(data.email);
+
+    if (isMailedUsed) {
+      throw new MailIsInUseError();
+    }
+
     const hashedPassword = await this.encryptString(data.password);
 
     const createSingleUserData: CreateUser = {
+      email: data.email,
       username: data.username,
       password: hashedPassword,
     };
@@ -30,16 +38,20 @@ export class AuthService {
   }
 
   public async singIn(data: SignIn): Promise<User> {
-    const user = await this.userService.findSingleByUsernameWithException(
-      data.username,
+    const user = await this.userService.findSingleByEmailWithException(
+      data.email,
     );
 
     const password = data.password;
     const encryptedPassword = user.password;
-    const passwordsMatch = await this.compareEncrypted(
+    const arePasswordsMatching = await this.compareEncrypted(
       password,
       encryptedPassword,
     );
+
+    if (!arePasswordsMatching) {
+      throw new PasswordsNotMatchingError();
+    }
 
     return user;
   }
@@ -55,10 +67,6 @@ export class AuthService {
     encrypted: string,
   ): Promise<boolean> {
     const passwordsMatch = await bcrypt.compare(data, encrypted);
-
-    if (!passwordsMatch) {
-      throw new PasswordsNotMatchingError();
-    }
 
     return passwordsMatch;
   }

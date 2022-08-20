@@ -1,4 +1,6 @@
 import { Injectable } from '@nestjs/common';
+import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
+import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { CreateUser } from './interfaces/create-user.interface';
 import { User } from './user.entity';
 import { UserRepository } from './user.repository';
@@ -14,7 +16,11 @@ export class UserService {
   }
 
   public async findSingleByUuidWithException(uuid: string): Promise<User> {
-    const user = await this.userRepository.findSingleByUuidWithException(uuid);
+    const user = await this.userRepository.findSingleByUuid(uuid);
+
+    if (!user) {
+      throw new Error('There is no user under this uuid');
+    }
 
     return user;
   }
@@ -22,11 +28,31 @@ export class UserService {
   public async findSingleByUsernameWithException(
     username: string,
   ): Promise<User> {
-    const user = await this.userRepository.findSingleByUsernameWithException(
-      username,
-    );
+    const user = await this.userRepository.findSingleByUsername(username);
+
+    if (!user) {
+      throw new UserNotFoundByUsernameError();
+    }
 
     return user;
+  }
+
+  public async findSingleByEmailWithException(email: string): Promise<User> {
+    const user = await this.userRepository.findSingleByEmail(email);
+
+    if (!user) {
+      throw new UserNotFoundByEmailError();
+    }
+
+    return user;
+  }
+
+  public async isMailUsed(email: string): Promise<boolean> {
+    const user = await this.userRepository.findSingleByEmail(email);
+
+    const isMailUsed = Boolean(user);
+
+    return isMailUsed;
   }
 
   public async createSingle(data: CreateUser): Promise<User> {

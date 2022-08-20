@@ -6,7 +6,7 @@ import { SignIn } from '../interfaces/sign-in.interface';
 export class SignInSchema implements SignIn {
   @Field()
   @IsString()
-  public readonly username: string;
+  public readonly email: string;
 
   @Field()
   @IsString()
