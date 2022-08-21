@@ -6,9 +6,10 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 
 import { CreateUser } from './interfaces/create-user.interface';
+import { UserRepositoryInterface } from './interfaces/user-repository.interface';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository implements UserRepositoryInterface<User> {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}

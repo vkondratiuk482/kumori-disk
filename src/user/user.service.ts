@@ -1,13 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+
+import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
+
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
+
 import { CreateUser } from './interfaces/create-user.interface';
+import { UserRepositoryInterface } from './interfaces/user-repository.interface';
+
 import { User } from './user.entity';
-import { UserRepository } from './user.repository';
 
 @Injectable()
 export class UserService {
-  constructor(private readonly userRepository: UserRepository) {}
+  constructor(
+    @Inject(USER_REPOSITORY_TOKEN)
+    private readonly userRepository: UserRepositoryInterface<User>,
+  ) {}
 
   public async findSingleByUuid(uuid: string): Promise<User> {
     const user = await this.userRepository.findSingleByUuid(uuid);
