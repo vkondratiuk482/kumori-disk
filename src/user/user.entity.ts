@@ -1,7 +1,8 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
-@Entity()
+@Entity('user')
 @ObjectType()
 export class User {
   @Field()
@@ -19,4 +20,12 @@ export class User {
   @HideField()
   @Column({ name: 'password', type: 'varchar', length: 72 })
   password: string;
+
+  @HideField()
+  @Column({
+    name: 'confirmation_status',
+    type: 'enum',
+    enum: UserConfirmationStatus,
+  })
+  confirmationStatus: UserConfirmationStatus;
 }

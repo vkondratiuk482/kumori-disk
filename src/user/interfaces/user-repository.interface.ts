@@ -7,5 +7,5 @@ export interface UserRepositoryInterface<User> {
 
   findSingleByEmail(email: string): Promise<User>;
 
-  createSingle(data: CreateUser): Promise<User>;
+  createSinglePending(data: CreateUser): Promise<User>;
 }

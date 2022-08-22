@@ -1,11 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import * as bcrypt from 'bcrypt';
 
 import { BCRYPT_SALT_ROUNDS } from './auth.constants';
+import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
 
 import { SignIn } from './interfaces/sign-in.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
+import { MailerServiceInterface } from '../mailer/interfaces/mailer-service.interface';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
@@ -13,10 +15,15 @@ import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error
 import { User } from '../user/user.entity';
 
 import { UserService } from '../user/user.service';
+import { SendMail } from 'src/mailer/interfaces/send-mail.interface';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    @Inject(MAILER_SERVICE_TOKEN)
+    private readonly mailerService: MailerServiceInterface,
+  ) {}
 
   public async signUp(data: CreateUser): Promise<User> {
     const isMailedUsed = await this.userService.isMailUsed(data.email);
@@ -32,7 +39,11 @@ export class AuthService {
       username: data.username,
       password: hashedPassword,
     };
-    const user = await this.userService.createSingle(createSingleUserData);
+    const user = await this.userService.createSingleForSignUp(
+      createSingleUserData,
+    );
+
+    await this.sendSignUpConfirmationMail(data.email);
 
     return user;
   }
@@ -54,6 +65,16 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  private async sendSignUpConfirmationMail(receiver: string): Promise<void> {
+    const data: SendMail = {
+      to: receiver,
+      subject: 'Confirm signing up',
+      text: 'Helllo',
+    };
+
+    await this.mailerService.sendEmail(data);
   }
 
   private async encryptString(data: string): Promise<string> {

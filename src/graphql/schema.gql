@@ -4,6 +4,7 @@
 
 type User {
   uuid: String!
+  email: String!
   username: String!
 }
 
@@ -18,11 +19,12 @@ type Mutation {
 }
 
 input SignUpSchema {
+  email: String!
   username: String!
   password: String!
 }
 
 input SignInSchema {
-  username: String!
+  email: String!
   password: String!
 }

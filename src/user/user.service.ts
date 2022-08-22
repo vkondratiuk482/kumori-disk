@@ -63,8 +63,8 @@ export class UserService {
     return isMailUsed;
   }
 
-  public async createSingle(data: CreateUser): Promise<User> {
-    const user = await this.userRepository.createSingle(data);
+  public async createSingleForSignUp(data: CreateUser): Promise<User> {
+    const user = await this.userRepository.createSinglePending(data);
 
     return user;
   }

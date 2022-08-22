@@ -7,6 +7,7 @@ import { User } from './user.entity';
 
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepositoryInterface } from './interfaces/user-repository.interface';
+import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 @Injectable()
 export class UserRepository implements UserRepositoryInterface<User> {
@@ -41,8 +42,10 @@ export class UserRepository implements UserRepositoryInterface<User> {
     return user;
   }
 
-  public async createSingle(data: CreateUser): Promise<User> {
-    const user = this.userRepository.create(data);
+  public async createSinglePending(data: CreateUser): Promise<User> {
+    const confirmationStatus = UserConfirmationStatus.Pending;
+
+    const user = this.userRepository.create({ ...data, confirmationStatus });
 
     return this.userRepository.save(user);
   }

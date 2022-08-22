@@ -7,7 +7,9 @@ import {
 } from '@nestjs/common';
 import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
 
+import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
+import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 
@@ -19,8 +21,6 @@ import { User } from '../user/user.entity';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
-import { MailIsInUseError } from './errors/mail-is-in-use.error';
-import { UserNotFoundByEmailError } from 'src/user/errors/user-not-found-by-email.error';
 
 @Resolver(() => User)
 export class AuthResolver {
