@@ -1,1 +1,2 @@
 export const BCRYPT_SALT_ROUNDS = 8;
+export const CONFIRMATION_HASH_TTL_SECONDS = 3600;

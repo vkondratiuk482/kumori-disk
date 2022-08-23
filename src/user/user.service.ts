@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
+import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
@@ -67,5 +68,17 @@ export class UserService {
     const user = await this.userRepository.createSinglePending(data);
 
     return user;
+  }
+
+  public async updateConfirmationStatus(
+    uuid: string,
+    status: UserConfirmationStatus,
+  ): Promise<boolean> {
+    const isUpdated = await this.userRepository.updateConfirmationStatus(
+      uuid,
+      status,
+    );
+
+    return isUpdated;
   }
 }

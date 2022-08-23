@@ -49,4 +49,23 @@ export class UserRepository implements UserRepositoryInterface<User> {
 
     return this.userRepository.save(user);
   }
+
+  public async updateConfirmationStatus(
+    uuid: string,
+    status: UserConfirmationStatus,
+  ): Promise<boolean> {
+    const result = await this.userRepository
+      .createQueryBuilder('u')
+      .update(User)
+      .set({
+        confirmationStatus: status,
+      })
+      .where('uuid = :uuid', { uuid })
+      .returning('*')
+      .execute();
+
+    const isUpdated = result.affected && result.affected > 0;
+
+    return isUpdated;
+  }
 }

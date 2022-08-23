@@ -9,13 +9,14 @@ type User {
 }
 
 type Query {
-  testr2(id: Float!): Int!
+  test(id: Float!): Int!
 }
 
 type Mutation {
   signUp(schema: SignUpSchema!): User!
   signIn(schema: SignInSchema!): User!
   signOut: Boolean!
+  confirmEmail(hash: String!): Boolean!
 }
 
 input SignUpSchema {

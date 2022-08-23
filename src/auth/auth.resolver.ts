@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  ForbiddenException,
   NotFoundException,
   UnauthorizedException,
   UseGuards,
@@ -8,8 +9,11 @@ import {
 import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
+import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
+import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
+import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 
@@ -26,20 +30,15 @@ import { AuthService } from './auth.service';
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
-  @Query(() => Int, { name: 'testr2' })
-  public async testqueryr2(@Args('id') args: number): Promise<number> {
+  @Query(() => Int, { name: 'test' })
+  public async test(@Args('id') id: number): Promise<number> {
     return 1;
   }
 
   @Mutation(() => User, { name: 'signUp' })
-  public async signUp(
-    @Args('schema') schema: SignUpSchema,
-    @Context() context: GraphQLContext,
-  ): Promise<User> {
+  public async signUp(@Args('schema') schema: SignUpSchema): Promise<User> {
     try {
       const user = await this.authService.signUp(schema);
-
-      context.req.session.set('user_uuid', user.uuid);
 
       return user;
     } catch (err) {
@@ -69,6 +68,9 @@ export class AuthResolver {
       if (err instanceof UserNotFoundByEmailError) {
         throw new NotFoundException(err);
       }
+      if (err instanceof EmailNotConfirmedError) {
+        throw new ForbiddenException(err);
+      }
 
       throw new BadRequestException(err);
     }
@@ -84,6 +86,24 @@ export class AuthResolver {
 
       return isSessionDeleted;
     } catch (err) {
+      throw new BadRequestException(err);
+    }
+  }
+
+  @Mutation(() => Boolean, { name: 'confirmEmail' })
+  public async confirmEmail(@Args('hash') hash: string): Promise<boolean> {
+    try {
+      const isConfirmed = await this.authService.confirmEmail(hash);
+
+      return isConfirmed;
+    } catch (err) {
+      if (
+        err instanceof InvalidConfirmationHashError ||
+        err instanceof EmailAlreadyConfirmedError
+      ) {
+        throw new ConflictException(err);
+      }
+
       throw new BadRequestException(err);
     }
   }

@@ -22,7 +22,7 @@ async function bootstrap() {
     key: Buffer.from(config.get<string>('SESSION_SECRET'), 'hex'),
   });
 
-  const port = config.get<number>('PORT');
+  const port = config.get<number>('APP_PORT');
 
   app.useGlobalPipes(new ValidationPipe());
 
