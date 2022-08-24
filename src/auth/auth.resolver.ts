@@ -11,9 +11,10 @@ import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
+import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
+import { UserNotFoundByUuidError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
-import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 
@@ -102,6 +103,27 @@ export class AuthResolver {
         err instanceof EmailAlreadyConfirmedError
       ) {
         throw new ConflictException(err);
+      }
+      if (err instanceof UserNotFoundByUuidError) {
+        throw new NotFoundException(err);
+      }
+
+      throw new BadRequestException(err);
+    }
+  }
+
+  @Mutation(() => Boolean, { name: 'resendConfirmationEmail' })
+  public async resendConfirmationEmail(
+    @Args('email') email: string,
+  ): Promise<boolean> {
+    try {
+      return this.authService.resendConfirmationEmail(email);
+    } catch (err) {
+      if (err instanceof EmailAlreadyConfirmedError) {
+        throw new ConflictException(err);
+      }
+      if (err instanceof UserNotFoundByEmailError) {
+        throw new NotFoundException(err);
       }
 
       throw new BadRequestException(err);

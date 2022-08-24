@@ -115,6 +115,22 @@ export class AuthService {
     return isConfirmed;
   }
 
+  public async resendConfirmationEmail(email: string): Promise<boolean> {
+    const user = await this.userService.findSingleByEmailWithException(email);
+
+    if (user.confirmationStatus === UserConfirmationStatus.Confirmed) {
+      throw new EmailAlreadyConfirmedError();
+    }
+
+    const hash = this.generateHash();
+    const confirmationLink = this.generateConfirmationLink(hash);
+
+    await this.redisService.set(hash, user.uuid, CONFIRMATION_HASH_TTL_SECONDS);
+    await this.sendSignUpConfirmationMail(email, confirmationLink);
+
+    return true;
+  }
+
   private generateHash(): string {
     const hash = randomUUID();
 

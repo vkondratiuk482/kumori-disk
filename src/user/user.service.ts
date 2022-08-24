@@ -5,6 +5,7 @@ import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
+import { UserNotFoundByUuidError } from './errors/user-not-found-by-uuid.error';
 
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepositoryInterface } from './interfaces/user-repository.interface';
@@ -28,7 +29,7 @@ export class UserService {
     const user = await this.userRepository.findSingleByUuid(uuid);
 
     if (!user) {
-      throw new Error('There is no user under this uuid');
+      throw new UserNotFoundByUuidError();
     }
 
     return user;
