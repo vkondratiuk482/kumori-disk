@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@fastify/aws-lambda": "^3.1.1",
     "@fastify/secure-session": "^5.2.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
@@ -29,6 +30,7 @@
     "@nestjs/mercurius": "^10.0.21",
     "@nestjs/platform-fastify": "^9.0.9",
     "@nestjs/typeorm": "^9.0.0",
+    "aws-lambda": "^1.0.7",
     "bcrypt": "^5.0.1",
     "cache-manager": "^4.1.0",
     "cache-manager-redis-store": "^2.0.0",
@@ -48,6 +50,7 @@
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.11",
+    "@types/aws-lambda": "^8.10.102",
     "@types/bcrypt": "^5.0.0",
     "@types/cache-manager": "^4.0.1",
     "@types/cache-manager-redis-store": "^2.0.1",

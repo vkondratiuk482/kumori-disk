@@ -6,14 +6,26 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 
+import awsLambdaFastify from '@fastify/aws-lambda';
 import session from '@fastify/secure-session';
+import fastify, { FastifyInstance, FastifyServerOptions } from 'fastify';
+import {
+  APIGatewayProxyEvent,
+  APIGatewayProxyResult,
+  Context,
+} from 'aws-lambda';
 
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+let cachedServer: FastifyInstance;
+
+async function bootstrap(): Promise<FastifyInstance> {
+  const serverOptions: FastifyServerOptions = { logger: true };
+  const instance: FastifyInstance = fastify(serverOptions);
+
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter({ logger: true }),
+    new FastifyAdapter(instance),
   );
 
   const config = app.get(ConfigService);
@@ -27,5 +39,19 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(port);
+
+  return instance;
 }
-bootstrap();
+
+async function handler(
+  event: APIGatewayProxyEvent,
+  context: Context,
+): Promise<APIGatewayProxyResult> {
+  if (!cachedServer) {
+    cachedServer = await bootstrap();
+  }
+
+  const proxy = awsLambdaFastify(cachedServer);
+
+  return proxy(event, context);
+}
