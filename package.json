@@ -29,8 +29,7 @@
     "@nestjs/graphql": "^10.0.21",
     "@nestjs/mercurius": "^10.0.21",
     "@nestjs/platform-fastify": "^9.0.9",
-    "@nestjs/typeorm": "^9.0.0",
-    "aws-lambda": "^1.0.7",
+    "@shiftcoders/dynamo-easy": "^7.1.0",
     "bcrypt": "^5.0.1",
     "cache-manager": "^4.1.0",
     "cache-manager-redis-store": "^2.0.0",
@@ -43,8 +42,7 @@
     "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0",
-    "typeorm": "^0.3.7"
+    "rxjs": "^7.2.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
