@@ -1,29 +1,30 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
-import { DynamoStore } from '@shiftcoders/dynamo-easy';
 import crypto from 'crypto';
+import { DynamoStore } from '@shiftcoders/dynamo-easy';
 
 import { User } from './user.entity';
 
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepositoryInterface } from './interfaces/user-repository.interface';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
+import { USER_DYNAMO_STORE_TOKEN } from './constants/user.constants';
 
 @Injectable()
 export class UserRepository implements UserRepositoryInterface<User> {
-  /**
-   * Create a separate Nest provider and then inject it
-   */
-  private readonly store: DynamoStore<User> = new DynamoStore<User>(User);
+  constructor(
+    @Inject(USER_DYNAMO_STORE_TOKEN)
+    private readonly userStore: DynamoStore<User>,
+  ) {}
 
   public async findSingleByUuid(uuid: string): Promise<User> {
-    const user = await this.store.get(uuid).exec();
+    const user = await this.userStore.get(uuid).exec();
 
     return user;
   }
 
   public async findSingleByUsername(username: string): Promise<User> {
-    const user = await this.store
+    const user = await this.userStore
       .query()
       .whereAttribute('username')
       .equals(username)
@@ -33,7 +34,7 @@ export class UserRepository implements UserRepositoryInterface<User> {
   }
 
   public async findSingleByEmail(email: string): Promise<User> {
-    const user = await this.store
+    const user = await this.userStore
       .query()
       .whereAttribute('email')
       .equals(email)
@@ -54,7 +55,7 @@ export class UserRepository implements UserRepositoryInterface<User> {
     userSchema.password = data.password;
     userSchema.confirmationStatus = confirmationStatus;
 
-    const user = await this.store
+    const user = await this.userStore
       .put(userSchema)
       .returnValues('ALL_OLD')
       .exec();
@@ -66,7 +67,7 @@ export class UserRepository implements UserRepositoryInterface<User> {
     uuid: string,
     status: UserConfirmationStatus,
   ): Promise<boolean> {
-    const result = await this.store
+    const result = await this.userStore
       .update(uuid)
       .updateAttribute('confirmationStatus')
       .set(status)
