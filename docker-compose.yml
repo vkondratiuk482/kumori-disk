@@ -8,4 +8,9 @@ services:
     ports:
       - 8000:8000
     command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"
+  redis:
+    image: "redis:alpine"
+    command: redis-server --requirepass password 
+    ports:
+     - "6379:6379"
 

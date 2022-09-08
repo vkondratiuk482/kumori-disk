@@ -21,6 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.165.0",
     "@fastify/aws-lambda": "^3.1.1",
     "@fastify/secure-session": "^5.2.0",
     "@nestjs/common": "^9.0.0",
