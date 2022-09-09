@@ -1,5 +1,9 @@
 export interface File {
-  readonly name: string;
+  readonly key: string;
+
+  readonly extension: string;
+
+  readonly buffer: Buffer;
 
   readonly sizeInMb: string;
 

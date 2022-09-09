@@ -1,11 +1,9 @@
 import { File } from './file.interface';
 
 export interface FileServiceInterface {
-  findSingleByUuid(uuid: string): Promise<File>;
+  findSingleByKey(key: string): Promise<File>;
 
-  findSingleByName(name: string): Promise<File>;
-
-  upload(file /* specify file interface */): Promise<boolean>;
+  upload(file: File): Promise<string>;
 
   createSingleDirectory(path: string): Promise<boolean>;
 
