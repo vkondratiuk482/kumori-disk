@@ -57,12 +57,12 @@ export class UserService {
     return user;
   }
 
-  public async isMailUsed(email: string): Promise<boolean> {
+  public async mailUsed(email: string): Promise<boolean> {
     const user = await this.userRepository.findSingleByEmail(email);
 
-    const isMailUsed = Boolean(user);
+    const mailUsed = Boolean(user);
 
-    return isMailUsed;
+    return mailUsed;
   }
 
   public async createSingleForSignUp(data: CreateUser): Promise<User> {
@@ -75,11 +75,11 @@ export class UserService {
     uuid: string,
     status: UserConfirmationStatus,
   ): Promise<boolean> {
-    const isUpdated = await this.userRepository.updateConfirmationStatus(
+    const updated = await this.userRepository.updateConfirmationStatus(
       uuid,
       status,
     );
 
-    return isUpdated;
+    return updated;
   }
 }

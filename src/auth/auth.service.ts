@@ -1,15 +1,12 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
-import * as bcrypt from 'bcrypt';
-import { randomUUID } from 'crypto';
+import crypto from 'crypto';
 
-import {
-  BCRYPT_SALT_ROUNDS,
-  CONFIRMATION_HASH_TTL_SECONDS,
-} from './auth.constants';
+import { CONFIRMATION_HASH_TTL_SECONDS } from './auth.constants';
 import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
 import { REDIS_SERVICE_TOKEN } from '../redis/constants/redis.constants';
+import { CRYPTOGRAPHY_SERVICE_TOKEN } from 'src/cryptography/cryptography.constants';
 
 import { UserConfirmationStatus } from '../user/enums/user-confirmation-status.enum';
 
@@ -18,6 +15,7 @@ import { SendMail } from '../mailer/interfaces/send-mail.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
 import { RedisServiceInterface } from '../redis/interfaces/redis-service.interface';
 import { MailerServiceInterface } from '../mailer/interfaces/mailer-service.interface';
+import { CryptographyServiceInterface } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
@@ -38,16 +36,18 @@ export class AuthService {
     private readonly mailerService: MailerServiceInterface,
     @Inject(REDIS_SERVICE_TOKEN)
     private readonly redisService: RedisServiceInterface,
+    @Inject(CRYPTOGRAPHY_SERVICE_TOKEN)
+    private readonly cryptographyService: CryptographyServiceInterface,
   ) {}
 
   public async signUp(data: CreateUser): Promise<User> {
-    const isMailedUsed = await this.userService.isMailUsed(data.email);
+    const mailUsed = await this.userService.mailUsed(data.email);
 
-    if (isMailedUsed) {
+    if (mailUsed) {
       throw new MailIsInUseError();
     }
 
-    const hashedPassword = await this.encryptString(data.password);
+    const hashedPassword = await this.cryptographyService.hash(data.password);
 
     const createSingleUserData: CreateUser = {
       email: data.email,
@@ -78,12 +78,12 @@ export class AuthService {
 
     const password = data.password;
     const encryptedPassword = user.password;
-    const arePasswordsMatching = await this.compareEncrypted(
+    const passwordsMatch = await this.cryptographyService.compareHashed(
       password,
       encryptedPassword,
     );
 
-    if (!arePasswordsMatching) {
+    if (!passwordsMatch) {
       throw new PasswordsNotMatchingError();
     }
 
@@ -107,12 +107,12 @@ export class AuthService {
       throw new EmailAlreadyConfirmedError();
     }
 
-    const isConfirmed = await this.userService.updateConfirmationStatus(
+    const confirmed = await this.userService.updateConfirmationStatus(
       uuid,
       confirmedStatus,
     );
 
-    return isConfirmed;
+    return confirmed;
   }
 
   public async resendConfirmationEmail(email: string): Promise<boolean> {
@@ -132,7 +132,7 @@ export class AuthService {
   }
 
   private generateHash(): string {
-    const hash = randomUUID();
+    const hash = crypto.randomUUID();
 
     return hash;
   }
@@ -160,20 +160,5 @@ export class AuthService {
     };
 
     return this.mailerService.sendEmail(data);
-  }
-
-  private async encryptString(data: string): Promise<string> {
-    const value = await bcrypt.hash(data, BCRYPT_SALT_ROUNDS);
-
-    return value;
-  }
-
-  private async compareEncrypted(
-    data: string,
-    encrypted: string,
-  ): Promise<boolean> {
-    const passwordsMatch = await bcrypt.compare(data, encrypted);
-
-    return passwordsMatch;
   }
 }
