@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import crypto from 'crypto';
+
+import * as crypto from 'crypto';
+import * as util from 'util';
+
+import { HASH_KEYLEN, HASH_SEPARATOR } from './cryptography.constants';
 import { CryptographyServiceInterface } from './interfaces/cryptography-service.interface';
 import { EncryptedData } from './interfaces/encrypted-data.interface';
 
@@ -26,5 +30,41 @@ export class CryptographyService implements CryptographyServiceInterface {
     };
 
     return encryptedData;
+  }
+
+  public decrypt(data: EncryptedData): string {
+    const key = this.config.get<string>('CRYPTO_KEY');
+    const algorithm = this.config.get<string>('CRYPTO_ALGORITHM');
+
+    const decipher = crypto.createDecipheriv(algorithm, key, data.iv);
+
+    const update = decipher.update(data.data, 'hex', 'utf8');
+    const final = decipher.final('utf8');
+
+    const decrypted = `${update}${final}`;
+
+    return decrypted;
+  }
+
+  public async hash(data: string, salt?: string): Promise<string> {
+    salt = salt || crypto.randomBytes(16).toString('hex');
+
+    const buffer: Buffer = (await util.promisify(crypto.scrypt)(
+      data,
+      salt,
+      HASH_KEYLEN,
+    )) as Buffer;
+    const hashed = `${buffer.toString('hex')}${HASH_SEPARATOR}${salt}`;
+
+    return hashed;
+  }
+
+  public async compareHashed(data: string, hashed: string): Promise<boolean> {
+    const [hash, salt] = hashed.split(HASH_SEPARATOR);
+
+    const compareHash = await this.hash(data, salt);
+    const equivalent = Boolean(compareHash === hashed);
+
+    return equivalent;
   }
 }

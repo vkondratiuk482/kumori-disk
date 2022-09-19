@@ -1,1 +1,4 @@
 export const CRYPTOGRAPHY_SERVICE_TOKEN = Symbol('CRYPTOGRAPHY_SERVICE_TOKEN');
+
+export const HASH_KEYLEN = 32;
+export const HASH_SEPARATOR = ';';
