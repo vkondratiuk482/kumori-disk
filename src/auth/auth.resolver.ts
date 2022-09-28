@@ -83,9 +83,9 @@ export class AuthResolver {
     try {
       context.req.session.delete();
 
-      const isSessionDeleted = context.req.session.deleted;
+      const sessionDeleted = context.req.session.deleted;
 
-      return isSessionDeleted;
+      return sessionDeleted;
     } catch (err) {
       throw new BadRequestException(err);
     }
@@ -94,9 +94,9 @@ export class AuthResolver {
   @Mutation(() => Boolean, { name: 'confirmEmail' })
   public async confirmEmail(@Args('hash') hash: string): Promise<boolean> {
     try {
-      const isConfirmed = await this.authService.confirmEmail(hash);
+      const confirmed = await this.authService.confirmEmail(hash);
 
-      return isConfirmed;
+      return confirmed;
     } catch (err) {
       if (
         err instanceof InvalidConfirmationHashError ||
@@ -117,7 +117,9 @@ export class AuthResolver {
     @Args('email') email: string,
   ): Promise<boolean> {
     try {
-      return this.authService.resendConfirmationEmail(email);
+      const resent = await this.authService.resendConfirmationEmail(email);
+
+      return resent;
     } catch (err) {
       if (err instanceof EmailAlreadyConfirmedError) {
         throw new ConflictException(err);

@@ -74,8 +74,8 @@ export class UserRepository implements UserRepositoryInterface<User> {
       .returnValues('ALL_OLD')
       .exec();
 
-    const isUpdated = result.confirmationStatus === status;
+    const updated = result.confirmationStatus === status;
 
-    return isUpdated;
+    return updated;
   }
 }
