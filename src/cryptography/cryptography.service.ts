@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
-import * as crypto from 'crypto';
-import * as util from 'util';
+import * as util from 'node:util';
+import * as crypto from 'node:crypto';
 
 import { HASH_KEYLEN, HASH_SEPARATOR } from './cryptography.constants';
-import { CryptographyServiceInterface } from './interfaces/cryptography-service.interface';
+
 import { EncryptedData } from './interfaces/encrypted-data.interface';
+import { CryptographyServiceInterface } from './interfaces/cryptography-service.interface';
 
 @Injectable()
 export class CryptographyService implements CryptographyServiceInterface {

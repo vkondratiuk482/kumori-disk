@@ -21,7 +21,7 @@ import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
 
-import { User } from '../user/user.entity';
+import { User } from '../user/entities/user.entity';
 
 import { SessionAuthGuard } from './guards/session-auth.guard';
 

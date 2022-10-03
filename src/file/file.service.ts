@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomUUID } from 'crypto';
+import { Stream } from 'node:stream';
 import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { S3_CLIENT_TOKEN } from './constants/file.constants';
 import { FileServiceInterface } from './interfaces/file-service.interface';
-import { File } from './interfaces/file.interface';
 import { FileNotUploadedError } from './errors/file-not-uploaded.error';
+import { UploadFile } from './interfaces/upload-file.interface';
 
 @Injectable()
 export class FileService implements FileServiceInterface {
@@ -14,15 +14,21 @@ export class FileService implements FileServiceInterface {
     private readonly configService: ConfigService,
   ) {}
 
-  public async upload(userUuid: string, file: File): Promise<string> {
-    const fileUuid = randomUUID();
-    const key = `${userUuid}_${fileUuid}.${file.extension}`;
+  public async uploadWithException(
+    userUuid: string,
+    data: UploadFile,
+  ): Promise<string> {
+    // condition to check whether user has exceeded personal storage limit
+
+    const key = `${userUuid}/${data.path}/${data.file.filename}.${data.file.mimetype}`;
+
+    const fileBuffer = this.streamToBuffer(data.file.createReadStream());
 
     try {
       await this.s3Client.send(
         new PutObjectCommand({
           Key: key,
-          Body: file.buffer,
+          Body: fileBuffer,
           Bucket: this.configService.get<string>('BUCKET_NAME'),
         }),
       );
@@ -31,5 +37,9 @@ export class FileService implements FileServiceInterface {
     } catch (err) {
       throw new FileNotUploadedError();
     }
+  }
+
+  private streamToBuffer(stream: Stream): Buffer {
+    // convert stream to buffer
   }
 }

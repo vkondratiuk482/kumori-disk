@@ -1,9 +1,9 @@
-import { File } from './file.interface';
+import { UploadFile } from './upload-file.interface';
 
 export interface FileServiceInterface {
   // findSingleByKey(key: string): Promise<File>;
 
-  upload(userUuid: string, file: File): Promise<string>;
+  uploadWithException(userUuid: string, data: UploadFile): Promise<string>;
 
   // createSingleDirectory(path: string): Promise<boolean>;
 
