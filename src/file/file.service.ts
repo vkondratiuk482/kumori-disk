@@ -6,6 +6,7 @@ import { S3_CLIENT_TOKEN } from './constants/file.constants';
 import { FileServiceInterface } from './interfaces/file-service.interface';
 import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 import { UploadFile } from './interfaces/upload-file.interface';
+import { MimeType } from './enums/mime-type.enum';
 
 @Injectable()
 export class FileService implements FileServiceInterface {
@@ -20,9 +21,9 @@ export class FileService implements FileServiceInterface {
   ): Promise<string> {
     // condition to check whether user has exceeded personal storage limit
 
-    const key = `${userUuid}/${data.path}/${data.file.filename}.${data.file.mimetype}`;
-
-    const fileBuffer = this.streamToBuffer(data.file.createReadStream());
+    const extension = MimeType[data.file.mimetype];
+    const key = `${userUuid}/${data.path}/${data.file.filename}.${extension}`;
+    const fileBuffer = await this.streamToBuffer(data.file.createReadStream());
 
     try {
       await this.s3Client.send(
@@ -39,7 +40,14 @@ export class FileService implements FileServiceInterface {
     }
   }
 
-  private streamToBuffer(stream: Stream): Buffer {
-    // convert stream to buffer
+  private async streamToBuffer(stream: Stream): Promise<Buffer> {
+    const chunks = [];
+
+    return new Promise((resolve, reject) =>
+      stream
+        .on('data', (data) => chunks.push(data))
+        .on('error', (err) => reject(err))
+        .on('end', () => resolve(Buffer.concat(chunks))),
+    );
   }
 }

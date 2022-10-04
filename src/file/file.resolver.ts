@@ -20,10 +20,6 @@ export class FileResolver {
     private readonly fileService: FileServiceInterface,
   ) {}
 
-  /**
-   * Probably move it to UserResolver
-   */
-
   @UseGuards(SessionAuthGuard)
   @Mutation(() => String, { name: 'uploadFile' })
   public async uploadFile(
