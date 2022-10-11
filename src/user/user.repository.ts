@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 
-import crypto from 'crypto';
+import { randomUUID } from 'node:crypto';
 import { DynamoStore } from '@shiftcoders/dynamo-easy';
 
-import { User } from './user.entity';
+import { User } from './entities/user.entity';
 
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepositoryInterface } from './interfaces/user-repository.interface';
@@ -44,7 +44,7 @@ export class UserRepository implements UserRepositoryInterface<User> {
   }
 
   public async createSinglePending(data: CreateUser): Promise<User> {
-    const uuid = crypto.randomUUID();
+    const uuid = randomUUID();
     const confirmationStatus = UserConfirmationStatus.Pending;
 
     const userSchema = new User();

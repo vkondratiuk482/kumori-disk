@@ -64,7 +64,7 @@ export class CryptographyService implements CryptographyServiceInterface {
     const [hash, salt] = hashed.split(HASH_SEPARATOR);
 
     const compareHash = await this.hash(data, salt);
-    const equivalent = Boolean(compareHash === hashed);
+    const equivalent = compareHash === hashed;
 
     return equivalent;
   }

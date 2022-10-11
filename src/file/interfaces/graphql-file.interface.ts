@@ -1,4 +1,4 @@
-import { Stream } from 'node:stream';
+import { Readable } from 'node:stream';
 
 export interface GraphQLFile {
   readonly filename: string;
@@ -7,5 +7,5 @@ export interface GraphQLFile {
 
   readonly encoding: string;
 
-  readonly createReadStream: () => Stream;
+  readonly createReadStream: () => Readable;
 }

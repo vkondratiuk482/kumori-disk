@@ -1,6 +1,6 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
 import { Model, PartitionKey } from '@shiftcoders/dynamo-easy';
-import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
+import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
 
 @Model()
 @ObjectType()

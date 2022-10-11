@@ -1,12 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Stream } from 'node:stream';
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  GetObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { S3_CLIENT_TOKEN } from './constants/file.constants';
 import { FileServiceInterface } from './interfaces/file-service.interface';
-import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 import { UploadFile } from './interfaces/upload-file.interface';
 import { MimeType } from './enums/mime-type.enum';
+import { FileNotDownloadedError } from './errors/file-not-downloaded.error';
+import { FileNotUploadedError } from './errors/file-not-uploaded.error';
+import { Readable } from 'node:stream';
 
 @Injectable()
 export class FileService implements FileServiceInterface {
@@ -40,14 +45,32 @@ export class FileService implements FileServiceInterface {
     }
   }
 
-  private async streamToBuffer(stream: Stream): Promise<Buffer> {
+  public async downloadWithException(key: string): Promise<Readable> {
+    try {
+      const { Body } = await this.s3Client.send(
+        new GetObjectCommand({
+          Key: key,
+          Bucket: this.configService.get<string>('BUCKET_NAME'),
+        }),
+      );
+
+      const readStream = Body as Readable;
+
+      return readStream;
+    } catch (err) {
+      throw new FileNotDownloadedError();
+    }
+  }
+
+  private async streamToBuffer(stream: Readable): Promise<Buffer> {
     const chunks = [];
 
-    return new Promise((resolve, reject) =>
-      stream
-        .on('data', (data) => chunks.push(data))
-        .on('error', (err) => reject(err))
-        .on('end', () => resolve(Buffer.concat(chunks))),
-    );
+    for await (const chunk of stream) {
+      chunks.push(chunk);
+    }
+
+    const buffer: Buffer = Buffer.concat(chunks);
+
+    return buffer;
   }
 }

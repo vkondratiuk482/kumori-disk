@@ -1,13 +1,10 @@
 version: "3"
 services:
-   dynamodb:
-    image:  amazon/dynamodb-local
-    container_name: my-dynamodb
-    hostname: dynamodb
-    restart: always
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: dynamodb-local
     ports:
-      - 8000:8000
-    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data/"
+      - "8000:8000"
   redis:
     image: "redis:alpine"
     command: redis-server --requirepass password 
