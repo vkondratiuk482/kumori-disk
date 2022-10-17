@@ -40,7 +40,7 @@ describe('AuthResolver (e2e)', () => {
 				username: "${username}", 
 				password: "${password}" 
 			}) { 
-				uuid 
+				id	
 				username 
 			} 
 		}`;
@@ -55,18 +55,18 @@ describe('AuthResolver (e2e)', () => {
 
     const body = JSON.parse(response.body);
 
-    let isSessionCookiePresent = false;
+    let sessionCookieExists = false;
 
     for (const cookie of response.cookies) {
       if (cookie['name'] === 'session') {
-        isSessionCookiePresent = true;
+        sessionCookieExists = true;
       }
     }
 
     expect(response.statusCode).toBe(200);
     expect(body.data.signUp.username).toMatch(username);
     expect(body.data.signUp.password).toBeUndefined();
-    expect(isSessionCookiePresent).toBeTruthy();
+    expect(sessionCookieExists).toBeTruthy();
   });
 
   it('signIn => create user and successfully to sign in', async () => {
@@ -79,7 +79,7 @@ describe('AuthResolver (e2e)', () => {
 		      username: "${username}",
 		      password: "${password}" 
 		    }) {
-		      uuid
+					id 
 		      username
 		    }	
 		  }
@@ -99,7 +99,7 @@ describe('AuthResolver (e2e)', () => {
 		      username: "${username}",
 		      password: "${password}" 
 		    }) {
-		      uuid
+					id 
 		      username
 		    }	
 		  }
@@ -113,11 +113,11 @@ describe('AuthResolver (e2e)', () => {
       },
     });
 
-    let isSessionCookiePresent = false;
+    let sessionCookieExists = false;
 
     for (const cookie of signUpResponse.cookies) {
       if (cookie['name'] === 'session') {
-        isSessionCookiePresent = true;
+        sessionCookieExists = true;
       }
     }
 
@@ -126,7 +126,7 @@ describe('AuthResolver (e2e)', () => {
     expect(signInResponse.statusCode).toBe(200);
     expect(body.data.signIn.username).toMatch(username);
     expect(body.data.signIn.password).toBeUndefined();
-    expect(isSessionCookiePresent).toBeTruthy();
+    expect(sessionCookieExists).toBeTruthy();
   });
 
   it('singOut => create user and then sign out', async () => {
@@ -139,7 +139,7 @@ describe('AuthResolver (e2e)', () => {
 		      username: "${username}",
 		      password: "${password}" 
 		    }) {
-		      uuid
+					id 
 		      username
 		    }	
 		  }
@@ -194,7 +194,7 @@ describe('AuthResolver (e2e)', () => {
 		      username: "${username}",
 		      password: "${password}" 
 		    }) {
-		      uuid
+					id 
 		      username
 		    }	
 		  }
@@ -214,7 +214,7 @@ describe('AuthResolver (e2e)', () => {
 		      username: "${username}",
 		      password: "wrongPassword" 
 		    }) {
-		      uuid
+					id 
 		      username
 		    }	
 		  }
@@ -230,15 +230,15 @@ describe('AuthResolver (e2e)', () => {
 
     const body = JSON.parse(signInResponse.body);
 
-    let isPasswordsNotMatchingError = false;
+    let passwordsDontMatch = false;
 
     for (const error of body.errors) {
       if (error.message === new PasswordsNotMatchingError().message) {
-        isPasswordsNotMatchingError = true;
+        passwordsDontMatch = true;
       }
     }
 
-    expect(isPasswordsNotMatchingError).toBeTruthy();
+    expect(passwordsDontMatch).toBeTruthy();
   });
 
   afterEach(async () => {

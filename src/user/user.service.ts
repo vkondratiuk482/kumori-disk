@@ -56,6 +56,18 @@ export class UserService {
     return user;
   }
 
+  public async getAvailableStorageSpaceByIdWithException(
+    id: string,
+  ): Promise<number> {
+    const user = await this.userRepository.findSingleById(id);
+
+    if (!user) {
+      throw new UserNotFoundByIdError();
+    }
+
+    return user.availableStorageSpaceInBytes;
+  }
+
   public async mailUsed(email: string): Promise<boolean> {
     const user = await this.userRepository.findSingleByEmail(email);
 

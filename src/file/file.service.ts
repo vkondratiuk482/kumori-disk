@@ -15,12 +15,14 @@ import { UserExceedsPersonalStorageLimitError } from './errors/user-exceeds-pers
 import { UploadFile } from './interfaces/upload-file.interface';
 import { UploadGraphQLFile } from './interfaces/upload-graphql-file.interface';
 import { FileService } from './interfaces/file-service.interface';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class FileServiceImplementation implements FileService {
   constructor(
     @Inject(S3_CLIENT_TOKEN) private readonly s3Client: S3Client,
     private readonly configService: ConfigService,
+    private readonly userService: UserService,
   ) {}
 
   public async uploadGraphQLWithException(
@@ -32,8 +34,7 @@ export class FileServiceImplementation implements FileService {
     );
     const bytes = Buffer.byteLength(fileBuffer);
 
-    const exceedsPersonalLimit =
-      await this.checkIfUserExceedsPersonalStorageLimit(userId, bytes);
+    const exceedsPersonalLimit = await this.exceedsPersonalLimit(userId, bytes);
 
     if (exceedsPersonalLimit) {
       throw new UserExceedsPersonalStorageLimitError();
@@ -99,11 +100,16 @@ export class FileServiceImplementation implements FileService {
     return key;
   }
 
-  private async checkIfUserExceedsPersonalStorageLimit(
+  private async exceedsPersonalLimit(
     userId: string,
     bytes: number,
   ): Promise<boolean> {
-    return true;
+    const availableStorageSpaceInBytes =
+      await this.userService.getAvailableStorageSpaceByIdWithException(userId);
+
+    const exceedsPersonalLimit = bytes > availableStorageSpaceInBytes;
+
+    return exceedsPersonalLimit;
   }
 
   private async convertStreamToBuffer(stream: Readable): Promise<Buffer> {

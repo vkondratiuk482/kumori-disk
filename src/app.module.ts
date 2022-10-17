@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
+import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 
 import { join } from 'path';
 
@@ -12,7 +13,6 @@ import { FileModule } from './file/file.module';
 import { RedisModule } from './redis/redis.module';
 import { MailerModule } from './mailer/mailer.module';
 import { CryptographyModule } from './cryptography/cryptography.module';
-import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
 
 @Module({
   imports: [

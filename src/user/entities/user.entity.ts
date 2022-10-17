@@ -28,4 +28,11 @@ export class User {
     enum: UserConfirmationStatus,
   })
   confirmationStatus: UserConfirmationStatus;
+
+  @Field()
+  @Column({
+    name: 'available_storage_space_in_bytes',
+    type: 'bigint',
+  })
+  availableStorageSpaceInBytes: number;
 }
