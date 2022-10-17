@@ -1,80 +1,73 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
-import { randomUUID } from 'node:crypto';
-import { DynamoStore } from '@shiftcoders/dynamo-easy';
+import { Repository } from 'typeorm';
 
 import { User } from './entities/user.entity';
 
-import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepositoryInterface } from './interfaces/user-repository.interface';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
-import { USER_DYNAMO_STORE_TOKEN } from './constants/user.constants';
+import { CreateUser } from './interfaces/create-user.interface';
+import { UserRepository } from './interfaces/user-repository.interface';
 
 @Injectable()
-export class UserRepository implements UserRepositoryInterface<User> {
+export class UserRepositoryImplementation implements UserRepository {
   constructor(
-    @Inject(USER_DYNAMO_STORE_TOKEN)
-    private readonly userStore: DynamoStore<User>,
+    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
-  public async findSingleByUuid(uuid: string): Promise<User> {
-    const user = await this.userStore.get(uuid).exec();
+  public async findSingleById(id: string): Promise<User> {
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('id = :id', { id })
+      .getOne();
 
     return user;
   }
 
   public async findSingleByUsername(username: string): Promise<User> {
-    const user = await this.userStore
-      .query()
-      .whereAttribute('username')
-      .equals(username)
-      .execSingle();
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('username = :username', { username })
+      .getOne();
 
     return user;
   }
 
   public async findSingleByEmail(email: string): Promise<User> {
-    const user = await this.userStore
-      .query()
-      .whereAttribute('email')
-      .equals(email)
-      .execSingle();
+    const user = await this.userRepository
+      .createQueryBuilder('u')
+      .where('email = :email', { email })
+      .getOne();
 
     return user;
   }
 
   public async createSinglePending(data: CreateUser): Promise<User> {
-    const uuid = randomUUID();
     const confirmationStatus = UserConfirmationStatus.Pending;
 
-    const userSchema = new User();
+    const user = this.userRepository.create({
+      ...data,
+      confirmationStatus,
+    });
 
-    userSchema.uuid = uuid;
-    userSchema.email = data.email;
-    userSchema.username = data.username;
-    userSchema.password = data.password;
-    userSchema.confirmationStatus = confirmationStatus;
-
-    const user = await this.userStore
-      .put(userSchema)
-      .returnValues('ALL_OLD')
-      .exec();
-
-    return user;
+    return this.userRepository.save(user);
   }
 
   public async updateConfirmationStatus(
-    uuid: string,
+    id: string,
     status: UserConfirmationStatus,
   ): Promise<boolean> {
-    const result = await this.userStore
-      .update(uuid)
-      .updateAttribute('confirmationStatus')
-      .set(status)
-      .returnValues('ALL_OLD')
-      .exec();
+    const result = await this.userRepository
+      .createQueryBuilder('u')
+      .update(User)
+      .set({
+        confirmationStatus: status,
+      })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
 
-    const updated = result.confirmationStatus === status;
+    const updated = result.affected && result.affected > 0;
 
     return updated;
   }

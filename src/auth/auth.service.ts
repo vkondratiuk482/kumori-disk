@@ -13,9 +13,9 @@ import { UserConfirmationStatus } from '../user/enums/user-confirmation-status.e
 import { SignIn } from './interfaces/sign-in.interface';
 import { SendMail } from '../mailer/interfaces/send-mail.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
-import { RedisServiceInterface } from '../redis/interfaces/redis-service.interface';
-import { MailerServiceInterface } from '../mailer/interfaces/mailer-service.interface';
-import { CryptographyServiceInterface } from 'src/cryptography/interfaces/cryptography-service.interface';
+import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
+import { RedisService } from 'src/redis/interfaces/redis-service.interface';
+import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
@@ -23,7 +23,7 @@ import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 
-import { User } from '../user/user.entity';
+import { User } from 'src/user/entities/user.entity';
 
 import { UserService } from '../user/user.service';
 
@@ -33,11 +33,11 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @Inject(MAILER_SERVICE_TOKEN)
-    private readonly mailerService: MailerServiceInterface,
+    private readonly mailerService: MailerService,
     @Inject(REDIS_SERVICE_TOKEN)
-    private readonly redisService: RedisServiceInterface,
+    private readonly redisService: RedisService,
     @Inject(CRYPTOGRAPHY_SERVICE_TOKEN)
-    private readonly cryptographyService: CryptographyServiceInterface,
+    private readonly cryptographyService: CryptographyService,
   ) {}
 
   public async signUp(data: CreateUser): Promise<User> {
@@ -61,7 +61,7 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set(hash, user.uuid, CONFIRMATION_HASH_TTL_SECONDS);
+    await this.redisService.set(hash, user.id, CONFIRMATION_HASH_TTL_SECONDS);
     await this.sendSignUpConfirmationMail(data.email, confirmationLink);
 
     return user;
@@ -91,15 +91,15 @@ export class AuthService {
   }
 
   public async confirmEmail(hash: string): Promise<boolean> {
-    const uuid = await this.redisService.get<string>(hash);
+    const id = await this.redisService.get<string>(hash);
 
-    if (!uuid) {
+    if (!id) {
       throw new InvalidConfirmationHashError();
     }
 
     await this.redisService.delete(hash);
 
-    const user = await this.userService.findSingleByUuidWithException(uuid);
+    const user = await this.userService.findSingleByIdWithException(id);
 
     const confirmedStatus = UserConfirmationStatus.Confirmed;
 
@@ -108,7 +108,7 @@ export class AuthService {
     }
 
     const confirmed = await this.userService.updateConfirmationStatus(
-      uuid,
+      id,
       confirmedStatus,
     );
 
@@ -125,7 +125,7 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set(hash, user.uuid, CONFIRMATION_HASH_TTL_SECONDS);
+    await this.redisService.set(hash, user.id, CONFIRMATION_HASH_TTL_SECONDS);
     await this.sendSignUpConfirmationMail(email, confirmationLink);
 
     return true;

@@ -1,4 +1,4 @@
-export interface RedisServiceInterface {
+export interface RedisService {
   get<T>(key: string): Promise<T>;
 
   set<T>(key: string, value: T, ttl: number): Promise<T>;

@@ -7,10 +7,10 @@ import * as crypto from 'node:crypto';
 import { HASH_KEYLEN, HASH_SEPARATOR } from './cryptography.constants';
 
 import { EncryptedData } from './interfaces/encrypted-data.interface';
-import { CryptographyServiceInterface } from './interfaces/cryptography-service.interface';
+import { CryptographyService } from './interfaces/cryptography-service.interface';
 
 @Injectable()
-export class CryptographyService implements CryptographyServiceInterface {
+export class CryptographyServiceImplementation implements CryptographyService {
   constructor(private readonly config: ConfigService) {}
 
   public encrypt(data: string): EncryptedData {

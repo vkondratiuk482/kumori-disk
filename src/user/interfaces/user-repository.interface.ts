@@ -1,8 +1,9 @@
 import { CreateUser } from './create-user.interface';
 import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
+import { User } from '../entities/user.entity';
 
-export interface UserRepositoryInterface<User> {
-  findSingleByUuid(uuid: string): Promise<User>;
+export interface UserRepository {
+  findSingleById(id: string): Promise<User>;
 
   findSingleByUsername(username: string): Promise<User>;
 
@@ -11,7 +12,7 @@ export interface UserRepositoryInterface<User> {
   createSinglePending(data: CreateUser): Promise<User>;
 
   updateConfirmationStatus(
-    uuid: string,
+    id: string,
     status: UserConfirmationStatus,
   ): Promise<boolean>;
 }

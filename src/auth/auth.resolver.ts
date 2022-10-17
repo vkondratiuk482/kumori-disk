@@ -12,7 +12,6 @@ import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
-import { UserNotFoundByUuidError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
@@ -26,6 +25,7 @@ import { User } from '../user/entities/user.entity';
 import { SessionAuthGuard } from './guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
+import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 
 @Resolver(() => User)
 export class AuthResolver {
@@ -59,7 +59,7 @@ export class AuthResolver {
     try {
       const user = await this.authService.singIn(schema);
 
-      context.req.session.set('user_uuid', user.uuid);
+      context.req.session.set('user_id', user.id);
 
       return user;
     } catch (err) {
@@ -104,7 +104,7 @@ export class AuthResolver {
       ) {
         throw new ConflictException(err);
       }
-      if (err instanceof UserNotFoundByUuidError) {
+      if (err instanceof UserNotFoundByIdError) {
         throw new NotFoundException(err);
       }
 

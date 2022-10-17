@@ -1,10 +1,13 @@
 import { Readable } from 'node:stream';
-import { UploadFile } from './upload-file.interface';
+import { UploadGraphQLFile } from './upload-graphql-file.interface';
 
-export interface FileServiceInterface {
+export interface FileService {
   // findSingleByKey(key: string): Promise<File>;
 
-  uploadWithException(userUuid: string, data: UploadFile): Promise<string>;
+  uploadGraphQLWithException(
+    userId: string,
+    data: UploadGraphQLFile,
+  ): Promise<string>;
 
   downloadWithException(key: string): Promise<Readable>;
 

@@ -1,13 +1,11 @@
 import { MimeType } from '../enums/mime-type.enum';
 
-export interface UploadFile {
+export interface GenerateFileKey {
   readonly userId: string;
+
+  readonly path: string;
 
   readonly name: string;
 
   readonly extension: MimeType;
-
-  readonly path: string;
-
-  readonly buffer: Buffer;
 }

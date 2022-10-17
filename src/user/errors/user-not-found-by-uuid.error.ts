@@ -1,5 +1,5 @@
-export class UserNotFoundByUuidError extends Error {
-  public readonly name: string = 'UserNotFoundByUuid';
+export class UserNotFoundByIdError extends Error {
+  public readonly name: string = 'UserNotFoundById';
 
-  public readonly message: string = 'There is no user under this uuid';
+  public readonly message: string = 'There is no user under this id';
 }

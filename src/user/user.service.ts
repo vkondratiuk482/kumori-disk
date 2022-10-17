@@ -1,35 +1,34 @@
 import { Inject, Injectable } from '@nestjs/common';
 
 import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
+import { User } from './entities/user.entity';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
-import { UserNotFoundByUuidError } from './errors/user-not-found-by-uuid.error';
+import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 
 import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepositoryInterface } from './interfaces/user-repository.interface';
-
-import { User } from './user.entity';
+import { UserRepository } from './interfaces/user-repository.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY_TOKEN)
-    private readonly userRepository: UserRepositoryInterface<User>,
+    private readonly userRepository: UserRepository,
   ) {}
 
-  public async findSingleByUuid(uuid: string): Promise<User> {
-    const user = await this.userRepository.findSingleByUuid(uuid);
+  public async findSingleById(id: string): Promise<User> {
+    const user = await this.userRepository.findSingleById(id);
 
     return user;
   }
 
-  public async findSingleByUuidWithException(uuid: string): Promise<User> {
-    const user = await this.userRepository.findSingleByUuid(uuid);
+  public async findSingleByIdWithException(id: string): Promise<User> {
+    const user = await this.userRepository.findSingleById(id);
 
     if (!user) {
-      throw new UserNotFoundByUuidError();
+      throw new UserNotFoundByIdError();
     }
 
     return user;
@@ -72,11 +71,11 @@ export class UserService {
   }
 
   public async updateConfirmationStatus(
-    uuid: string,
+    id: string,
     status: UserConfirmationStatus,
   ): Promise<boolean> {
     const updated = await this.userRepository.updateConfirmationStatus(
-      uuid,
+      id,
       status,
     );
 

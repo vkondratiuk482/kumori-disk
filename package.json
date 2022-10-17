@@ -21,8 +21,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.165.0",
-    "@fastify/aws-lambda": "^3.1.1",
+    "@aws-sdk/client-s3": "^3.188.0",
     "@fastify/secure-session": "^5.2.0",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",
@@ -31,7 +30,7 @@
     "@nestjs/mercurius": "^10.0.21",
     "@nestjs/platform-fastify": "^9.0.9",
     "@nestjs/throttler": "^3.0.0",
-    "@shiftcoders/dynamo-easy": "^7.1.0",
+    "@nestjs/typeorm": "^9.0.1",
     "cache-manager": "^4.1.0",
     "cache-manager-redis-store": "^2.0.0",
     "class-transformer": "^0.5.1",
@@ -44,13 +43,13 @@
     "pg": "^8.7.3",
     "reflect-metadata": "^0.1.13",
     "rimraf": "^3.0.2",
-    "rxjs": "^7.2.0"
+    "rxjs": "^7.2.0",
+    "typeorm": "^0.3.10"
   },
   "devDependencies": {
     "@nestjs/cli": "^9.0.0",
     "@nestjs/schematics": "^9.0.0",
     "@nestjs/testing": "^9.0.11",
-    "@types/aws-lambda": "^8.10.102",
     "@types/cache-manager": "^4.0.1",
     "@types/cache-manager-redis-store": "^2.0.1",
     "@types/graphql-upload": "^8.0.11",

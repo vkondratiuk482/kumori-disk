@@ -6,18 +6,18 @@ import {
 } from '@nestjs/common';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
 import { FILE_SERVICE_TOKEN } from './constants/file.constants';
-import { FileServiceInterface } from './interfaces/file-service.interface';
 import { File } from './entities/file.entity';
 import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 import { SessionAuthGuard } from 'src/auth/guards/session-auth.guard';
 import { UploadFileSchema } from './schema/upload-file.schema';
+import { FileService } from './interfaces/file-service.interface';
 
 @Resolver(() => File)
 export class FileResolver {
   constructor(
     @Inject(FILE_SERVICE_TOKEN)
-    private readonly fileService: FileServiceInterface,
+    private readonly fileService: FileService,
   ) {}
 
   @UseGuards(SessionAuthGuard)
@@ -27,9 +27,12 @@ export class FileResolver {
     @Context() context: GraphQLContext,
   ): Promise<string> {
     try {
-      const userUuid: string = context.req.session.get('user_uuid');
+      const userId: string = context.req.session.get('user_id');
 
-      const file = await this.fileService.uploadWithException(userUuid, schema);
+      const file = await this.fileService.uploadGraphQLWithException(
+        userId,
+        schema,
+      );
 
       return file;
     } catch (err) {

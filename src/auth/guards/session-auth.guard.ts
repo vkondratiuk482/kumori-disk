@@ -10,9 +10,9 @@ export class SessionAuthGuard implements CanActivate {
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const gqlContext = GqlExecutionContext.create(context).getContext();
 
-    const uuid = gqlContext.req.session.get('user_uuid');
+    const id = gqlContext.req.session.get('user_id');
 
-    const user = await this.userService.findSingleByUuid(uuid);
+    const user = await this.userService.findSingleById(id);
 
     if (!user) {
       return false;

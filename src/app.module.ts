@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
 import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
 
@@ -27,6 +28,7 @@ import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
       inject: [ConfigService],
     }),
     GraphQLModule.forRootAsync<MercuriusDriverConfig>({
+			driver: MercuriusDriver,
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
         driver: MercuriusDriver,
@@ -35,6 +37,20 @@ import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
           config.get<string>('GRAPHQL_SCHEMA_PATH'),
         ),
         graphiql: true,
+      }),
+      inject: [ConfigService],
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DATABASE_HOST'),
+        port: config.get<number>('DATABASE_PORT'),
+        database: config.get<string>('DATABASE_NAME'),
+        username: config.get<string>('DATABASE_USERNAME'),
+        password: config.get<string>('DATABASE_PASSWORD'),
+        autoLoadEntities: true,
+        synchronize: true,
       }),
       inject: [ConfigService],
     }),
