@@ -25,7 +25,7 @@ import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
         ttl: config.get<number>('THROTTLER_TTL'),
         limit: config.get<number>('THROTTLER_LIMIT'),
       }),
-      inject: [ConfigService]
+      inject: [ConfigService],
     }),
     GraphQLModule.forRootAsync<MercuriusDriverConfig>({
       driver: MercuriusDriver,
