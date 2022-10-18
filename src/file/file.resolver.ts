@@ -18,6 +18,7 @@ import { FileNotCreatedInDatabaseError } from './errors/file-not-created-in-data
 import { ShareAccessSchema } from './schema/share-access.schema';
 import { FileNotAccessibleError } from './errors/file-not-accessible.error';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
+import { RevokeAccessSchema } from './schema/revoke-access.schema';
 
 @Resolver(() => File)
 export class FileResolver {
@@ -74,6 +75,30 @@ export class FileResolver {
       }
       if (err instanceof UserNotFoundByIdError) {
         throw new NotFoundException(err);
+      }
+
+      throw new BadRequestException(err);
+    }
+  }
+
+	@UseGuards(SessionAuthGuard)
+  @Mutation(() => Boolean, { name: 'revokeAccess' })
+  public async revokeAccess(
+    @Args('schema') schema: RevokeAccessSchema,
+    @Context() context: GraphQLContext,
+  ): Promise<boolean> {
+    try {
+      const ownerId: string = context.req.session.get('user_id');
+
+      const revoked = await this.fileService.revokeAccessWithException(
+        ownerId,
+        schema,
+      );
+
+      return revoked;
+    } catch (err) {
+      if (err instanceof FileNotAccessibleError) {
+        throw new ForbiddenException(err);
       }
 
       throw new BadRequestException(err);

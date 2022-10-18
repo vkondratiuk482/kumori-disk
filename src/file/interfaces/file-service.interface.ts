@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream';
+import { RevokeAccess } from './revoke-access.interface';
 import { ShareAccess } from './share-access.interface';
 import { UploadGraphQLFile } from './upload-graphql-file.interface';
 
@@ -13,6 +14,11 @@ export interface FileService {
   shareAccessWithException(
     ownerId: string,
     data: ShareAccess,
+  ): Promise<boolean>;
+
+  revokeAccessWithException(
+    ownerId: string,
+    data: RevokeAccess,
   ): Promise<boolean>;
 
   downloadWithException(key: string): Promise<Readable>;

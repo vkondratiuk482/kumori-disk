@@ -26,6 +26,8 @@ import { File } from './entities/file.entity';
 import { FileNotCreatedInDatabaseError } from './errors/file-not-created-in-database.error';
 import { ShareAccess } from './interfaces/share-access.interface';
 import { FileNotAccessibleError } from './errors/file-not-accessible.error';
+import { RevokeAccess } from './interfaces/revoke-access.interface';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class FileServiceImplementation implements FileService {
@@ -78,6 +80,32 @@ export class FileServiceImplementation implements FileService {
 
     for (const file of files) {
       file.users.push(tenant);
+    }
+
+    return this.saveManyInDatabase(files);
+  }
+
+  public async revokeAccessWithException(
+    ownerId: string,
+    data: RevokeAccess,
+  ): Promise<boolean> {
+    const files = await this.findManyByIdsAndOwnerIdInDatabaseWithException(
+      data.fileIds,
+      ownerId,
+    );
+
+    for (const file of files) {
+      const users: User[] = [];
+
+      for (const user of file.users) {
+        if (user.id === data.tenantId) {
+          continue;
+        }
+
+        users.push(user);
+      }
+
+			file.users = users;
     }
 
     return this.saveManyInDatabase(files);
