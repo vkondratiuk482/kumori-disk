@@ -1,14 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { S3_CLIENT_TOKEN } from './constants/file.constants';
+import {
+  FILE_REPOSITORY_TOKEN,
+  S3_CLIENT_TOKEN,
+} from './constants/file.constants';
 import { MimeType } from './enums/mime-type.enum';
 import { FileNotDownloadedError } from './errors/file-not-downloaded.error';
-import { FileNotUploadedError } from './errors/file-not-uploaded.error';
+import { FileNotUploadedToS3Error } from './errors/file-not-uploaded-to-s3.error';
 import { Readable } from 'node:stream';
 import { GenerateFileKey } from './interfaces/generate-file-key.interface';
 import { UserExceedsPersonalStorageLimitError } from './errors/user-exceeds-personal-storage-limit.error';
@@ -16,12 +20,20 @@ import { UploadFile } from './interfaces/upload-file.interface';
 import { UploadGraphQLFile } from './interfaces/upload-graphql-file.interface';
 import { FileService } from './interfaces/file-service.interface';
 import { UserService } from 'src/user/user.service';
+import { FileRepository } from './interfaces/file-repository.interface';
+import { CreateFile } from './interfaces/create-file.interface';
+import { File } from './entities/file.entity';
+import { FileNotCreatedInDatabaseError } from './errors/file-not-created-in-database.error';
+import { ShareAccess } from './interfaces/share-access.interface';
+import { FileNotAccessibleError } from './errors/file-not-accessible.error';
 
 @Injectable()
 export class FileServiceImplementation implements FileService {
   constructor(
     @Inject(S3_CLIENT_TOKEN) private readonly s3Client: S3Client,
     private readonly configService: ConfigService,
+    @Inject(FILE_REPOSITORY_TOKEN)
+    private readonly fileRepository: FileRepository,
     private readonly userService: UserService,
   ) {}
 
@@ -50,6 +62,25 @@ export class FileServiceImplementation implements FileService {
     const key = await this.uploadWithException(file);
 
     return key;
+  }
+
+  public async shareAccessWithException(
+    ownerId: string,
+    data: ShareAccess,
+  ): Promise<boolean> {
+    const files = await this.findManyByIdsAndOwnerIdInDatabaseWithException(
+      data.fileIds,
+      ownerId,
+    );
+    const tenant = await this.userService.findSingleByIdWithException(
+      data.tenantId,
+    );
+
+    for (const file of files) {
+      file.users.push(tenant);
+    }
+
+    return this.saveManyInDatabase(files);
   }
 
   public async downloadWithException(key: string): Promise<Readable> {
@@ -87,11 +118,55 @@ export class FileServiceImplementation implements FileService {
           Bucket: this.configService.get<string>('BUCKET_NAME'),
         }),
       );
+    } catch (err) {
+      throw new FileNotUploadedToS3Error();
+    }
+
+    try {
+      await this.createSingleInDatabase({
+        key,
+        userId,
+        sizeInBytes: Buffer.byteLength(buffer),
+      });
 
       return key;
     } catch (err) {
-      throw new FileNotUploadedError();
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Key: key,
+          Bucket: this.configService.get<string>('BUCKET_NAME'),
+        }),
+      );
+
+      throw new FileNotCreatedInDatabaseError();
     }
+  }
+
+  private async findManyByIdsAndOwnerIdInDatabaseWithException(
+    ids: string[],
+    ownerId: string,
+  ): Promise<File[]> {
+    const files = await this.fileRepository.findManyByIds(ids);
+
+    for (const file of files) {
+      if (file.ownerId !== ownerId) {
+        throw new FileNotAccessibleError();
+      }
+    }
+
+    return files;
+  }
+
+  private async createSingleInDatabase(data: CreateFile): Promise<File> {
+    const file = await this.fileRepository.createSingle(data);
+
+    return file;
+  }
+
+  private async saveManyInDatabase(files: File[]): Promise<boolean> {
+    const saved = await this.fileRepository.saveMany(files);
+
+    return saved;
   }
 
   private generateFileKey(data: GenerateFileKey): string {

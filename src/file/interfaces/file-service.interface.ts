@@ -1,4 +1,5 @@
 import { Readable } from 'node:stream';
+import { ShareAccess } from './share-access.interface';
 import { UploadGraphQLFile } from './upload-graphql-file.interface';
 
 export interface FileService {
@@ -8,6 +9,11 @@ export interface FileService {
     userId: string,
     data: UploadGraphQLFile,
   ): Promise<string>;
+
+  shareAccessWithException(
+    ownerId: string,
+    data: ShareAccess,
+  ): Promise<boolean>;
 
   downloadWithException(key: string): Promise<Readable>;
 

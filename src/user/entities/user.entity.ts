@@ -1,5 +1,6 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { File } from 'src/file/entities/file.entity';
+import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
 
 @Entity('user')
@@ -35,4 +36,7 @@ export class User {
     type: 'bigint',
   })
   availableStorageSpaceInBytes: number;
+
+  @ManyToMany(() => File, (file: File) => file.users)
+  files: File[];
 }
