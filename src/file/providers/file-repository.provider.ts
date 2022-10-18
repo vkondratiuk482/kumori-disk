@@ -4,5 +4,5 @@ import { FileRepositoryImplementation } from '../file.repository';
 
 export const FileRepositoryProvider: Provider = {
   provide: FILE_REPOSITORY_TOKEN,
-  useClass: FileRepositoryImplementation
+  useClass: FileRepositoryImplementation,
 };

@@ -81,7 +81,7 @@ export class FileResolver {
     }
   }
 
-	@UseGuards(SessionAuthGuard)
+  @UseGuards(SessionAuthGuard)
   @Mutation(() => Boolean, { name: 'revokeAccess' })
   public async revokeAccess(
     @Args('schema') schema: RevokeAccessSchema,
