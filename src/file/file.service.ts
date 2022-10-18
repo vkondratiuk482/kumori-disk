@@ -105,7 +105,7 @@ export class FileServiceImplementation implements FileService {
         users.push(user);
       }
 
-			file.users = users;
+      file.users = users;
     }
 
     return this.saveManyInDatabase(files);
