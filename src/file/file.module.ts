@@ -1,15 +1,22 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserModule } from 'src/user/user.module';
 import { File } from './entities/file.entity';
-import { FileRepositoryProvider } from './providers/file-repository.provider';
-import { FileServiceProvider } from './providers/file-service.provider';
 import { S3ClientProvider } from './providers/s3-client.provider';
+import { FileFacadeProvider } from './providers/file-facade.provider';
+import { FileRepositoryProvider } from './providers/file-repository.provider';
+import { FileStorageServiceProvider } from './providers/file-storage-service.provider';
+import { FileService } from './services/file.service';
 
 @Module({
-  imports: [ConfigModule, UserModule, TypeOrmModule.forFeature([File])],
-  providers: [FileRepositoryProvider, FileServiceProvider, S3ClientProvider],
-  exports: [FileServiceProvider],
+  imports: [ConfigModule, TypeOrmModule.forFeature([File])],
+  providers: [
+    FileService,
+    S3ClientProvider,
+    FileRepositoryProvider,
+    FileStorageServiceProvider,
+    FileFacadeProvider,
+  ],
+  exports: [FileFacadeProvider],
 })
 export class FileModule {}

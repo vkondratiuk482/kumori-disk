@@ -2,49 +2,43 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  Inject,
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { FILE_SERVICE_TOKEN } from './constants/file.constants';
-import { File } from './entities/file.entity';
+import { SessionAuthGuard } from 'src/user/guards/session-auth.guard';
+import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.error';
+import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
+import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
+import { convertGraphQLFileToFile } from 'src/file/file.utils';
+import { RevokeAccessSchema } from 'src/user/schema/revoke-access.schema';
+import { ShareAccessSchema } from 'src/user/schema/share-access.schema';
+import { UploadFileSchema } from 'src/file/schema/upload-file.schema';
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
-import { SessionAuthGuard } from 'src/auth/guards/session-auth.guard';
-import { UploadFileSchema } from './schema/upload-file.schema';
-import { FileService } from './interfaces/file-service.interface';
-import { FileNotUploadedToS3Error } from './errors/file-not-uploaded-to-s3.error';
-import { FileNotCreatedInDatabaseError } from './errors/file-not-created-in-database.error';
-import { ShareAccessSchema } from './schema/share-access.schema';
-import { FileNotAccessibleError } from './errors/file-not-accessible.error';
-import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
-import { RevokeAccessSchema } from './schema/revoke-access.schema';
+import { User } from './entities/user.entity';
+import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
+import { UserService } from './user.service';
 
-@Resolver(() => File)
-export class FileResolver {
-  constructor(
-    @Inject(FILE_SERVICE_TOKEN)
-    private readonly fileService: FileService,
-  ) {}
+@Resolver(() => User)
+export class UserResolver {
+  constructor(private readonly userService: UserService) {}
 
   @UseGuards(SessionAuthGuard)
-  @Mutation(() => String, { name: 'uploadFile' })
-  public async uploadFile(
+  @Mutation(() => String, { name: 'uploadSingleFile' })
+  public async uploadSingleFile(
     @Args('schema') schema: UploadFileSchema,
     @Context() context: GraphQLContext,
-  ): Promise<string> {
+  ) {
     try {
       const userId: string = context.req.session.get('user_id');
+      const file = await convertGraphQLFileToFile(userId, schema);
 
-      const file = await this.fileService.uploadGraphQLWithException(
-        userId,
-        schema,
-      );
+      const key = await this.userService.uploadSingleFileWithException(file);
 
-      return file;
+      return key;
     } catch (err) {
       if (
-        err instanceof FileNotUploadedToS3Error ||
+        err instanceof FileNotUploadedToStorageError ||
         FileNotCreatedInDatabaseError
       ) {
         throw new ConflictException(err);
@@ -59,11 +53,11 @@ export class FileResolver {
   public async shareAccess(
     @Args('schema') schema: ShareAccessSchema,
     @Context() context: GraphQLContext,
-  ): Promise<boolean> {
+  ) {
     try {
       const ownerId: string = context.req.session.get('user_id');
 
-      const shared = await this.fileService.shareAccessWithException(
+      const shared = await this.userService.shareAccessWithException(
         ownerId,
         schema,
       );
@@ -86,11 +80,11 @@ export class FileResolver {
   public async revokeAccess(
     @Args('schema') schema: RevokeAccessSchema,
     @Context() context: GraphQLContext,
-  ): Promise<boolean> {
+  ) {
     try {
       const ownerId: string = context.req.session.get('user_id');
 
-      const revoked = await this.fileService.revokeAccessWithException(
+      const revoked = await this.userService.revokeAccessWithException(
         ownerId,
         schema,
       );

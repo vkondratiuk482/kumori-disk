@@ -1,21 +1,28 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { FILE_FACADE_TOKEN } from 'src/file/constants/file.constants';
+import { FileFacade } from 'src/file/interfaces/file-facade.interface';
+import { RevokeAccess } from 'src/user/interfaces/revoke-access.interface';
+import { ShareAccess } from 'src/user/interfaces/share-access.interface';
+import { UploadFile } from 'src/file/interfaces/upload-file.interface';
+import { CreateUser } from './interfaces/create-user.interface';
+import { UserRepository } from './interfaces/user-repository.interface';
 
-import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
 import { User } from './entities/user.entity';
+import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
-
-import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepository } from './interfaces/user-repository.interface';
+import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
 
 @Injectable()
 export class UserService {
   constructor(
     @Inject(USER_REPOSITORY_TOKEN)
     private readonly userRepository: UserRepository,
+    @Inject(FILE_FACADE_TOKEN)
+    private readonly fileFacade: FileFacade,
   ) {}
 
   public async findSingleById(id: string): Promise<User> {
@@ -92,5 +99,81 @@ export class UserService {
     );
 
     return updated;
+  }
+
+  public async uploadSingleFileWithException(
+    file: UploadFile,
+  ): Promise<string> {
+    const bytes = Buffer.byteLength(file.buffer);
+
+    const exceedsPersonalLimit = await this.exceedsPersonalLimit(
+      file.ownerId,
+      bytes,
+    );
+
+    if (exceedsPersonalLimit) {
+      throw new UserExceedsPersonalStorageLimitError();
+    }
+
+    const key = await this.fileFacade.uploadSingleFileWithException(file);
+
+    return key;
+  }
+
+  public async shareAccessWithException(
+    ownerId: string,
+    data: ShareAccess,
+  ): Promise<boolean> {
+    const files =
+      await this.fileFacade.findManyByIdsAndOwnerIdInDatabaseWithException(
+        data.fileIds,
+        ownerId,
+      );
+    const tenant = await this.findSingleByIdWithException(data.tenantId);
+
+    for (const file of files) {
+      file.users.push(tenant);
+    }
+
+    return this.fileFacade.saveManyInDatabase(files);
+  }
+
+  public async revokeAccessWithException(
+    ownerId: string,
+    data: RevokeAccess,
+  ): Promise<boolean> {
+    const files =
+      await this.fileFacade.findManyByIdsAndOwnerIdInDatabaseWithException(
+        data.fileIds,
+        ownerId,
+      );
+
+    for (const file of files) {
+      const users: User[] = [];
+
+      for (const user of file.users) {
+        if (user.id === data.tenantId) {
+          continue;
+        }
+
+        users.push(user);
+      }
+
+      file.users = users;
+    }
+
+    return this.fileFacade.saveManyInDatabase(files);
+  }
+
+  private async exceedsPersonalLimit(
+    userId: string,
+    bytes: number,
+  ): Promise<boolean> {
+    const availableStorageSpaceInBytes =
+      await this.getAvailableStorageSpaceByIdWithException(userId);
+
+    const exceedsPersonalLimit = bytes > availableStorageSpaceInBytes;
+
+    return exceedsPersonalLimit;
   }
 }

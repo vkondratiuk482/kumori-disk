@@ -1,7 +1,7 @@
 import { MimeType } from '../enums/mime-type.enum';
 
 export interface UploadFile {
-  readonly userId: string;
+  readonly ownerId: string;
 
   readonly name: string;
 

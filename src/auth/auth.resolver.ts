@@ -22,7 +22,7 @@ import { SignInSchema } from './schema/sign-in.schema';
 
 import { User } from '../user/entities/user.entity';
 
-import { SessionAuthGuard } from './guards/session-auth.guard';
+import { SessionAuthGuard } from '../user/guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
