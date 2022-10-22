@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { File } from './entities/file.entity';
 import { UploadFile } from './interfaces/upload-file.interface';
 import { FileFacade } from './interfaces/file-facade.interface';
 import { FileStorageService } from './interfaces/file-storage-service.interface';
 import { FILE_STORAGE_SERVICE_TOKEN } from './constants/file.constants';
 import { FileService } from './services/file.service';
+import { ShareAccess } from 'src/file/interfaces/share-access.interface';
+import { RevokeAccess } from './interfaces/revoke-access.interface';
 
 @Injectable()
 export class FileFacadeImplementation implements FileFacade {
@@ -23,6 +24,7 @@ export class FileFacadeImplementation implements FileFacade {
       const created = await this.fileService.createSingle({
         key,
         ownerId: data.ownerId,
+        ownerType: data.ownerType,
         sizeInBytes: Buffer.byteLength(data.buffer),
       });
 
@@ -32,21 +34,35 @@ export class FileFacadeImplementation implements FileFacade {
     }
   }
 
-  public async findManyByIdsAndOwnerIdInDatabaseWithException(
-    ids: string[],
-    ownerId: string,
-  ): Promise<File[]> {
-    const files = await this.fileService.findManyByIdsAndOwnerIdWithException(
-      ids,
-      ownerId,
+  public async shareAccessWithException(data: ShareAccess): Promise<boolean> {
+    const files = await this.fileService.findManyByIdsAndOwnerWithException(
+      data.fileIds,
+      data.ownerId,
+      data.ownerType,
     );
 
-    return files;
+    const attached = await this.fileService.attachTenantWithException({
+      files,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+    });
+
+    return attached;
   }
 
-  public async saveManyInDatabase(files: File[]): Promise<boolean> {
-    const saved = await this.fileService.saveMany(files);
+  public async revokeAccessWithException(data: RevokeAccess): Promise<boolean> {
+    const files = await this.fileService.findManyByIdsAndOwnerWithException(
+      data.fileIds,
+      data.ownerId,
+      data.ownerType,
+    );
 
-    return saved;
+    const dettached = this.fileService.detachTenantWithException({
+      files,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+    });
+
+    return dettached;
   }
 }

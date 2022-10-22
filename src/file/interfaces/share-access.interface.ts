@@ -1,8 +1,9 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface CreateFile {
-  readonly key: string;
-  readonly sizeInBytes: number;
+export interface ShareAccess {
   readonly ownerId: string;
   readonly ownerType: FileConsumer;
+  readonly tenantId: string;
+  readonly tenantType: FileConsumer;
+  readonly fileIds: string[];
 }

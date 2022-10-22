@@ -11,13 +11,13 @@ import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.erro
 import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
 import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
 import { convertGraphQLFileToFile } from 'src/file/file.utils';
-import { RevokeAccessSchema } from 'src/user/schema/revoke-access.schema';
-import { ShareAccessSchema } from 'src/user/schema/share-access.schema';
 import { UploadFileSchema } from 'src/file/schema/upload-file.schema';
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 import { User } from './entities/user.entity';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
+import { UserShareAccessSchema } from './schema/user-share-access.schema';
+import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -31,9 +31,12 @@ export class UserResolver {
   ) {
     try {
       const userId: string = context.req.session.get('user_id');
-      const file = await convertGraphQLFileToFile(userId, schema);
+      const file = await convertGraphQLFileToFile(schema);
 
-      const key = await this.userService.uploadSingleFileWithException(file);
+      const key = await this.userService.uploadSingleFileWithException(
+        userId,
+        file,
+      );
 
       return key;
     } catch (err) {
@@ -49,9 +52,9 @@ export class UserResolver {
   }
 
   @UseGuards(SessionAuthGuard)
-  @Mutation(() => Boolean, { name: 'shareAccess' })
+  @Mutation(() => Boolean, { name: 'userShareAccess' })
   public async shareAccess(
-    @Args('schema') schema: ShareAccessSchema,
+    @Args('schema') schema: UserShareAccessSchema,
     @Context() context: GraphQLContext,
   ) {
     try {
@@ -76,9 +79,9 @@ export class UserResolver {
   }
 
   @UseGuards(SessionAuthGuard)
-  @Mutation(() => Boolean, { name: 'revokeAccess' })
+  @Mutation(() => Boolean, { name: 'userRevokeAccess' })
   public async revokeAccess(
-    @Args('schema') schema: RevokeAccessSchema,
+    @Args('schema') schema: UserRevokeAccessSchema,
     @Context() context: GraphQLContext,
   ) {
     try {

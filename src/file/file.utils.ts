@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
 import { MimeType } from './enums/mime-type.enum';
+import { File } from './interfaces/file.interface';
 import { UploadFile } from './interfaces/upload-file.interface';
 import { UploadGraphQLFile } from './interfaces/upload-graphql-file.interface';
 
@@ -16,13 +17,11 @@ export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
 }
 
 export async function convertGraphQLFileToFile(
-  ownerId: string,
   data: UploadGraphQLFile,
-): Promise<UploadFile> {
+): Promise<File> {
   const fileBuffer = await convertStreamToBuffer(data.file.createReadStream());
 
-  const file: UploadFile = {
-    ownerId,
+  const file: File = {
     path: data.path,
     buffer: fileBuffer,
     name: data.file.filename,

@@ -1,8 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FILE_FACADE_TOKEN } from 'src/file/constants/file.constants';
 import { FileFacade } from 'src/file/interfaces/file-facade.interface';
-import { RevokeAccess } from 'src/user/interfaces/revoke-access.interface';
-import { ShareAccess } from 'src/user/interfaces/share-access.interface';
 import { UploadFile } from 'src/file/interfaces/upload-file.interface';
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepository } from './interfaces/user-repository.interface';
@@ -15,6 +13,10 @@ import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
+import { File } from 'src/file/interfaces/file.interface';
+import { FileConsumer } from 'src/file/enums/file-consumer.enum';
+import { UserShareAccess } from './interfaces/user-share-access.interface';
+import { UserRevokeAccess } from './interfaces/user-revoke-access.interface';
 
 @Injectable()
 export class UserService {
@@ -102,18 +104,28 @@ export class UserService {
   }
 
   public async uploadSingleFileWithException(
-    file: UploadFile,
+    ownerId: string,
+    data: File,
   ): Promise<string> {
-    const bytes = Buffer.byteLength(file.buffer);
+    const bytes = Buffer.byteLength(data.buffer);
 
     const exceedsPersonalLimit = await this.exceedsPersonalLimit(
-      file.ownerId,
+      ownerId,
       bytes,
     );
 
     if (exceedsPersonalLimit) {
       throw new UserExceedsPersonalStorageLimitError();
     }
+
+    const file: UploadFile = {
+      ownerId,
+      path: data.path,
+      name: data.name,
+      buffer: data.buffer,
+      extension: data.extension,
+      ownerType: FileConsumer.User,
+    };
 
     const key = await this.fileFacade.uploadSingleFileWithException(file);
 
@@ -122,47 +134,32 @@ export class UserService {
 
   public async shareAccessWithException(
     ownerId: string,
-    data: ShareAccess,
+    data: UserShareAccess,
   ): Promise<boolean> {
-    const files =
-      await this.fileFacade.findManyByIdsAndOwnerIdInDatabaseWithException(
-        data.fileIds,
-        ownerId,
-      );
-    const tenant = await this.findSingleByIdWithException(data.tenantId);
+    const shared = await this.fileFacade.shareAccessWithException({
+      ownerId,
+      ownerType: FileConsumer.User,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+      fileIds: data.fileIds,
+    });
 
-    for (const file of files) {
-      file.users.push(tenant);
-    }
-
-    return this.fileFacade.saveManyInDatabase(files);
+    return shared;
   }
 
   public async revokeAccessWithException(
     ownerId: string,
-    data: RevokeAccess,
+    data: UserRevokeAccess,
   ): Promise<boolean> {
-    const files =
-      await this.fileFacade.findManyByIdsAndOwnerIdInDatabaseWithException(
-        data.fileIds,
-        ownerId,
-      );
+    const revoked = await this.fileFacade.revokeAccessWithException({
+      ownerId,
+      ownerType: FileConsumer.User,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+      fileIds: data.fileIds,
+    });
 
-    for (const file of files) {
-      const users: User[] = [];
-
-      for (const user of file.users) {
-        if (user.id === data.tenantId) {
-          continue;
-        }
-
-        users.push(user);
-      }
-
-      file.users = users;
-    }
-
-    return this.fileFacade.saveManyInDatabase(files);
+    return revoked;
   }
 
   private async exceedsPersonalLimit(

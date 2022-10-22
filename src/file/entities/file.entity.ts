@@ -1,5 +1,6 @@
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { FileConsumer } from '../enums/file-consumer.enum';
 
 @Entity('file')
 export class File {
@@ -17,4 +18,7 @@ export class File {
 
   @Column({ name: 'owner_id', type: 'uuid' })
   ownerId: string;
+
+  @Column({ name: 'owner_type', type: 'enum', enum: FileConsumer })
+  ownerType: FileConsumer;
 }
