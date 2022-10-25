@@ -6,6 +6,7 @@ import { FILE_STORAGE_SERVICE_TOKEN } from './constants/file.constants';
 import { FileService } from './services/file.service';
 import { ShareAccess } from 'src/file/interfaces/share-access.interface';
 import { RevokeAccess } from './interfaces/revoke-access.interface';
+import { CopyFile } from './interfaces/copy-file.interface';
 
 @Injectable()
 export class FileFacadeImplementation implements FileFacade {
@@ -66,7 +67,24 @@ export class FileFacadeImplementation implements FileFacade {
     return dettached;
   }
 
-	public async copySingleWithException(uuid: string, copyPath: string): Promise<boolean> {
-		const file = await this.fileService.
-	}
+  public async copySingleWithException(data: CopyFile): Promise<string> {
+    const source = await this.fileService.findSingleByIdAndOwnerWithException(
+      data.fileId,
+      data.ownerId,
+      data.ownerType,
+    );
+
+    const key = await this.fileStorage.copySingleWithException(
+      source.key,
+      data.copyPath,
+    );
+
+    try {
+      await this.fileService.createSingle({ ...source, key });
+
+      return key;
+    } catch (err) {
+      await this.fileStorage.deleteOne(key);
+    }
+  }
 }

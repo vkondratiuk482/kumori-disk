@@ -6,7 +6,10 @@ export interface FileStorageService {
 
   getDirectoryHierarchy(path: string): Promise<object>;
 
-  copySingle(soureFileKey: string, copyPath: string): Promise<boolean>;
+  copySingleWithException(
+    soureFileKey: string,
+    copyPath: string,
+  ): Promise<string>;
 
   copyMany(sourceFileKeys: string[], copyPath: string): Promise<boolean>;
 

@@ -15,6 +15,7 @@ import { UploadFile } from '../interfaces/upload-file.interface';
 import { GenerateFileKey } from '../interfaces/generate-file-key.interface';
 import { FileStorageService } from '../interfaces/file-storage-service.interface';
 import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
+import { MimeType } from '../enums/mime-type.enum';
 
 export class S3FileStorageServiceImplementation implements FileStorageService {
   private readonly bucket: string;
@@ -56,19 +57,21 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
   }
 
   public async copySingleWithException(
-    soureFileKey: string,
+    sourceFileKey: string,
     copyPath: string,
-  ): Promise<boolean> {
+  ): Promise<string> {
     try {
+      const key = this.modifyFileKeyPath(sourceFileKey, copyPath);
+
       await this.s3Client.send(
         new CopyObjectCommand({
-          CopySource: soureFileKey,
-          Key: copyPath,
+          Key: key,
+          CopySource: sourceFileKey,
           Bucket: this.bucket,
         }),
       );
 
-      return true;
+      return key;
     } catch (err) {
       throw new FileNotCopiedInStorageError();
     }
@@ -110,5 +113,21 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
     const key = `${data.ownerId}/${data.path}/${data.name}.${data.extension}`;
 
     return key;
+  }
+
+  private modifyFileKeyPath(key: string, newPath: string): string {
+    const [ownerId, path, file] = key.split('/');
+
+    const name = file.split('.')[0];
+    const extension = file.split('.')[1] as MimeType;
+
+    const newKey = this.generateFileKey({
+      name,
+      ownerId,
+      extension,
+      path: newPath,
+    });
+
+    return newKey;
   }
 }
