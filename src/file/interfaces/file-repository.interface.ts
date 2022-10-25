@@ -4,6 +4,8 @@ import { AttachTenant } from './attach-tenant.interface';
 import { DettachTenant } from './dettach-tenant.interface';
 
 export interface FileRepository {
+  findSingleById(id: string): Promise<File>;
+
   findManyByIds(ids: string[]): Promise<File[]>;
 
   createSingle(data: CreateFile): Promise<File>;

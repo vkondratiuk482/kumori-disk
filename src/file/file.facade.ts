@@ -65,4 +65,8 @@ export class FileFacadeImplementation implements FileFacade {
 
     return dettached;
   }
+
+	public async copySingleWithException(uuid: string, copyPath: string): Promise<boolean> {
+		const file = await this.fileService.
+	}
 }

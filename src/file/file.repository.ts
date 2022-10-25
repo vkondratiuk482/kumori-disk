@@ -18,6 +18,15 @@ export class FileRepositoryImplementation implements FileRepository {
     @InjectRepository(File) private readonly fileRepository: Repository<File>,
   ) {}
 
+  public async findSingleById(id: string): Promise<File> {
+    const file = await this.fileRepository
+      .createQueryBuilder('f')
+      .where('id = :id', { id })
+      .getOne();
+
+    return file;
+  }
+
   public async findManyByIds(ids: string[]): Promise<File[]> {
     const files = await this.fileRepository
       .createQueryBuilder('f')

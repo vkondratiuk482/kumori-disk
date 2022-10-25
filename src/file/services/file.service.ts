@@ -9,6 +9,7 @@ import { FileConsumer } from '../enums/file-consumer.enum';
 import { TenantNotAttachedError } from '../errors/tenant-not-attached.error';
 import { DettachTenant } from '../interfaces/dettach-tenant.interface';
 import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
+import { FileNotFoundError } from '../errors/file-not-found.error';
 
 @Injectable()
 export class FileService {
@@ -16,6 +17,26 @@ export class FileService {
     @Inject(FILE_REPOSITORY_TOKEN)
     private readonly fileRepository: FileRepository,
   ) {}
+
+  public async findSingleByIdAndOwnerWithException(
+    id: string,
+    ownerId: string,
+    ownerType: FileConsumer,
+  ): Promise<File> {
+    const file = await this.fileRepository.findSingleById(id);
+
+    if (!file) {
+      throw new FileNotFoundError();
+    }
+
+    const fileAccessible = this.fileAccessible(file, ownerId, ownerType);
+
+    if (!fileAccessible) {
+      throw new FileNotAccessibleError();
+    }
+
+    return file;
+  }
 
   public async findManyByIdsAndOwnerWithException(
     ids: string[],
@@ -25,7 +46,9 @@ export class FileService {
     const files = await this.fileRepository.findManyByIds(ids);
 
     for (const file of files) {
-      if (file.ownerId !== ownerId && file.ownerType === ownerType) {
+      const fileAccessible = this.fileAccessible(file, ownerId, ownerType);
+
+      if (!fileAccessible) {
         throw new FileNotAccessibleError();
       }
     }
@@ -61,9 +84,15 @@ export class FileService {
     return dettached;
   }
 
-  public async saveMany(files: File[]): Promise<boolean> {
-    const saved = await this.fileRepository.saveMany(files);
+  private async fileAccessible(
+    file: File,
+    ownerId: string,
+    ownerType: FileConsumer,
+  ): Promise<boolean> {
+    if (file.ownerId !== ownerId && file.ownerType === ownerType) {
+      return false;
+    }
 
-    return saved;
+    return true;
   }
 }
