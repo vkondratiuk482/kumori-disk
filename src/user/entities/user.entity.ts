@@ -1,11 +1,12 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
-import { File } from 'src/file/entities/file.entity';
+import { TypeOrmFileEntity } from 'src/file/entities/file.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
+import { UserEntity } from '../interfaces/user-entity.interface';
 
 @Entity('user')
 @ObjectType()
-export class User {
+export class TypeOrmUserEntity implements UserEntity {
   @Field()
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -37,6 +38,6 @@ export class User {
   })
   availableStorageSpaceInBytes: number;
 
-  @ManyToMany(() => File, (file: File) => file.users)
-  files: File[];
+  @ManyToMany(() => TypeOrmFileEntity, (file: TypeOrmFileEntity) => file.users)
+  files: TypeOrmFileEntity[];
 }

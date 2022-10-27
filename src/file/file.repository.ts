@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
+import { TypeOrmUserEntity } from 'src/user/entities/user.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { File } from './entities/file.entity';
+import { TypeOrmFileEntity } from './entities/file.entity';
 import { FileConsumer } from './enums/file-consumer.enum';
 import { FileTenantKey } from './enums/file-tenant-key.enum';
 import { AttachTenant } from './interfaces/attach-tenant.interface';
@@ -15,10 +15,11 @@ import { FileRepository } from './interfaces/file-repository.interface';
 export class FileRepositoryImplementation implements FileRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
-    @InjectRepository(File) private readonly fileRepository: Repository<File>,
+    @InjectRepository(TypeOrmFileEntity)
+    private readonly fileRepository: Repository<TypeOrmFileEntity>,
   ) {}
 
-  public async findSingleById(id: string): Promise<File> {
+  public async findSingleById(id: string): Promise<TypeOrmFileEntity> {
     const file = await this.fileRepository
       .createQueryBuilder('f')
       .where('id = :id', { id })
@@ -27,7 +28,7 @@ export class FileRepositoryImplementation implements FileRepository {
     return file;
   }
 
-  public async findManyByIds(ids: string[]): Promise<File[]> {
+  public async findManyByIds(ids: string[]): Promise<TypeOrmFileEntity[]> {
     const files = await this.fileRepository
       .createQueryBuilder('f')
       .where('id IN (:...ids)', { ids })
@@ -36,12 +37,12 @@ export class FileRepositoryImplementation implements FileRepository {
     return files;
   }
 
-  public async createSingle(data: CreateFile): Promise<File> {
-    let result: File;
+  public async createSingle(data: CreateFile): Promise<TypeOrmFileEntity> {
+    let result: TypeOrmFileEntity;
 
     await this.dataSource.manager.transaction(
       async (manager: EntityManager): Promise<void> => {
-        const fileRepository = manager.getRepository(File);
+        const fileRepository = manager.getRepository(TypeOrmFileEntity);
         const file = fileRepository.create(data);
 
         const { repository: ownerRepository, tenantKey } =
@@ -117,12 +118,6 @@ export class FileRepositoryImplementation implements FileRepository {
     }
   }
 
-  public async saveMany(files: File[]): Promise<boolean> {
-    const saved = Boolean(await this.fileRepository.save(files));
-
-    return saved;
-  }
-
   private getRepositoryAndTenantKeyByFileConsumer(
     consumer: FileConsumer,
     manager?: EntityManager,
@@ -134,7 +129,7 @@ export class FileRepositoryImplementation implements FileRepository {
     switch (consumer) {
       case FileConsumer.User: {
         const tenantKey = FileTenantKey.User;
-        const repository = manager.getRepository(User);
+        const repository = manager.getRepository(TypeOrmUserEntity);
 
         return { repository, tenantKey };
       }

@@ -3,13 +3,13 @@ import { FileNotAccessibleError } from '../errors/file-not-accessible.error';
 import { FILE_REPOSITORY_TOKEN } from '../constants/file.constants';
 import { FileRepository } from '../interfaces/file-repository.interface';
 import { CreateFile } from '../interfaces/create-file.interface';
-import { File } from '../entities/file.entity';
 import { AttachTenant } from '../interfaces/attach-tenant.interface';
 import { FileConsumer } from '../enums/file-consumer.enum';
 import { TenantNotAttachedError } from '../errors/tenant-not-attached.error';
 import { DettachTenant } from '../interfaces/dettach-tenant.interface';
 import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
 import { FileNotFoundError } from '../errors/file-not-found.error';
+import { FileEntity } from '../interfaces/file-entity.interface';
 
 @Injectable()
 export class FileService {
@@ -22,7 +22,7 @@ export class FileService {
     id: string,
     ownerId: string,
     ownerType: FileConsumer,
-  ): Promise<File> {
+  ): Promise<FileEntity> {
     const file = await this.fileRepository.findSingleById(id);
 
     if (!file) {
@@ -42,7 +42,7 @@ export class FileService {
     ids: string[],
     ownerId: string,
     ownerType: FileConsumer,
-  ): Promise<File[]> {
+  ): Promise<FileEntity[]> {
     const files = await this.fileRepository.findManyByIds(ids);
 
     for (const file of files) {
@@ -56,7 +56,7 @@ export class FileService {
     return files;
   }
 
-  public async createSingle(data: CreateFile): Promise<File> {
+  public async createSingle(data: CreateFile): Promise<FileEntity> {
     const file = await this.fileRepository.createSingle(data);
 
     return file;
@@ -85,7 +85,7 @@ export class FileService {
   }
 
   private async fileAccessible(
-    file: File,
+    file: FileEntity,
     ownerId: string,
     ownerType: FileConsumer,
   ): Promise<boolean> {

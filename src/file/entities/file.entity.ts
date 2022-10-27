@@ -1,9 +1,10 @@
-import { User } from 'src/user/entities/user.entity';
+import { TypeOrmUserEntity } from 'src/user/entities/user.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { FileConsumer } from '../enums/file-consumer.enum';
+import { FileEntity } from '../interfaces/file-entity.interface';
 
 @Entity('file')
-export class File {
+export class TypeOrmFileEntity implements FileEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -13,8 +14,8 @@ export class File {
   @Column({ name: 'size_in_bytes', type: 'bigint' })
   sizeInBytes: number;
 
-  @ManyToMany(() => User, (user: User) => user.files)
-  users: User[];
+  @ManyToMany(() => TypeOrmUserEntity, (user: TypeOrmUserEntity) => user.files)
+  users: TypeOrmUserEntity[];
 
   @Column({ name: 'owner_id', type: 'uuid' })
   ownerId: string;

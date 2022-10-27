@@ -23,9 +23,8 @@ import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 
-import { User } from 'src/user/entities/user.entity';
-
 import { UserService } from '../user/user.service';
+import { UserEntity } from 'src/user/interfaces/user-entity.interface';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +39,7 @@ export class AuthService {
     private readonly cryptographyService: CryptographyService,
   ) {}
 
-  public async signUp(data: CreateUser): Promise<User> {
+  public async signUp(data: CreateUser): Promise<UserEntity> {
     const mailUsed = await this.userService.mailUsed(data.email);
 
     if (mailUsed) {
@@ -67,7 +66,7 @@ export class AuthService {
     return user;
   }
 
-  public async singIn(data: SignIn): Promise<User> {
+  public async singIn(data: SignIn): Promise<UserEntity> {
     const user = await this.userService.findSingleByEmailWithException(
       data.email,
     );

@@ -5,7 +5,6 @@ import { UploadFile } from 'src/file/interfaces/upload-file.interface';
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepository } from './interfaces/user-repository.interface';
 
-import { User } from './entities/user.entity';
 import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
@@ -17,6 +16,7 @@ import { File } from 'src/file/interfaces/file.interface';
 import { FileConsumer } from 'src/file/enums/file-consumer.enum';
 import { UserShareAccess } from './interfaces/user-share-access.interface';
 import { UserRevokeAccess } from './interfaces/user-revoke-access.interface';
+import { UserEntity } from './interfaces/user-entity.interface';
 
 @Injectable()
 export class UserService {
@@ -27,13 +27,13 @@ export class UserService {
     private readonly fileFacade: FileFacade,
   ) {}
 
-  public async findSingleById(id: string): Promise<User> {
+  public async findSingleById(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findSingleById(id);
 
     return user;
   }
 
-  public async findSingleByIdWithException(id: string): Promise<User> {
+  public async findSingleByIdWithException(id: string): Promise<UserEntity> {
     const user = await this.userRepository.findSingleById(id);
 
     if (!user) {
@@ -45,7 +45,7 @@ export class UserService {
 
   public async findSingleByUsernameWithException(
     username: string,
-  ): Promise<User> {
+  ): Promise<UserEntity> {
     const user = await this.userRepository.findSingleByUsername(username);
 
     if (!user) {
@@ -55,7 +55,9 @@ export class UserService {
     return user;
   }
 
-  public async findSingleByEmailWithException(email: string): Promise<User> {
+  public async findSingleByEmailWithException(
+    email: string,
+  ): Promise<UserEntity> {
     const user = await this.userRepository.findSingleByEmail(email);
 
     if (!user) {
@@ -85,7 +87,7 @@ export class UserService {
     return mailUsed;
   }
 
-  public async createSingleForSignUp(data: CreateUser): Promise<User> {
+  public async createSingleForSignUp(data: CreateUser): Promise<UserEntity> {
     const user = await this.userRepository.createSinglePending(data);
 
     return user;

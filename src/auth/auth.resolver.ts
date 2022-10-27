@@ -20,14 +20,15 @@ import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
 
-import { User } from '../user/entities/user.entity';
+import { TypeOrmUserEntity } from '../user/entities/user.entity';
 
 import { SessionAuthGuard } from '../user/guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
+import { UserEntity } from 'src/user/interfaces/user-entity.interface';
 
-@Resolver(() => User)
+@Resolver(() => TypeOrmUserEntity) // temp
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
@@ -36,8 +37,10 @@ export class AuthResolver {
     return 1;
   }
 
-  @Mutation(() => User, { name: 'signUp' })
-  public async signUp(@Args('schema') schema: SignUpSchema): Promise<User> {
+  @Mutation(() => TypeOrmUserEntity, { name: 'signUp' })
+  public async signUp(
+    @Args('schema') schema: SignUpSchema,
+  ): Promise<UserEntity> {
     try {
       const user = await this.authService.signUp(schema);
 
@@ -51,11 +54,11 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => User, { name: 'signIn' })
+  @Mutation(() => TypeOrmUserEntity, { name: 'signIn' })
   public async signIn(
     @Args('schema') schema: SignInSchema,
     @Context() context: GraphQLContext,
-  ): Promise<User> {
+  ): Promise<UserEntity> {
     try {
       const user = await this.authService.singIn(schema);
 

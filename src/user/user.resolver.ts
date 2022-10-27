@@ -13,13 +13,13 @@ import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded
 import { convertGraphQLFileToFile } from 'src/file/file.utils';
 import { UploadFileSchema } from 'src/file/schema/upload-file.schema';
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
-import { User } from './entities/user.entity';
+import { TypeOrmUserEntity } from './entities/user.entity';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
 
-@Resolver(() => User)
+@Resolver(() => TypeOrmUserEntity) // temp
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 

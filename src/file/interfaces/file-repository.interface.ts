@@ -1,18 +1,16 @@
-import { File } from '../entities/file.entity';
 import { CreateFile } from './create-file.interface';
 import { AttachTenant } from './attach-tenant.interface';
 import { DettachTenant } from './dettach-tenant.interface';
+import { FileEntity } from './file-entity.interface';
 
 export interface FileRepository {
-  findSingleById(id: string): Promise<File>;
+  findSingleById(id: string): Promise<FileEntity>;
 
-  findManyByIds(ids: string[]): Promise<File[]>;
+  findManyByIds(ids: string[]): Promise<FileEntity[]>;
 
-  createSingle(data: CreateFile): Promise<File>;
+  createSingle(data: CreateFile): Promise<FileEntity>;
 
   attachTenant(data: AttachTenant): Promise<boolean>;
 
   dettachTenant(data: DettachTenant): Promise<boolean>;
-
-  saveMany(files: File[]): Promise<boolean>;
 }
