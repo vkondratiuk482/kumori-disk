@@ -13,7 +13,7 @@ export interface FileStorageService {
 
   copyMany(sourceFileKeys: string[], copyPath: string): Promise<boolean>;
 
-  renameSingle(key: string, name: string): Promise<boolean>;
+  renameSingleWithException(key: string, name: string): Promise<string>;
 
   renameMany(keys: string[], name: string): Promise<boolean>;
 

@@ -7,6 +7,7 @@ import { FileService } from './services/file.service';
 import { ShareAccess } from 'src/file/interfaces/share-access.interface';
 import { RevokeAccess } from './interfaces/revoke-access.interface';
 import { CopyFile } from './interfaces/copy-file.interface';
+import { RenameFile } from './interfaces/rename-file.interface';
 
 @Injectable()
 export class FileFacadeImplementation implements FileFacade {
@@ -86,5 +87,22 @@ export class FileFacadeImplementation implements FileFacade {
     } catch (err) {
       await this.fileStorage.deleteOne(key);
     }
+  }
+
+  public async renameSingleWithException(data: RenameFile): Promise<string> {
+    const source = await this.fileService.findSingleByIdAndOwnerWithException(
+      data.fileId,
+      data.ownerId,
+      data.ownerType,
+    );
+
+    const key = await this.fileStorage.renameSingleWithException(
+      source.key,
+      data.name,
+    );
+
+    await this.fileService.updateKeyWithException(data.fileId, key);
+
+    return key;
   }
 }

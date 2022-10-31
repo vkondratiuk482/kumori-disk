@@ -16,6 +16,7 @@ import { GenerateFileKey } from '../interfaces/generate-file-key.interface';
 import { FileStorageService } from '../interfaces/file-storage-service.interface';
 import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
 import { MimeType } from '../enums/mime-type.enum';
+import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
 
 export class S3FileStorageServiceImplementation implements FileStorageService {
   private readonly bucket: string;
@@ -77,6 +78,34 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
     }
   }
 
+  public async renameSingleWithException(
+    sourceFileKey: string,
+    name: string,
+  ): Promise<string> {
+    try {
+      const key = this.modifyFileKeyName(sourceFileKey, name);
+
+      await this.s3Client.send(
+        new CopyObjectCommand({
+          Key: key,
+          CopySource: sourceFileKey,
+          Bucket: this.bucket,
+        }),
+      );
+
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Key: sourceFileKey,
+          Bucket: this.bucket,
+        }),
+      );
+
+      return key;
+    } catch (err) {
+      throw new FileNotRenamedInStorageError();
+    }
+  }
+
   public async downloadSingleWithException(key: string): Promise<Readable> {
     try {
       const { Body } = await this.s3Client.send(
@@ -126,6 +155,21 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
       ownerId,
       extension,
       path: newPath,
+    });
+
+    return newKey;
+  }
+
+  private modifyFileKeyName(key: string, newName: string): string {
+    const [ownerId, path, file] = key.split('/');
+
+    const extension = file.split('.')[1] as MimeType;
+
+    const newKey = this.generateFileKey({
+      name: newName,
+      ownerId,
+      extension,
+      path,
     });
 
     return newKey;

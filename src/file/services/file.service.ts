@@ -10,6 +10,7 @@ import { DettachTenant } from '../interfaces/dettach-tenant.interface';
 import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
 import { FileNotFoundError } from '../errors/file-not-found.error';
 import { FileEntity } from '../interfaces/file-entity.interface';
+import { FileKeyNotUpdatedInDatabaseError } from '../errors/file-key-not-updated-in-database.error';
 
 @Injectable()
 export class FileService {
@@ -60,6 +61,19 @@ export class FileService {
     const file = await this.fileRepository.createSingle(data);
 
     return file;
+  }
+
+  public async updateKeyWithException(
+    id: string,
+    key: string,
+  ): Promise<boolean> {
+    const updated = await this.fileRepository.updateKey(id, key);
+
+    if (!updated) {
+      throw new FileKeyNotUpdatedInDatabaseError();
+    }
+
+    return updated;
   }
 
   public async attachTenantWithException(data: AttachTenant): Promise<boolean> {

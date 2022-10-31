@@ -10,6 +10,8 @@ export interface FileRepository {
 
   createSingle(data: CreateFile): Promise<FileEntity>;
 
+  updateKey(id: string, key: string): Promise<boolean>;
+
   attachTenant(data: AttachTenant): Promise<boolean>;
 
   dettachTenant(data: DettachTenant): Promise<boolean>;

@@ -2,6 +2,7 @@ import { UploadFile } from './upload-file.interface';
 import { ShareAccess } from './share-access.interface';
 import { RevokeAccess } from './revoke-access.interface';
 import { CopyFile } from './copy-file.interface';
+import { RenameFile } from './rename-file.interface';
 
 export interface FileFacade {
   uploadSingleFileWithException(data: UploadFile): Promise<string>;
@@ -11,4 +12,6 @@ export interface FileFacade {
   revokeAccessWithException(data: RevokeAccess): Promise<boolean>;
 
   copySingleWithException(data: CopyFile): Promise<string>;
+
+  renameSingleWithException(data: RenameFile): Promise<string>;
 }

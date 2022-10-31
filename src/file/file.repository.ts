@@ -64,6 +64,22 @@ export class FileRepositoryImplementation implements FileRepository {
     return result;
   }
 
+  public async updateKey(id: string, key: string): Promise<boolean> {
+    const result = await this.fileRepository
+      .createQueryBuilder('u')
+      .update(TypeOrmFileEntity)
+      .set({
+        key,
+      })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    const updated = result.affected && result.affected > 0;
+
+    return updated;
+  }
+
   public async attachTenant(data: AttachTenant): Promise<boolean> {
     try {
       const { repository: tenantRepository, tenantKey } =
