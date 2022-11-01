@@ -13,6 +13,7 @@ import { FileModule } from './file/file.module';
 import { RedisModule } from './redis/redis.module';
 import { MailerModule } from './mailer/mailer.module';
 import { CryptographyModule } from './cryptography/cryptography.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { CryptographyModule } from './cryptography/cryptography.module';
     RedisModule,
     FileModule,
     CryptographyModule,
+    PaymentModule,
   ],
 })
 export class AppModule {}

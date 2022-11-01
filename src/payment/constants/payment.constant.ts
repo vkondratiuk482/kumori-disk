@@ -1,0 +1,1 @@
+export const PAYMENT_SERVICE_TOKEN = Symbol('PAYMENT_SERVICE_TOKEN');
