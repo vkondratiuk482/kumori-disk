@@ -60,7 +60,11 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set(hash, user.id, CONFIRMATION_HASH_TTL_SECONDS);
+    await this.redisService.set<string>(
+      hash,
+      user.id,
+      CONFIRMATION_HASH_TTL_SECONDS,
+    );
     await this.sendSignUpConfirmationMail(data.email, confirmationLink);
 
     return user;
@@ -124,7 +128,11 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set(hash, user.id, CONFIRMATION_HASH_TTL_SECONDS);
+    await this.redisService.set<string>(
+      hash,
+      user.id,
+      CONFIRMATION_HASH_TTL_SECONDS,
+    );
     await this.sendSignUpConfirmationMail(email, confirmationLink);
 
     return true;
