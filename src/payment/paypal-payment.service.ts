@@ -8,6 +8,7 @@ import {
 import { PaypalEnvironment } from './enums/paypal-environment.enum';
 import { IncorrectPaypalApiAuthResponseError } from './errors/incorrect-paypal-api-auth-response.error';
 import { PaypalAccessTokenNotCachedError } from './errors/paypal-access-token-not-cached.error';
+import { PaypalAccessTokenNotFoundInCacheError } from './errors/paypal-access-token-not-found-in-cache.error';
 import { PaymentService } from './interfaces/payment-service.interface';
 
 @Injectable()
@@ -42,17 +43,31 @@ export class PaypalPaymentServiceImplementation
   }
 
   public async onModuleInit(): Promise<void> {
-    const clientId = this.configService.get<string>('PAYPAL_CLIENT_ID');
-    const clientSecret = this.configService.get<string>('PAYPAL_CLIENT_SECRET');
-    const credentials = `${clientId}:${clientSecret}`;
+    const expirationTimeInMs = await this.obtainAndCacheAccessToken();
 
+    /**
+     * Think of scalability in order to be able to use it
+     * with multiple instances
+     */
+    setTimeout(async () => {
+      this.onModuleInit();
+    }, expirationTimeInMs);
+  }
+
+  public async createOrder(): Promise<string> {
+    return 'orderId';
+  }
+
+  /**
+   * Obtains and caches access token required for Bearer auth
+   * Returns expiration time of the token in ms
+   */
+  private async obtainAndCacheAccessToken(): Promise<number> {
     const url = `${this.domain}/v1/oauth2/token`;
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
     )}`;
-    const authorizationHeaders = `Basic ${Buffer.from(credentials).toString(
-      'base64',
-    )}`;
+    const authorizationHeaders = this.getBasicAuthorizationHeaders();
 
     const response = await fetch(url, {
       method: 'POST',
@@ -83,16 +98,32 @@ export class PaypalPaymentServiceImplementation
     const expirationTimeInMs =
       (data.expires_in - PAYPAL_AUTH_REQUEST_DELAY_SECONDS) * 1000;
 
-    /**
-     * Think of scalability in order to be able to use it
-     * with multiple instances
-     */
-    setTimeout(async () => {
-      this.onModuleInit();
-    }, expirationTimeInMs);
+    return expirationTimeInMs;
   }
 
-  public async createOrder(): Promise<string> {
-    return 'orderId';
+  private getBasicAuthorizationHeaders(): string {
+    const clientId = this.configService.get<string>('PAYPAL_CLIENT_ID');
+    const clientSecret = this.configService.get<string>('PAYPAL_CLIENT_SECRET');
+
+    const credentials = `${clientId}:${clientSecret}`;
+    const base64Credentials = Buffer.from(credentials).toString('base64');
+
+    const authorizationHeaders = `Basic ${base64Credentials}`;
+
+    return authorizationHeaders;
+  }
+
+  private async getBearerAuthorizationHeadersWithException(): Promise<string> {
+    const accessToken = await this.redisService.get<string>(
+      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+    );
+
+    if (!accessToken) {
+      throw new PaypalAccessTokenNotFoundInCacheError();
+    }
+
+    const authorizationHeaders = `Bearer ${accessToken}`;
+
+    return authorizationHeaders;
   }
 }
