@@ -2,10 +2,11 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type User {
-  uuid: String!
+type TypeOrmUserEntity {
+  id: String!
   email: String!
   username: String!
+  availableStorageSpaceInBytes: Float!
 }
 
 type Query {
@@ -13,10 +14,11 @@ type Query {
 }
 
 type Mutation {
-  signUp(schema: SignUpSchema!): User!
-  signIn(schema: SignInSchema!): User!
+  signUp(schema: SignUpSchema!): TypeOrmUserEntity!
+  signIn(schema: SignInSchema!): TypeOrmUserEntity!
   signOut: Boolean!
   confirmEmail(hash: String!): Boolean!
+  resendConfirmationEmail(email: String!): Boolean!
 }
 
 input SignUpSchema {

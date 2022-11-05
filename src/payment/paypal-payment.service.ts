@@ -1,15 +1,17 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { REDIS_SERVICE_TOKEN } from 'src/redis/constants/redis.constants';
 import { RedisService } from 'src/redis/interfaces/redis-service.interface';
 import {
   PAYPAL_ACCESS_TOKEN_CACHING_KEY,
   PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
 } from './constants/payment.constant';
 import { PaypalEnvironment } from './enums/paypal-environment.enum';
-import { IncorrectPaypalApiAuthResponseError } from './errors/incorrect-paypal-api-auth-response.error';
+import { IncorrectPaypalAuthorizationResponseError } from './errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from './errors/paypal-access-token-not-cached.error';
 import { PaypalAccessTokenNotFoundInCacheError } from './errors/paypal-access-token-not-found-in-cache.error';
 import { PaymentService } from './interfaces/payment-service.interface';
+import { PaypalAuthorizationResponse } from './interfaces/paypal-authorization-response.interface';
 
 @Injectable()
 export class PaypalPaymentServiceImplementation
@@ -19,6 +21,7 @@ export class PaypalPaymentServiceImplementation
 
   constructor(
     private readonly configService: ConfigService,
+    @Inject(REDIS_SERVICE_TOKEN)
     private readonly redisService: RedisService,
   ) {
     const environment = this.configService.get<PaypalEnvironment>('PAYPAL_ENV');
@@ -43,12 +46,8 @@ export class PaypalPaymentServiceImplementation
   }
 
   public async onModuleInit(): Promise<void> {
-    const expirationTimeInMs = await this.obtainAndCacheAccessToken();
+    const expirationTimeInMs = await this.getAndCacheAccessToken();
 
-    /**
-     * Think of scalability in order to be able to use it
-     * with multiple instances
-     */
     setTimeout(async () => {
       this.onModuleInit();
     }, expirationTimeInMs);
@@ -62,7 +61,26 @@ export class PaypalPaymentServiceImplementation
    * Obtains and caches access token required for Bearer auth
    * Returns expiration time of the token in ms
    */
-  private async obtainAndCacheAccessToken(): Promise<number> {
+  private async getAndCacheAccessToken(): Promise<number> {
+    const authorization = await this.authorize();
+
+    const accessToken = await this.redisService.set<string>(
+      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+      authorization.accessToken,
+      authorization.expires_in,
+    );
+
+    if (!accessToken) {
+      throw new PaypalAccessTokenNotCachedError();
+    }
+
+    const expirationTimeInMs =
+      (authorization.expires_in - PAYPAL_AUTH_REQUEST_DELAY_SECONDS) * 1000;
+
+    return expirationTimeInMs;
+  }
+
+  private async authorize(): Promise<PaypalAuthorizationResponse> {
     const url = `${this.domain}/v1/oauth2/token`;
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
@@ -82,23 +100,10 @@ export class PaypalPaymentServiceImplementation
     const data = await response.json();
 
     if (!data.accessToken || !data.expires_in) {
-      throw new IncorrectPaypalApiAuthResponseError();
+      throw new IncorrectPaypalAuthorizationResponseError();
     }
 
-    const accessToken = await this.redisService.set<string>(
-      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
-      data.accessToken,
-      data.expires_in,
-    );
-
-    if (!accessToken) {
-      throw new PaypalAccessTokenNotCachedError();
-    }
-
-    const expirationTimeInMs =
-      (data.expires_in - PAYPAL_AUTH_REQUEST_DELAY_SECONDS) * 1000;
-
-    return expirationTimeInMs;
+    return data;
   }
 
   private getBasicAuthorizationHeaders(): string {
