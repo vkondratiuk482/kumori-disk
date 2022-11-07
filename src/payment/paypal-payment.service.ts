@@ -1,5 +1,8 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { HTTP_SERVICE_TOKEN } from 'src/http/constants/http.constants';
+import { HttpMethod } from 'src/http/enums/http-method.enum';
+import { HttpService } from 'src/http/interfaces/http-service.interface';
 import { REDIS_SERVICE_TOKEN } from 'src/redis/constants/redis.constants';
 import { RedisService } from 'src/redis/interfaces/redis-service.interface';
 import {
@@ -23,6 +26,8 @@ export class PaypalPaymentServiceImplementation
     private readonly configService: ConfigService,
     @Inject(REDIS_SERVICE_TOKEN)
     private readonly redisService: RedisService,
+    @Inject(HTTP_SERVICE_TOKEN)
+    private readonly httpService: HttpService,
   ) {
     const environment = this.configService.get<PaypalEnvironment>('PAYPAL_ENV');
 
@@ -33,7 +38,7 @@ export class PaypalPaymentServiceImplementation
         break;
       }
       case PaypalEnvironment.SANDBOX: {
-        this.domain = 'https://api-m.sandbox.com';
+        this.domain = 'https://api-m.sandbox.paypal.com';
 
         break;
       }
@@ -62,11 +67,11 @@ export class PaypalPaymentServiceImplementation
    * Returns expiration time of the token in ms
    */
   private async getAndCacheAccessToken(): Promise<number> {
-    const authorization = await this.authorize();
+    const authorization = await this.authorizeWithException();
 
     const accessToken = await this.redisService.set<string>(
       PAYPAL_ACCESS_TOKEN_CACHING_KEY,
-      authorization.accessToken,
+      authorization.access_token,
       authorization.expires_in,
     );
 
@@ -80,30 +85,33 @@ export class PaypalPaymentServiceImplementation
     return expirationTimeInMs;
   }
 
-  private async authorize(): Promise<PaypalAuthorizationResponse> {
+  private async authorizeWithException(): Promise<PaypalAuthorizationResponse> {
     const url = `${this.domain}/v1/oauth2/token`;
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
     )}`;
     const authorizationHeaders = this.getBasicAuthorizationHeaders();
+    const headers = {
+      accept: 'application/json',
+      'accept-language': 'en_US',
+      'content-type': 'application/x-www-form-urlencoded',
+      authorization: authorizationHeaders,
+    };
+    const method = HttpMethod.POST;
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        Accept: 'application/json',
-        'Accept-Language': 'en_US',
-        'Content-Type': 'application/x-www-form-urlencoded',
-        Authorization: authorizationHeaders,
-      },
-      body,
-    });
-    const data = await response.json();
+    const response =
+      await this.httpService.request<PaypalAuthorizationResponse>({
+        url,
+        body,
+        method,
+        headers,
+      });
 
-    if (!data.accessToken || !data.expires_in) {
+    if (!response.access_token || !response.expires_in) {
       throw new IncorrectPaypalAuthorizationResponseError();
     }
 
-    return data;
+    return response;
   }
 
   private getBasicAuthorizationHeaders(): string {

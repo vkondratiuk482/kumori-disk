@@ -1,5 +1,5 @@
 export interface PaypalAuthorizationResponse {
-  readonly accessToken: string;
+  readonly access_token: string;
 
   readonly expires_in: number;
 }

@@ -14,11 +14,12 @@ import { RedisModule } from './redis/redis.module';
 import { MailerModule } from './mailer/mailer.module';
 import { CryptographyModule } from './cryptography/cryptography.module';
 import { PaymentModule } from './payment/payment.module';
+import { HttpModule } from './http/http.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: ['.env.development'],
+      envFilePath: ['.env', '.env.development'],
     }),
     ThrottlerModule.forRootAsync({
       imports: [ConfigModule],
@@ -62,6 +63,7 @@ import { PaymentModule } from './payment/payment.module';
     FileModule,
     CryptographyModule,
     PaymentModule,
+    HttpModule,
   ],
 })
 export class AppModule {}

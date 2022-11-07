@@ -1,0 +1,1 @@
+export const HTTP_SERVICE_TOKEN = Symbol('HTTP_SERVICE_TOKEN');
