@@ -76,4 +76,24 @@ export class UserRepositoryImplementation implements UserRepository {
 
     return updated;
   }
+
+  public async subtractAvailableSpaceInBytes(
+    id: string,
+    bytes: number,
+  ): Promise<boolean> {
+    try {
+      const user = await this.userRepository
+        .createQueryBuilder('u')
+        .where('id = :id', { id })
+        .getOne();
+
+      user.availableStorageSpaceInBytes -= bytes;
+
+      await this.userRepository.save(user);
+
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
 }

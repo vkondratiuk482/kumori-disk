@@ -105,6 +105,18 @@ export class UserService {
     return updated;
   }
 
+  public async subtractAvailableSpaceInBytes(
+    id: string,
+    bytes: number,
+  ): Promise<boolean> {
+    const subtracted = await this.userRepository.subtractAvailableSpaceInBytes(
+      id,
+      bytes,
+    );
+
+    return subtracted;
+  }
+
   public async uploadSingleFileWithException(
     ownerId: string,
     data: File,
@@ -129,7 +141,10 @@ export class UserService {
       ownerType: FileConsumer.User,
     };
 
+    // Use transactions
     const key = await this.fileFacade.uploadSingleFileWithException(file);
+
+    await this.subtractAvailableSpaceInBytes(ownerId, bytes);
 
     return key;
   }

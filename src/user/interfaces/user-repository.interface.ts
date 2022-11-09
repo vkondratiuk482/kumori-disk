@@ -15,4 +15,6 @@ export interface UserRepository {
     id: string,
     status: UserConfirmationStatus,
   ): Promise<boolean>;
+
+  subtractAvailableSpaceInBytes(id: string, bytes: number): Promise<boolean>;
 }
