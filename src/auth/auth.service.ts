@@ -5,7 +5,6 @@ import crypto from 'crypto';
 
 import { CONFIRMATION_HASH_TTL_SECONDS } from './auth.constants';
 import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
-import { REDIS_SERVICE_TOKEN } from '../redis/constants/redis.constants';
 import { CRYPTOGRAPHY_SERVICE_TOKEN } from 'src/cryptography/cryptography.constants';
 
 import { UserConfirmationStatus } from '../user/enums/user-confirmation-status.enum';
@@ -14,7 +13,6 @@ import { SignIn } from './interfaces/sign-in.interface';
 import { SendMail } from '../mailer/interfaces/send-mail.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
 import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
-import { RedisService } from 'src/redis/interfaces/redis-service.interface';
 import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
@@ -25,6 +23,8 @@ import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash
 
 import { UserService } from '../user/user.service';
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
+import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
+import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 
 @Injectable()
 export class AuthService {
@@ -33,8 +33,8 @@ export class AuthService {
     private readonly configService: ConfigService,
     @Inject(MAILER_SERVICE_TOKEN)
     private readonly mailerService: MailerService,
-    @Inject(REDIS_SERVICE_TOKEN)
-    private readonly redisService: RedisService,
+    @Inject(CACHE_SERVICE_TOKEN)
+    private readonly cacheService: CacheService,
     @Inject(CRYPTOGRAPHY_SERVICE_TOKEN)
     private readonly cryptographyService: CryptographyService,
   ) {}
@@ -60,7 +60,7 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set<string>(
+    await this.cacheService.set<string>(
       hash,
       user.id,
       CONFIRMATION_HASH_TTL_SECONDS,
@@ -94,13 +94,13 @@ export class AuthService {
   }
 
   public async confirmEmail(hash: string): Promise<boolean> {
-    const id = await this.redisService.get<string>(hash);
+    const id = await this.cacheService.get<string>(hash);
 
     if (!id) {
       throw new InvalidConfirmationHashError();
     }
 
-    await this.redisService.delete(hash);
+    await this.cacheService.delete(hash);
 
     const user = await this.userService.findSingleByIdWithException(id);
 
@@ -128,7 +128,7 @@ export class AuthService {
     const hash = this.generateHash();
     const confirmationLink = this.generateConfirmationLink(hash);
 
-    await this.redisService.set<string>(
+    await this.cacheService.set<string>(
       hash,
       user.id,
       CONFIRMATION_HASH_TTL_SECONDS,

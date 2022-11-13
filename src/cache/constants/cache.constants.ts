@@ -1,0 +1,1 @@
+export const CACHE_SERVICE_TOKEN = Symbol('CACHE_SERVICE_TOKEN');

@@ -10,11 +10,11 @@ import { join } from 'path';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
-import { RedisModule } from './redis/redis.module';
 import { MailerModule } from './mailer/mailer.module';
 import { CryptographyModule } from './cryptography/cryptography.module';
 import { PaymentModule } from './payment/payment.module';
 import { HttpModule } from './http/http.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -59,7 +59,7 @@ import { HttpModule } from './http/http.module';
     UserModule,
     AuthModule,
     MailerModule,
-    RedisModule,
+    CacheModule,
     FileModule,
     CryptographyModule,
     PaymentModule,

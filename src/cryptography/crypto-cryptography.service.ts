@@ -10,7 +10,9 @@ import { EncryptedData } from './interfaces/encrypted-data.interface';
 import { CryptographyService } from './interfaces/cryptography-service.interface';
 
 @Injectable()
-export class CryptographyServiceImplementation implements CryptographyService {
+export class NativeCryptoCryptographyServiceImplementation
+  implements CryptographyService
+{
   constructor(private readonly config: ConfigService) {}
 
   public encrypt(data: string): EncryptedData {

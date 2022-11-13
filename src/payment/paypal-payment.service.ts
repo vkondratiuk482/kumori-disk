@@ -1,10 +1,10 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
+import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { HTTP_SERVICE_TOKEN } from 'src/http/constants/http.constants';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
 import { HttpService } from 'src/http/interfaces/http-service.interface';
-import { REDIS_SERVICE_TOKEN } from 'src/redis/constants/redis.constants';
-import { RedisService } from 'src/redis/interfaces/redis-service.interface';
 import {
   PAYPAL_ACCESS_TOKEN_CACHING_KEY,
   PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
@@ -24,8 +24,8 @@ export class PaypalPaymentServiceImplementation
 
   constructor(
     private readonly configService: ConfigService,
-    @Inject(REDIS_SERVICE_TOKEN)
-    private readonly redisService: RedisService,
+    @Inject(CACHE_SERVICE_TOKEN)
+    private readonly cacheService: CacheService,
     @Inject(HTTP_SERVICE_TOKEN)
     private readonly httpService: HttpService,
   ) {
@@ -69,7 +69,7 @@ export class PaypalPaymentServiceImplementation
   private async getAndCacheAccessToken(): Promise<number> {
     const authorization = await this.authorizeWithException();
 
-    const accessToken = await this.redisService.set<string>(
+    const accessToken = await this.cacheService.set<string>(
       PAYPAL_ACCESS_TOKEN_CACHING_KEY,
       authorization.access_token,
       authorization.expires_in,
@@ -127,7 +127,7 @@ export class PaypalPaymentServiceImplementation
   }
 
   private async getBearerAuthorizationHeadersWithException(): Promise<string> {
-    const accessToken = await this.redisService.get<string>(
+    const accessToken = await this.cacheService.get<string>(
       PAYPAL_ACCESS_TOKEN_CACHING_KEY,
     );
 
