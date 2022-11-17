@@ -5,7 +5,11 @@ import { UploadFile } from 'src/file/interfaces/upload-file.interface';
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepository } from './interfaces/user-repository.interface';
 
-import { USER_REPOSITORY_TOKEN } from './constants/user.constants';
+import {
+  USER_REPOSITORY_TOKEN,
+  USER_REVOKE_ACCESS_EVENT,
+  USER_SHARE_ACCESS_EVENT,
+} from './constants/user.constants';
 import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
 
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
@@ -17,6 +21,10 @@ import { FileConsumer } from 'src/file/enums/file-consumer.enum';
 import { UserShareAccess } from './interfaces/user-share-access.interface';
 import { UserRevokeAccess } from './interfaces/user-revoke-access.interface';
 import { UserEntity } from './interfaces/user-entity.interface';
+import { EVENT_SERVICE_TOKEN } from 'src/event/event.constants';
+import { EventService } from 'src/event/interface/event-service.interface';
+import { UserShareAccessEvent } from './interfaces/user-share-access-event.interface';
+import { UserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
 
 @Injectable()
 export class UserService {
@@ -25,6 +33,8 @@ export class UserService {
     private readonly userRepository: UserRepository,
     @Inject(FILE_FACADE_TOKEN)
     private readonly fileFacade: FileFacade,
+    @Inject(EVENT_SERVICE_TOKEN)
+    private readonly eventService: EventService,
   ) {}
 
   public async findSingleById(id: string): Promise<UserEntity> {
@@ -141,7 +151,6 @@ export class UserService {
       ownerType: FileConsumer.User,
     };
 
-    // Use transactions
     const key = await this.fileFacade.uploadSingleFileWithException(file);
 
     await this.subtractAvailableSpaceInBytes(ownerId, bytes);
@@ -161,6 +170,13 @@ export class UserService {
       fileIds: data.fileIds,
     });
 
+    const payload: UserShareAccessEvent = {
+      fileIds: data.fileIds,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+    };
+    this.eventService.emit(USER_SHARE_ACCESS_EVENT, payload);
+
     return shared;
   }
 
@@ -175,6 +191,13 @@ export class UserService {
       tenantType: data.tenantType,
       fileIds: data.fileIds,
     });
+
+    const payload: UserRevokeAccessEvent = {
+      fileIds: data.fileIds,
+      tenantId: data.tenantId,
+      tenantType: data.tenantType,
+    };
+    this.eventService.emit(USER_REVOKE_ACCESS_EVENT, payload);
 
     return revoked;
   }

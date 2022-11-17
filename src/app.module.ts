@@ -15,6 +15,8 @@ import { CryptographyModule } from './cryptography/cryptography.module';
 import { PaymentModule } from './payment/payment.module';
 import { HttpModule } from './http/http.module';
 import { CacheModule } from './cache/cache.module';
+import { EventModule } from './event/event.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
@@ -56,6 +58,7 @@ import { CacheModule } from './cache/cache.module';
       }),
       inject: [ConfigService],
     }),
+    EventEmitterModule.forRoot(),
     UserModule,
     AuthModule,
     MailerModule,
@@ -64,6 +67,7 @@ import { CacheModule } from './cache/cache.module';
     CryptographyModule,
     PaymentModule,
     HttpModule,
+    EventModule,
   ],
 })
 export class AppModule {}
