@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventModule } from 'src/event/event.module';
 import { FileModule } from 'src/file/file.module';
-import { TypeOrmUserEntity } from './entities/user.entity';
+import { TypeOrmUserEntityImplementation } from './entities/typeorm-user.entity';
 
 import { UserRepositoryProvider } from './providers/user-repository.provider';
 
@@ -10,7 +10,7 @@ import { UserService } from './user.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([TypeOrmUserEntity]),
+    TypeOrmModule.forFeature([TypeOrmUserEntityImplementation]),
     FileModule,
     EventModule,
   ],

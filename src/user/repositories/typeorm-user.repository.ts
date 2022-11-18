@@ -2,21 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
+import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
 
-import { TypeOrmUserEntity } from './entities/user.entity';
-
-import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
-import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepository } from './interfaces/user-repository.interface';
+import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
+import { CreateUser } from '../interfaces/create-user.interface';
+import { UserRepository } from '../interfaces/user-repository.interface';
 
 @Injectable()
-export class UserRepositoryImplementation implements UserRepository {
+export class TypeOrmUserRepositoryImplementation implements UserRepository {
   constructor(
-    @InjectRepository(TypeOrmUserEntity)
-    private readonly userRepository: Repository<TypeOrmUserEntity>,
+    @InjectRepository(TypeOrmUserEntityImplementation)
+    private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
   ) {}
 
-  public async findSingleById(id: string): Promise<TypeOrmUserEntity> {
+  public async findSingleById(
+    id: string,
+  ): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('id = :id', { id })
@@ -27,7 +28,7 @@ export class UserRepositoryImplementation implements UserRepository {
 
   public async findSingleByUsername(
     username: string,
-  ): Promise<TypeOrmUserEntity> {
+  ): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('username = :username', { username })
@@ -36,7 +37,9 @@ export class UserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async findSingleByEmail(email: string): Promise<TypeOrmUserEntity> {
+  public async findSingleByEmail(
+    email: string,
+  ): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('email = :email', { email })
@@ -47,7 +50,7 @@ export class UserRepositoryImplementation implements UserRepository {
 
   public async createSinglePending(
     data: CreateUser,
-  ): Promise<TypeOrmUserEntity> {
+  ): Promise<TypeOrmUserEntityImplementation> {
     const confirmationStatus = UserConfirmationStatus.Pending;
 
     const user = this.userRepository.create({
@@ -64,7 +67,7 @@ export class UserRepositoryImplementation implements UserRepository {
   ): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')
-      .update(TypeOrmUserEntity)
+      .update(TypeOrmUserEntityImplementation)
       .set({
         confirmationStatus: status,
       })

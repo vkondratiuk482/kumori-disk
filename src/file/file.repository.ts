@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
-import { TypeOrmUserEntity } from 'src/user/entities/user.entity';
+import { TypeOrmUserEntityImplementation } from 'src/user/entities/typeorm-user.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { TypeOrmFileEntity } from './entities/file.entity';
+import { TypeOrmFileEntityImplementation } from './entities/typeorm-file.entity';
 import { FileConsumer } from './enums/file-consumer.enum';
 import { FileTenantKey } from './enums/file-tenant-key.enum';
 import { AttachTenant } from './interfaces/attach-tenant.interface';
@@ -15,11 +15,13 @@ import { FileRepository } from './interfaces/file-repository.interface';
 export class FileRepositoryImplementation implements FileRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
-    @InjectRepository(TypeOrmFileEntity)
-    private readonly fileRepository: Repository<TypeOrmFileEntity>,
+    @InjectRepository(TypeOrmFileEntityImplementation)
+    private readonly fileRepository: Repository<TypeOrmFileEntityImplementation>,
   ) {}
 
-  public async findSingleById(id: string): Promise<TypeOrmFileEntity> {
+  public async findSingleById(
+    id: string,
+  ): Promise<TypeOrmFileEntityImplementation> {
     const file = await this.fileRepository
       .createQueryBuilder('f')
       .where('id = :id', { id })
@@ -28,7 +30,9 @@ export class FileRepositoryImplementation implements FileRepository {
     return file;
   }
 
-  public async findManyByIds(ids: string[]): Promise<TypeOrmFileEntity[]> {
+  public async findManyByIds(
+    ids: string[],
+  ): Promise<TypeOrmFileEntityImplementation[]> {
     const files = await this.fileRepository
       .createQueryBuilder('f')
       .where('id IN (:...ids)', { ids })
@@ -37,12 +41,16 @@ export class FileRepositoryImplementation implements FileRepository {
     return files;
   }
 
-  public async createSingle(data: CreateFile): Promise<TypeOrmFileEntity> {
-    let result: TypeOrmFileEntity;
+  public async createSingle(
+    data: CreateFile,
+  ): Promise<TypeOrmFileEntityImplementation> {
+    let result: TypeOrmFileEntityImplementation;
 
     await this.dataSource.manager.transaction(
       async (manager: EntityManager): Promise<void> => {
-        const fileRepository = manager.getRepository(TypeOrmFileEntity);
+        const fileRepository = manager.getRepository(
+          TypeOrmFileEntityImplementation,
+        );
         const file = fileRepository.create(data);
 
         const { repository: ownerRepository, tenantKey } =
@@ -67,7 +75,7 @@ export class FileRepositoryImplementation implements FileRepository {
   public async updateKey(id: string, key: string): Promise<boolean> {
     const result = await this.fileRepository
       .createQueryBuilder('u')
-      .update(TypeOrmFileEntity)
+      .update(TypeOrmFileEntityImplementation)
       .set({
         key,
       })
@@ -145,7 +153,9 @@ export class FileRepositoryImplementation implements FileRepository {
     switch (consumer) {
       case FileConsumer.User: {
         const tenantKey = FileTenantKey.User;
-        const repository = manager.getRepository(TypeOrmUserEntity);
+        const repository = manager.getRepository(
+          TypeOrmUserEntityImplementation,
+        );
 
         return { repository, tenantKey };
       }
