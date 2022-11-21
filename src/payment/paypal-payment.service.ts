@@ -15,6 +15,11 @@ import { PaypalAccessTokenNotCachedError } from './errors/paypal-access-token-no
 import { PaypalAccessTokenNotFoundInCacheError } from './errors/paypal-access-token-not-found-in-cache.error';
 import { PaymentService } from './interfaces/payment-service.interface';
 import { PaypalAuthorizationResponse } from './interfaces/paypal-authorization-response.interface';
+import {
+  PaypalSubscribeBody,
+  PaypalSubscribeRequest,
+} from './interfaces/paypal-subscribe-request.interface';
+import { SubscribeToPayment } from './interfaces/subscribe-to-payment.interface';
 
 @Injectable()
 export class PaypalPaymentServiceImplementation
@@ -58,8 +63,24 @@ export class PaypalPaymentServiceImplementation
     }, expirationTimeInMs);
   }
 
-  public async createOrder(): Promise<string> {
-    return 'orderId';
+  public async subscribe(data: SubscribeToPayment): Promise<string> {
+    const authorizationHeader =
+      await this.getBearerAuthorizationHeadersWithException();
+
+    const url = this.getUrlWithDomain('/v1/billing/plans');
+    const headers = {
+      'content-type': 'application/json',
+      authorization: authorizationHeader,
+    };
+    const method = HttpMethod.POST;
+    const body: PaypalSubscribeBody = {};
+
+    const response = await this.httpService.request({
+      url,
+      body,
+      method,
+      headers,
+    });
   }
 
   /**
@@ -86,7 +107,7 @@ export class PaypalPaymentServiceImplementation
   }
 
   private async authorizeWithException(): Promise<PaypalAuthorizationResponse> {
-    const url = `${this.domain}/v1/oauth2/token`;
+    const url = this.getUrlWithDomain('/v1/oauth2/token');
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
     )}`;
@@ -138,5 +159,11 @@ export class PaypalPaymentServiceImplementation
     const authorizationHeaders = `Bearer ${accessToken}`;
 
     return authorizationHeaders;
+  }
+
+  private getUrlWithDomain(path: string): string {
+    const url = `${this.domain}${path}`;
+
+    return url;
   }
 }

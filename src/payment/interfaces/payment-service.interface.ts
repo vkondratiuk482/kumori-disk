@@ -1,3 +1,5 @@
+import { SubscribeToPayment } from './subscribe-to-payment.interface';
+
 export interface PaymentService {
-  createOrder(): Promise<string>;
+  subscribe(data: SubscribeToPayment): Promise<string>;
 }
