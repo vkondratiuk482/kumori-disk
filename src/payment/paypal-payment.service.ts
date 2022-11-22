@@ -15,10 +15,6 @@ import { PaypalAccessTokenNotCachedError } from './errors/paypal-access-token-no
 import { PaypalAccessTokenNotFoundInCacheError } from './errors/paypal-access-token-not-found-in-cache.error';
 import { PaymentService } from './interfaces/payment-service.interface';
 import { PaypalAuthorizationResponse } from './interfaces/paypal-authorization-response.interface';
-import {
-  PaypalSubscribeBody,
-  PaypalSubscribeRequest,
-} from './interfaces/paypal-subscribe-request.interface';
 import { SubscribeToPayment } from './interfaces/subscribe-to-payment.interface';
 
 @Injectable()
@@ -63,7 +59,7 @@ export class PaypalPaymentServiceImplementation
     }, expirationTimeInMs);
   }
 
-  public async subscribe(data: SubscribeToPayment): Promise<string> {
+  public async subscribe(/*data: SubscribeToPayment*/): Promise<string> {
     const authorizationHeader =
       await this.getBearerAuthorizationHeadersWithException();
 
@@ -73,7 +69,7 @@ export class PaypalPaymentServiceImplementation
       authorization: authorizationHeader,
     };
     const method = HttpMethod.POST;
-    const body: PaypalSubscribeBody = {};
+    const body = {};
 
     const response = await this.httpService.request({
       url,
