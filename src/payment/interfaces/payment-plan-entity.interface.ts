@@ -9,4 +9,6 @@ export interface PaymentPlanEntity {
   charge: number;
 
   currency: PaymentCurrencies;
+
+  externalId: string;
 }

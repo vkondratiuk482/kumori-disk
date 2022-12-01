@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
+import { DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES } from '../constants/user.constants';
 import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
 
 import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
@@ -52,10 +53,12 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     data: CreateUser,
   ): Promise<TypeOrmUserEntityImplementation> {
     const confirmationStatus = UserConfirmationStatus.Pending;
+    const availableStorageSpaceInBytes = DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES;
 
     const user = this.userRepository.create({
       ...data,
       confirmationStatus,
+      availableStorageSpaceInBytes,
     });
 
     return this.userRepository.save(user);

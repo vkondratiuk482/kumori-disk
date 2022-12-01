@@ -17,9 +17,8 @@ import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
-import { TypeOrmUserEntityImplementation } from './entities/typeorm-user.entity';
 
-@Resolver(() => TypeOrmUserEntityImplementation) // temp
+@Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
@@ -28,7 +27,7 @@ export class UserResolver {
   public async uploadSingleFile(
     @Args('schema') schema: UploadFileSchema,
     @Context() context: GraphQLContext,
-  ) {
+  ): Promise<string> {
     try {
       const userId: string = context.req.session.get('user_id');
       const file = await convertGraphQLFileToFile(schema);
@@ -56,7 +55,7 @@ export class UserResolver {
   public async shareAccess(
     @Args('schema') schema: UserShareAccessSchema,
     @Context() context: GraphQLContext,
-  ) {
+  ): Promise<boolean> {
     try {
       const ownerId: string = context.req.session.get('user_id');
 
@@ -83,7 +82,7 @@ export class UserResolver {
   public async revokeAccess(
     @Args('schema') schema: UserRevokeAccessSchema,
     @Context() context: GraphQLContext,
-  ) {
+  ): Promise<boolean> {
     try {
       const ownerId: string = context.req.session.get('user_id');
 

@@ -18,7 +18,7 @@ import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storag
 import { MimeType } from '../enums/mime-type.enum';
 import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
 
-export class S3FileStorageServiceImplementation implements FileStorageService {
+export class S3FileStorageServiceImplementation /*implements FileStorageService */ {
   private readonly bucket: string;
 
   constructor(
@@ -29,13 +29,12 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
   }
 
   public async uploadSingleWithException(file: UploadFile): Promise<string> {
-    const { ownerId, extension, path, name, buffer } = file;
+    const { ownerId, path, name, buffer } = file;
 
     const key = this.generateFileKey({
       name,
       path,
       ownerId,
-      extension,
     });
 
     try {
@@ -139,21 +138,19 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
   }
 
   private generateFileKey(data: GenerateFileKey): string {
-    const key = `${data.ownerId}/${data.path}/${data.name}.${data.extension}`;
+    const key = `${data.ownerId}/${data.path}/${data.name}`;
 
     return key;
   }
 
   private modifyFileKeyPath(key: string, newPath: string): string {
-    const [ownerId, path, file] = key.split('/');
+    const [ownerId, file] = key.split('/');
 
     const name = file.split('.')[0];
-    const extension = file.split('.')[1] as MimeType;
 
     const newKey = this.generateFileKey({
       name,
       ownerId,
-      extension,
       path: newPath,
     });
 
@@ -161,14 +158,11 @@ export class S3FileStorageServiceImplementation implements FileStorageService {
   }
 
   private modifyFileKeyName(key: string, newName: string): string {
-    const [ownerId, path, file] = key.split('/');
-
-    const extension = file.split('.')[1] as MimeType;
+    const [ownerId, path] = key.split('/');
 
     const newKey = this.generateFileKey({
       name: newName,
       ownerId,
-      extension,
       path,
     });
 

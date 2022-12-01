@@ -16,19 +16,16 @@ import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
 import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
-
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
-
-import { TypeOrmUserEntityImplementation } from '../user/entities/typeorm-user.entity';
 
 import { SessionAuthGuard } from '../user/guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
-import { UserEntity } from 'src/user/interfaces/user-entity.interface';
+import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 
-@Resolver(() => TypeOrmUserEntityImplementation) // temp
+@Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
@@ -37,14 +34,16 @@ export class AuthResolver {
     return 1;
   }
 
-  @Mutation(() => TypeOrmUserEntityImplementation, { name: 'signUp' })
+  @Mutation(() => UserEntityResponse, { name: 'signUp' })
   public async signUp(
     @Args('schema') schema: SignUpSchema,
-  ): Promise<UserEntity> {
+  ): Promise<UserEntityResponse> {
     try {
       const user = await this.authService.signUp(schema);
 
-      return user;
+      const response = new UserEntityResponse(user);
+
+      return response;
     } catch (err) {
       if (err instanceof MailIsInUseError) {
         throw new ConflictException(err);
@@ -54,17 +53,19 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => TypeOrmUserEntityImplementation, { name: 'signIn' })
+  @Mutation(() => UserEntityResponse, { name: 'signIn' })
   public async signIn(
     @Args('schema') schema: SignInSchema,
     @Context() context: GraphQLContext,
-  ): Promise<UserEntity> {
+  ): Promise<UserEntityResponse> {
     try {
       const user = await this.authService.singIn(schema);
 
+      const response = new UserEntityResponse(user);
+
       context.req.session.set('user_id', user.id);
 
-      return user;
+      return response;
     } catch (err) {
       if (err instanceof PasswordsNotMatchingError) {
         throw new UnauthorizedException(err);

@@ -44,7 +44,10 @@ export class FileService {
     ownerId: string,
     ownerType: FileConsumer,
   ): Promise<FileEntity[]> {
-    const files = await this.fileRepository.findManyByIds(ids);
+    const files = await this.fileRepository.findManyByIdsWithOwners(
+      ids,
+      ownerType,
+    );
 
     for (const file of files) {
       const fileAccessible = this.fileAccessible(file, ownerId, ownerType);

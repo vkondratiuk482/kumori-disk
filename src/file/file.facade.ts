@@ -8,6 +8,7 @@ import { ShareAccess } from 'src/file/interfaces/share-access.interface';
 import { RevokeAccess } from './interfaces/revoke-access.interface';
 import { CopyFile } from './interfaces/copy-file.interface';
 import { RenameFile } from './interfaces/rename-file.interface';
+import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 
 @Injectable()
 export class FileFacadeImplementation implements FileFacade {
@@ -33,6 +34,8 @@ export class FileFacadeImplementation implements FileFacade {
       return key;
     } catch (err) {
       await this.fileStorage.deleteOne(key);
+
+      throw new FileNotUploadedError();
     }
   }
 

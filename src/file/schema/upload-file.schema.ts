@@ -1,9 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
-import { GraphQLUpload } from 'graphql-upload';
 import { Type } from 'class-transformer';
-import { IsNotEmptyObject, IsString, ValidateNested } from 'class-validator';
+import { IsString, ValidatePromise } from 'class-validator';
 import { UploadGraphQLFile } from '../interfaces/upload-graphql-file.interface';
 import { GraphQLFileSchema } from './graphql-file.schema';
+import * as GraphQLUpload from 'graphql-upload/GraphQLUpload.js';
 
 @InputType()
 export class UploadFileSchema implements UploadGraphQLFile {
@@ -12,8 +12,7 @@ export class UploadFileSchema implements UploadGraphQLFile {
   public readonly path: string;
 
   @Field(() => GraphQLUpload)
-  @IsNotEmptyObject()
-  @ValidateNested()
+  @ValidatePromise()
   @Type(() => GraphQLFileSchema)
-  public readonly file: GraphQLFileSchema;
+  public readonly file: Promise<GraphQLFileSchema>;
 }

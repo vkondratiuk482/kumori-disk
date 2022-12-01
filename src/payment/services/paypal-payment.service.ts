@@ -8,14 +8,15 @@ import { HttpService } from 'src/http/interfaces/http-service.interface';
 import {
   PAYPAL_ACCESS_TOKEN_CACHING_KEY,
   PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
-} from './constants/payment.constant';
-import { PaypalEnvironment } from './enums/paypal-environment.enum';
-import { IncorrectPaypalAuthorizationResponseError } from './errors/incorrect-paypal-authorization-response.error';
-import { PaypalAccessTokenNotCachedError } from './errors/paypal-access-token-not-cached.error';
-import { PaypalAccessTokenNotFoundInCacheError } from './errors/paypal-access-token-not-found-in-cache.error';
-import { PaymentService } from './interfaces/payment-service.interface';
-import { PaypalAuthorizationResponse } from './interfaces/paypal-authorization-response.interface';
-import { SubscribeToPayment } from './interfaces/subscribe-to-payment.interface';
+} from '../constants/payment.constant';
+import { PaypalEnvironment } from '../enums/paypal-environment.enum';
+import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
+import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
+import { PaypalAccessTokenNotFoundInCacheError } from '../errors/paypal-access-token-not-found-in-cache.error';
+import { PaymentService } from '../interfaces/payment-service.interface';
+import { PaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
+import { SubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
+import { PaymentPlanService } from './payment-plan.service';
 
 @Injectable()
 export class PaypalPaymentServiceImplementation
@@ -25,6 +26,7 @@ export class PaypalPaymentServiceImplementation
 
   constructor(
     private readonly configService: ConfigService,
+    private readonly paymentPlanService: PaymentPlanService,
     @Inject(CACHE_SERVICE_TOKEN)
     private readonly cacheService: CacheService,
     @Inject(HTTP_SERVICE_TOKEN)
@@ -59,24 +61,8 @@ export class PaypalPaymentServiceImplementation
     }, expirationTimeInMs);
   }
 
-  public async subscribe(/*data: SubscribeToPayment*/): Promise<string> {
-    const authorizationHeader =
-      await this.getBearerAuthorizationHeadersWithException();
-
-    const url = this.getUrlWithDomain('/v1/billing/plans');
-    const headers = {
-      'content-type': 'application/json',
-      authorization: authorizationHeader,
-    };
-    const method = HttpMethod.POST;
-    const body = {};
-
-    const response = await this.httpService.request({
-      url,
-      body,
-      method,
-      headers,
-    });
+  public async subscribe(data: SubscribeToPaymentPlan): Promise<string> {
+    return 'mock';
   }
 
   /**

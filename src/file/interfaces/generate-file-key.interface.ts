@@ -6,6 +6,4 @@ export interface GenerateFileKey {
   readonly path: string;
 
   readonly name: string;
-
-  readonly extension: MimeType;
 }

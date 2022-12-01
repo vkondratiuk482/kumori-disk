@@ -6,23 +6,23 @@ import { FileEntity } from '../interfaces/file-entity.interface';
 @Entity('file')
 export class TypeOrmFileEntityImplementation implements FileEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  public id: string;
 
   @Column({ name: 'key', type: 'varchar', length: 320 })
-  key: string;
+  public key: string;
 
   @Column({ name: 'size_in_bytes', type: 'bigint' })
-  sizeInBytes: number;
+  public sizeInBytes: number;
 
   @ManyToMany(
     () => TypeOrmUserEntityImplementation,
     (user: TypeOrmUserEntityImplementation) => user.files,
   )
-  users: TypeOrmUserEntityImplementation[];
+  public users: TypeOrmUserEntityImplementation[];
 
   @Column({ name: 'owner_id', type: 'uuid' })
-  ownerId: string;
+  public ownerId: string;
 
   @Column({ name: 'owner_type', type: 'enum', enum: FileConsumer })
-  ownerType: FileConsumer;
+  public ownerType: FileConsumer;
 }

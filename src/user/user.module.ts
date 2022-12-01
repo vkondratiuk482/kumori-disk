@@ -5,6 +5,7 @@ import { FileModule } from 'src/file/file.module';
 import { TypeOrmUserEntityImplementation } from './entities/typeorm-user.entity';
 
 import { UserRepositoryProvider } from './providers/user-repository.provider';
+import { UserResolver } from './user.resolver';
 
 import { UserService } from './user.service';
 
@@ -14,7 +15,7 @@ import { UserService } from './user.service';
     FileModule,
     EventModule,
   ],
-  providers: [UserService, UserRepositoryProvider],
+  providers: [UserService, UserRepositoryProvider, UserResolver],
   exports: [UserService],
 })
 export class UserModule {}

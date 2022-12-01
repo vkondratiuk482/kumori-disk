@@ -2,7 +2,7 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type TypeOrmUserEntity {
+type UserEntityResponse {
   id: String!
   email: String!
   username: String!
@@ -14,11 +14,34 @@ type Query {
 }
 
 type Mutation {
-  signUp(schema: SignUpSchema!): TypeOrmUserEntity!
-  signIn(schema: SignInSchema!): TypeOrmUserEntity!
+  uploadSingleFile(schema: UploadFileSchema!): String!
+  userShareAccess(schema: UserShareAccessSchema!): Boolean!
+  userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
+  signUp(schema: SignUpSchema!): UserEntityResponse!
+  signIn(schema: SignInSchema!): UserEntityResponse!
   signOut: Boolean!
   confirmEmail(hash: String!): Boolean!
   resendConfirmationEmail(email: String!): Boolean!
+}
+
+input UploadFileSchema {
+  path: String!
+  file: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UserShareAccessSchema {
+  tenantId: String!
+  tenantType: String!
+  fileIds: [String!]!
+}
+
+input UserRevokeAccessSchema {
+  tenantId: String!
+  tenantType: String!
+  fileIds: [String!]!
 }
 
 input SignUpSchema {

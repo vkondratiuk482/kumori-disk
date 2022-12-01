@@ -1,10 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 import { CONFIRMATION_HASH_TTL_SECONDS } from './auth.constants';
 import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
+import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
 import { CRYPTOGRAPHY_SERVICE_TOKEN } from 'src/cryptography/cryptography.constants';
 
 import { UserConfirmationStatus } from '../user/enums/user-confirmation-status.enum';
@@ -23,7 +24,6 @@ import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash
 
 import { UserService } from '../user/user.service';
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
-import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 
 @Injectable()

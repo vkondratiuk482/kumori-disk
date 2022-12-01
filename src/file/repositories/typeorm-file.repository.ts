@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { TypeOrmUserEntityImplementation } from 'src/user/entities/typeorm-user.entity';
 import { DataSource, EntityManager, Repository } from 'typeorm';
-import { TypeOrmFileEntityImplementation } from './entities/typeorm-file.entity';
-import { FileConsumer } from './enums/file-consumer.enum';
-import { FileTenantKey } from './enums/file-tenant-key.enum';
-import { AttachTenant } from './interfaces/attach-tenant.interface';
-import { CreateFile } from './interfaces/create-file.interface';
-import { DettachTenant } from './interfaces/dettach-tenant.interface';
-import { FileConsumerRepositoryAndTenantKey } from './interfaces/file-consumer-repository-and-tenant-key.interface';
-import { FileRepository } from './interfaces/file-repository.interface';
+import { TypeOrmFileEntityImplementation } from '../entities/typeorm-file.entity';
+import { FileConsumer } from '../enums/file-consumer.enum';
+import { FileTenantKey } from '../enums/file-tenant-key.enum';
+import { AttachTenant } from '../interfaces/attach-tenant.interface';
+import { CreateFile } from '../interfaces/create-file.interface';
+import { DettachTenant } from '../interfaces/dettach-tenant.interface';
+import { FileConsumerRepositoryAndTenantKey } from '../interfaces/file-consumer-repository-and-tenant-key.interface';
+import { FileRepository } from '../interfaces/file-repository.interface';
 
 @Injectable()
-export class FileRepositoryImplementation implements FileRepository {
+export class TypeOrmFileRepositoryImplementation implements FileRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(TypeOrmFileEntityImplementation)
@@ -30,12 +30,17 @@ export class FileRepositoryImplementation implements FileRepository {
     return file;
   }
 
-  public async findManyByIds(
+  public async findManyByIdsWithOwners(
     ids: string[],
+    ownerType: FileConsumer,
   ): Promise<TypeOrmFileEntityImplementation[]> {
+    const { tenantKey } =
+      this.getRepositoryAndTenantKeyByFileConsumer(ownerType);
+
     const files = await this.fileRepository
       .createQueryBuilder('f')
-      .where('id IN (:...ids)', { ids })
+      .leftJoinAndSelect(`f.${tenantKey}`, 'o')
+      .where('f.id IN (:...ids)', { ids })
       .getMany();
 
     return files;

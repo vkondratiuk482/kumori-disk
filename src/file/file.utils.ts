@@ -18,13 +18,17 @@ export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
 export async function convertGraphQLFileToFile(
   data: UploadGraphQLFile,
 ): Promise<File> {
-  const fileBuffer = await convertStreamToBuffer(data.file.createReadStream());
+  const resolvedFile = await data.file;
+
+  const fileBuffer = await convertStreamToBuffer(
+    resolvedFile.createReadStream(),
+  );
 
   const file: File = {
     path: data.path,
     buffer: fileBuffer,
-    name: data.file.filename,
-    extension: MimeType[data.file.mimetype],
+    name: resolvedFile.filename,
+    extension: MimeType[resolvedFile.mimetype],
   };
 
   return file;
