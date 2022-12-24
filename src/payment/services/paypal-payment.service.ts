@@ -9,7 +9,7 @@ import {
   PAYPAL_ACCESS_TOKEN_CACHING_KEY,
   PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
 } from '../constants/payment.constant';
-import { PaypalEnvironment } from '../enums/paypal-environment.enum';
+import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
 import { PaypalAccessTokenNotFoundInCacheError } from '../errors/paypal-access-token-not-found-in-cache.error';
@@ -32,15 +32,16 @@ export class PaypalPaymentServiceImplementation
     @Inject(HTTP_SERVICE_TOKEN)
     private readonly httpService: HttpService,
   ) {
-    const environment = this.configService.get<PaypalEnvironment>('PAYPAL_ENV');
+    const environment =
+      this.configService.get<PaypalEnvironments>('PAYPAL_ENV');
 
     switch (environment) {
-      case PaypalEnvironment.MAIN: {
+      case PaypalEnvironments.MAIN: {
         this.domain = 'https://api-m.paypal.com';
 
         break;
       }
-      case PaypalEnvironment.SANDBOX: {
+      case PaypalEnvironments.SANDBOX: {
         this.domain = 'https://api-m.sandbox.paypal.com';
 
         break;

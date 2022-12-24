@@ -1,4 +1,4 @@
-export enum PaypalEnvironment {
+export enum PaypalEnvironments {
   MAIN = 'MAIN',
   SANDBOX = 'SANDBOX',
 }

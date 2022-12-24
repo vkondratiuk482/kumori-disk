@@ -1,5 +1,1 @@
-export type Body =
-  | { [key: string]: string | number | boolean | object }
-  | string
-  | Buffer
-  | object;
+export type Body = object | string;
