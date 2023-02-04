@@ -39,25 +39,25 @@ export class AuthService {
     private readonly cryptographyService: CryptographyService,
   ) {}
 
-  public async signUp(data: CreateUser): Promise<UserEntity> {
-    const mailUsed = await this.userService.mailUsed(data.email);
+  public async signUp(payload: CreateUser): Promise<UserEntity> {
+    const mailUsed = await this.userService.mailUsed(payload.email);
 
     if (mailUsed) {
       throw new MailIsInUseError();
     }
 
-    const hashedPassword = await this.cryptographyService.hash(data.password);
-
-    const createSingleUserData: CreateUser = {
-      email: data.email,
-      username: data.username,
-      password: hashedPassword,
-    };
-    const user = await this.userService.createSingleForSignUp(
-      createSingleUserData,
+    const hashedPassword = await this.cryptographyService.hash(
+      payload.password,
     );
 
-    const hash = this.generateHash();
+    const data: CreateUser = {
+      email: payload.email,
+      username: payload.username,
+      password: hashedPassword,
+    };
+    const user = await this.userService.createSingleForSignUp(data);
+
+    const hash = this.cryptographyService.randomUUID();
     const confirmationLink = this.generateConfirmationLink(hash);
 
     await this.cacheService.set<string>(
@@ -65,21 +65,21 @@ export class AuthService {
       user.id,
       CONFIRMATION_HASH_TTL_SECONDS,
     );
-    await this.sendSignUpConfirmationMail(data.email, confirmationLink);
+    await this.sendSignUpConfirmationMail(payload.email, confirmationLink);
 
     return user;
   }
 
-  public async singIn(data: SignIn): Promise<UserEntity> {
+  public async singIn(payload: SignIn): Promise<UserEntity> {
     const user = await this.userService.findSingleByEmailWithException(
-      data.email,
+      payload.email,
     );
 
     if (user.confirmationStatus !== UserConfirmationStatus.Confirmed) {
       throw new EmailNotConfirmedError();
     }
 
-    const password = data.password;
+    const password = payload.password;
     const encryptedPassword = user.password;
     const passwordsMatch = await this.cryptographyService.compareHashed(
       password,
@@ -125,7 +125,7 @@ export class AuthService {
       throw new EmailAlreadyConfirmedError();
     }
 
-    const hash = this.generateHash();
+    const hash = this.cryptographyService.randomUUID();
     const confirmationLink = this.generateConfirmationLink(hash);
 
     await this.cacheService.set<string>(
@@ -136,12 +136,6 @@ export class AuthService {
     await this.sendSignUpConfirmationMail(email, confirmationLink);
 
     return true;
-  }
-
-  private generateHash(): string {
-    const hash = crypto.randomUUID();
-
-    return hash;
   }
 
   private generateConfirmationLink(hash: string): string {

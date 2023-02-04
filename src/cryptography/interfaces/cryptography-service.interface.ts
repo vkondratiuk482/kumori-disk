@@ -5,4 +5,5 @@ export interface CryptographyService {
   decrypt(data: EncryptedData): string;
   hash(data: string, salt?: string): Promise<string>;
   compareHashed(data: string, hashed: string): Promise<boolean>;
+  randomUUID(): string;
 }

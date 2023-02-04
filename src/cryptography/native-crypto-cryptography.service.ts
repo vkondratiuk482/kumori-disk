@@ -70,4 +70,10 @@ export class NativeCryptoCryptographyServiceImplementation
 
     return equivalent;
   }
+
+  public randomUUID(): string {
+    const uuid = crypto.randomUUID();
+
+    return uuid;
+  }
 }
