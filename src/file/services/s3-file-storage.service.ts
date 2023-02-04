@@ -13,9 +13,7 @@ import { FileNotDownloadedError } from '../errors/file-not-downloaded.error';
 import { S3_CLIENT_TOKEN } from '../constants/file.constants';
 import { UploadFile } from '../interfaces/upload-file.interface';
 import { GenerateFileKey } from '../interfaces/generate-file-key.interface';
-import { FileStorageService } from '../interfaces/file-storage-service.interface';
 import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
-import { MimeType } from '../enums/mime-type.enum';
 import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
 
 export class S3FileStorageServiceImplementation /*implements FileStorageService */ {
