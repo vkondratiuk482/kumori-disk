@@ -37,14 +37,14 @@ export class UserService {
     private readonly eventService: EventService,
   ) {}
 
-  public async findSingleById(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleById(id);
+  public async findById(id: string): Promise<UserEntity> {
+    const user = await this.userRepository.findById(id);
 
     return user;
   }
 
-  public async findSingleByIdWithException(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleById(id);
+  public async findByIdOrThrow(id: string): Promise<UserEntity> {
+    const user = await this.userRepository.findById(id);
 
     if (!user) {
       throw new UserNotFoundByIdError();
@@ -65,10 +65,8 @@ export class UserService {
     return user;
   }
 
-  public async findSingleByEmailWithException(
-    email: string,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleByEmail(email);
+  public async findByEmailOrThrow(email: string): Promise<UserEntity> {
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new UserNotFoundByEmailError();
@@ -89,16 +87,18 @@ export class UserService {
     return user.availableStorageSpaceInBytes;
   }
 
-  public async mailUsed(email: string): Promise<boolean> {
-    const user = await this.userRepository.findSingleByEmail(email);
+  public async verifyMailAvailability(email: string): Promise<boolean> {
+    const user = await this.userRepository.findByEmail(email);
 
-    const mailUsed = Boolean(user);
+    if (!user) {
+      return true;
+    }
 
-    return mailUsed;
+    return false;
   }
 
-  public async createSingleForSignUp(data: CreateUser): Promise<UserEntity> {
-    const user = await this.userRepository.createSinglePending(data);
+  public async create(data: CreateUser): Promise<UserEntity> {
+    const user = await this.userRepository.create(data);
 
     return user;
   }

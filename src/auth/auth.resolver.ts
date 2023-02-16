@@ -24,6 +24,9 @@ import { SessionAuthGuard } from '../user/guards/session-auth.guard';
 import { AuthService } from './auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
+import { JwtPairResponse } from './responses/jwt-pair.response';
+import { ConfirmEmailResponse } from './responses/confirm-email.response';
+import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
 
 @Resolver()
 export class AuthResolver {
@@ -53,17 +56,14 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => UserEntityResponse, { name: 'signIn' })
+  @Mutation(() => JwtPairResponse, { name: 'signIn' })
   public async signIn(
     @Args('schema') schema: SignInSchema,
-    @Context() context: GraphQLContext,
-  ): Promise<UserEntityResponse> {
+  ): Promise<JwtPairResponse> {
     try {
-      const user = await this.authService.singIn(schema);
+      const pair = await this.authService.singIn(schema);
 
-      const response = new UserEntityResponse(user);
-
-      context.req.session.set('user_id', user.id);
+      const response = new JwtPairResponse(pair);
 
       return response;
     } catch (err) {
@@ -81,26 +81,16 @@ export class AuthResolver {
     }
   }
 
-  @UseGuards(SessionAuthGuard)
-  @Mutation(() => Boolean, { name: 'signOut' })
-  public async signOut(@Context() context: GraphQLContext): Promise<boolean> {
-    try {
-      context.req.session.delete();
-
-      const sessionDeleted = context.req.session.deleted;
-
-      return sessionDeleted;
-    } catch (err) {
-      throw new BadRequestException(err);
-    }
-  }
-
-  @Mutation(() => Boolean, { name: 'confirmEmail' })
-  public async confirmEmail(@Args('hash') hash: string): Promise<boolean> {
+  @Mutation(() => ConfirmEmailResponse, { name: 'confirmEmail' })
+  public async confirmEmail(
+    @Args('hash') hash: string,
+  ): Promise<ConfirmEmailResponse> {
     try {
       const confirmed = await this.authService.confirmEmail(hash);
 
-      return confirmed;
+      const response = new ConfirmEmailResponse(confirmed);
+
+      return response;
     } catch (err) {
       if (
         err instanceof InvalidConfirmationHashError ||
@@ -116,14 +106,18 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => Boolean, { name: 'resendConfirmationEmail' })
+  @Mutation(() => ResendConfirmationEmailResponse, {
+    name: 'resendConfirmationEmail',
+  })
   public async resendConfirmationEmail(
     @Args('email') email: string,
-  ): Promise<boolean> {
+  ): Promise<ResendConfirmationEmailResponse> {
     try {
       const resent = await this.authService.resendConfirmationEmail(email);
 
-      return resent;
+      const response = new ResendConfirmationEmailResponse(resent);
+
+      return response;
     } catch (err) {
       if (err instanceof EmailAlreadyConfirmedError) {
         throw new ConflictException(err);

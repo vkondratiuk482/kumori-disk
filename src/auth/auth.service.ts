@@ -1,18 +1,21 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
-import crypto from 'node:crypto';
-
-import { CONFIRMATION_HASH_TTL_SECONDS } from './auth.constants';
+import { AUTH_CONSTANTS } from './auth.constants';
+import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
 import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
 import { CRYPTOGRAPHY_SERVICE_TOKEN } from 'src/cryptography/cryptography.constants';
-
-import { UserConfirmationStatus } from '../user/enums/user-confirmation-status.enum';
+import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 
 import { SignIn } from './interfaces/sign-in.interface';
+import { JwtTypes } from 'src/jwt/enums/jwt-types.enum';
+import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
 import { SendMail } from '../mailer/interfaces/send-mail.interface';
+import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
+import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { CreateUser } from '../user/interfaces/create-user.interface';
+import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
@@ -22,9 +25,9 @@ import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 
-import { UserService } from '../user/user.service';
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
-import { CacheService } from 'src/cache/interfaces/cache-service.interface';
+import { UserService } from '../user/user.service';
+import {SignUp} from './interfaces/sign-up.interface';
 
 @Injectable()
 export class AuthService {
@@ -37,12 +40,16 @@ export class AuthService {
     private readonly cacheService: CacheService,
     @Inject(CRYPTOGRAPHY_SERVICE_TOKEN)
     private readonly cryptographyService: CryptographyService,
+    @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
+    private readonly jwtService: JwtService,
   ) {}
 
-  public async signUp(payload: CreateUser): Promise<UserEntity> {
-    const mailUsed = await this.userService.mailUsed(payload.email);
+  public async signUp(payload: SignUp): Promise<UserEntity> {
+    const mailAvailable = await this.userService.verifyMailAvailability(
+      payload.email,
+    );
 
-    if (mailUsed) {
+    if (!mailAvailable) {
       throw new MailIsInUseError();
     }
 
@@ -50,47 +57,49 @@ export class AuthService {
       payload.password,
     );
 
-    const data: CreateUser = {
+    const user = await this.userService.create({
       email: payload.email,
-      username: payload.username,
       password: hashedPassword,
-    };
-    const user = await this.userService.createSingleForSignUp(data);
+      username: payload.username,
+      confirmationStatus: UserConfirmationStatuses.Pending,
+    });
 
-    const hash = this.cryptographyService.randomUUID();
-    const confirmationLink = this.generateConfirmationLink(hash);
+    const confirmationHash = this.cryptographyService.randomUUID();
+    const link = this.generateConfirmationLink(confirmationHash);
 
     await this.cacheService.set<string>(
-      hash,
+      confirmationHash,
       user.id,
-      CONFIRMATION_HASH_TTL_SECONDS,
+      AUTH_CONSTANTS.DOMAIN.CONFIRMATION_HASH_TTL_SECONDS,
     );
-    await this.sendSignUpConfirmationMail(payload.email, confirmationLink);
+    await this.sendConfirmationMail(payload.email, link);
 
     return user;
   }
 
-  public async singIn(payload: SignIn): Promise<UserEntity> {
-    const user = await this.userService.findSingleByEmailWithException(
-      payload.email,
-    );
+  public async singIn(payload: SignIn): Promise<JwtPair> {
+    const user = await this.userService.findByEmailOrThrow(payload.email);
 
-    if (user.confirmationStatus !== UserConfirmationStatus.Confirmed) {
+    if (user.confirmationStatus !== UserConfirmationStatuses.Confirmed) {
       throw new EmailNotConfirmedError();
     }
 
     const password = payload.password;
-    const encryptedPassword = user.password;
+    const hashedPassword = user.password;
     const passwordsMatch = await this.cryptographyService.compareHashed(
       password,
-      encryptedPassword,
+      hashedPassword,
     );
 
     if (!passwordsMatch) {
       throw new PasswordsNotMatchingError();
     }
 
-    return user;
+    const jwtPair = this.generateJwtPair({
+      id: user.id,
+    });
+
+    return jwtPair;
   }
 
   public async confirmEmail(hash: string): Promise<boolean> {
@@ -102,9 +111,9 @@ export class AuthService {
 
     await this.cacheService.delete(hash);
 
-    const user = await this.userService.findSingleByIdWithException(id);
+    const user = await this.userService.findByIdOrThrow(id);
 
-    const confirmedStatus = UserConfirmationStatus.Confirmed;
+    const confirmedStatus = UserConfirmationStatuses.Confirmed;
 
     if (user.confirmationStatus === confirmedStatus) {
       throw new EmailAlreadyConfirmedError();
@@ -119,23 +128,51 @@ export class AuthService {
   }
 
   public async resendConfirmationEmail(email: string): Promise<boolean> {
-    const user = await this.userService.findSingleByEmailWithException(email);
+    try {
+      const user = await this.userService.findByEmailOrThrow(email);
 
-    if (user.confirmationStatus === UserConfirmationStatus.Confirmed) {
-      throw new EmailAlreadyConfirmedError();
+      if (user.confirmationStatus === UserConfirmationStatuses.Confirmed) {
+        throw new EmailAlreadyConfirmedError();
+      }
+
+      const hash = this.cryptographyService.randomUUID();
+      const confirmationLink = this.generateConfirmationLink(hash);
+
+      await this.cacheService.set<string>(
+        hash,
+        user.id,
+        AUTH_CONSTANTS.DOMAIN.CONFIRMATION_HASH_TTL_SECONDS,
+      );
+      await this.sendConfirmationMail(email, confirmationLink);
+
+      return true;
+    } catch (err) {
+      return false;
     }
+  }
 
-    const hash = this.cryptographyService.randomUUID();
-    const confirmationLink = this.generateConfirmationLink(hash);
+  private generateJwtPair(payload: JwtPayload): JwtPair {
+    const accessToken = this.generateAccessJwt(payload);
+    const refreshToken = this.generateRefreshJwt(payload);
 
-    await this.cacheService.set<string>(
-      hash,
-      user.id,
-      CONFIRMATION_HASH_TTL_SECONDS,
-    );
-    await this.sendSignUpConfirmationMail(email, confirmationLink);
+    const pair: JwtPair = {
+      accessToken,
+      refreshToken,
+    };
 
-    return true;
+    return pair;
+  }
+
+  private generateAccessJwt(payload: JwtPayload): string {
+    const accessToken = this.jwtService.generate(payload, JwtTypes.Access);
+
+    return accessToken;
+  }
+
+  private generateRefreshJwt(payload: JwtPayload): string {
+    const refreshToken = this.jwtService.generate(payload, JwtTypes.Refresh);
+
+    return refreshToken;
   }
 
   private generateConfirmationLink(hash: string): string {
@@ -147,17 +184,17 @@ export class AuthService {
     return link;
   }
 
-  private async sendSignUpConfirmationMail(
+  private async sendConfirmationMail(
     receiver: string,
     link: string,
   ): Promise<void> {
-    const text = `You've signed up for Kumori-Disk cloud storage, please follow the link to verify your email address - ${link}`;
-    const subject = 'Account verification for Kumori-Disk';
+    const subject = AUTH_CONSTANTS.DOMAIN.CONFIRMATION_MAIL_SUBJECT;
+    const text = `${AUTH_CONSTANTS.DOMAIN.CONFIRMATION_MAIL_BASE_TEXT} - ${link}`;
 
     const data: SendMail = {
-      to: receiver,
-      subject,
       text,
+      subject,
+      to: receiver,
     };
 
     return this.mailerService.sendEmail(data);

@@ -1,9 +1,8 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString } from 'class-validator';
-import { CreateUser } from '../../user/interfaces/create-user.interface';
 
 @InputType()
-export class SignUpSchema implements CreateUser {
+export class SignUpSchema {
   @Field()
   @IsEmail()
   public readonly email: string;

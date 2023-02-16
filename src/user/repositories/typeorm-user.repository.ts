@@ -7,6 +7,7 @@ import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity
 
 import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
 import { CreateUser } from '../interfaces/create-user.interface';
+import { UserEntity } from '../interfaces/user-entity.interface';
 import { UserRepository } from '../interfaces/user-repository.interface';
 
 @Injectable()
@@ -49,17 +50,8 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async createSinglePending(
-    data: CreateUser,
-  ): Promise<TypeOrmUserEntityImplementation> {
-    const confirmationStatus = UserConfirmationStatus.Pending;
-    const availableStorageSpaceInBytes = DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES;
-
-    const user = this.userRepository.create({
-      ...data,
-      confirmationStatus,
-      availableStorageSpaceInBytes,
-    });
+  public async create(data: CreateUser): Promise<UserEntity> {
+    const user = this.userRepository.create(data);
 
     return this.userRepository.save(user);
   }

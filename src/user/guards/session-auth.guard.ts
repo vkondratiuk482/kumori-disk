@@ -11,7 +11,7 @@ export class SessionAuthGuard implements CanActivate {
 
     const id = gqlContext.req.session.get('user_id');
 
-    const user = await this.userService.findSingleById(id);
+    const user = await this.userService.findById(id);
 
     if (!user) {
       return false;
