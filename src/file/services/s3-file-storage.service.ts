@@ -10,18 +10,19 @@ import {
 } from '@aws-sdk/client-s3';
 import { FileNotUploadedToStorageError } from '../errors/file-not-uploaded-to-storage.error';
 import { FileNotDownloadedError } from '../errors/file-not-downloaded.error';
-import { S3_CLIENT_TOKEN } from '../constants/file.constants';
 import { UploadFile } from '../interfaces/upload-file.interface';
 import { GenerateFileKey } from '../interfaces/generate-file-key.interface';
 import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
 import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
+import { FILE_CONSTANTS } from '../file.constants';
 
 export class S3FileStorageServiceImplementation /*implements FileStorageService */ {
   private readonly bucket: string;
 
   constructor(
-    @Inject(S3_CLIENT_TOKEN) private readonly s3Client: S3Client,
     private readonly configService: ConfigService,
+    @Inject(FILE_CONSTANTS.APPLICATION.S3_CLIENT_TOKEN)
+    private readonly s3Client: S3Client,
   ) {
     this.bucket = configService.get<string>('BUCKET_NAME');
   }

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CacheModule } from 'src/cache/cache.module';
 import { HttpModule } from 'src/http/http.module';
@@ -10,9 +9,8 @@ import { PaymentPlanService } from './services/payment-plan.service';
 
 @Module({
   imports: [
-    ConfigModule,
-    CacheModule,
     HttpModule,
+    CacheModule,
     TypeOrmModule.forFeature([TypeOrmPaymentPlanEntityImplementation]),
   ],
   providers: [

@@ -1,14 +1,10 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
+import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
-import { HTTP_SERVICE_TOKEN } from 'src/http/constants/http.constants';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
+import { HTTP_CONSTANTS } from 'src/http/http.constants';
 import { HttpService } from 'src/http/interfaces/http-service.interface';
-import {
-  PAYPAL_ACCESS_TOKEN_CACHING_KEY,
-  PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
-} from '../constants/payment.constant';
 import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
@@ -16,6 +12,7 @@ import { PaypalAccessTokenNotFoundInCacheError } from '../errors/paypal-access-t
 import { PaymentService } from '../interfaces/payment-service.interface';
 import { PaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
 import { SubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
+import { PAYMENT_CONSTANTS } from '../payment.constant';
 import { PaymentPlanService } from './payment-plan.service';
 
 @Injectable()
@@ -27,9 +24,9 @@ export class PaypalPaymentServiceImplementation
   constructor(
     private readonly configService: ConfigService,
     private readonly paymentPlanService: PaymentPlanService,
-    @Inject(CACHE_SERVICE_TOKEN)
+    @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly cacheService: CacheService,
-    @Inject(HTTP_SERVICE_TOKEN)
+    @Inject(HTTP_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly httpService: HttpService,
   ) {
     const environment =
@@ -74,7 +71,7 @@ export class PaypalPaymentServiceImplementation
     const authorization = await this.authorizeWithException();
 
     const accessToken = await this.cacheService.set<string>(
-      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+      PAYMENT_CONSTANTS.APPLICATION.PAYPAL_ACCESS_TOKEN_CACHING_KEY,
       authorization.access_token,
       authorization.expires_in,
     );
@@ -84,7 +81,9 @@ export class PaypalPaymentServiceImplementation
     }
 
     const expirationTimeInMs =
-      (authorization.expires_in - PAYPAL_AUTH_REQUEST_DELAY_SECONDS) * 1000;
+      (authorization.expires_in -
+        PAYMENT_CONSTANTS.APPLICATION.PAYPAL_AUTH_REQUEST_DELAY_SECONDS) *
+      1000;
 
     return expirationTimeInMs;
   }
@@ -132,7 +131,7 @@ export class PaypalPaymentServiceImplementation
 
   private async getBearerAuthorizationHeadersWithException(): Promise<string> {
     const accessToken = await this.cacheService.get<string>(
-      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+      PAYMENT_CONSTANTS.APPLICATION.PAYPAL_ACCESS_TOKEN_CACHING_KEY,
     );
 
     if (!accessToken) {

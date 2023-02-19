@@ -4,10 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import * as util from 'node:util';
 import * as crypto from 'node:crypto';
 
-import { HASH_KEYLEN, HASH_SEPARATOR } from './cryptography.constants';
-
 import { EncryptedData } from './interfaces/encrypted-data.interface';
 import { CryptographyService } from './interfaces/cryptography-service.interface';
+import { CRYPTOGRAPHY_CONSTANTS } from './cryptography.constants';
 
 @Injectable()
 export class NativeCryptoCryptographyServiceImplementation
@@ -55,15 +54,19 @@ export class NativeCryptoCryptographyServiceImplementation
     const buffer: Buffer = (await util.promisify(crypto.scrypt)(
       data,
       salt,
-      HASH_KEYLEN,
+      CRYPTOGRAPHY_CONSTANTS.DOMAIN.HASH_KEYLEN,
     )) as Buffer;
-    const hashed = `${buffer.toString('hex')}${HASH_SEPARATOR}${salt}`;
+    const hashed = `${buffer.toString('hex')}${
+      CRYPTOGRAPHY_CONSTANTS.DOMAIN.HASH_SEPARATOR
+    }${salt}`;
 
     return hashed;
   }
 
   public async compareHashed(data: string, hashed: string): Promise<boolean> {
-    const [hash, salt] = hashed.split(HASH_SEPARATOR);
+    const [hash, salt] = hashed.split(
+      CRYPTOGRAPHY_CONSTANTS.DOMAIN.HASH_SEPARATOR,
+    );
 
     const compareHash = await this.hash(data, salt);
     const equivalent = compareHash === hashed;

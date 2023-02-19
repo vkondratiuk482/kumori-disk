@@ -1,11 +1,11 @@
 import { CreateUser } from './create-user.interface';
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
 import { UserEntity } from './user-entity.interface';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
 export interface UserRepository {
   findById(id: string): Promise<UserEntity>;
 
-  findSingleByUsername(username: string): Promise<UserEntity>;
+  findByUsername(username: string): Promise<UserEntity>;
 
   findByEmail(email: string): Promise<UserEntity>;
 
@@ -13,7 +13,7 @@ export interface UserRepository {
 
   updateConfirmationStatus(
     id: string,
-    status: UserConfirmationStatus,
+    status: UserConfirmationStatuses,
   ): Promise<boolean>;
 
   subtractAvailableSpaceInBytes(id: string, bytes: number): Promise<boolean>;

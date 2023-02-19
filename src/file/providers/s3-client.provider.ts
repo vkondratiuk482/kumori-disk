@@ -1,10 +1,10 @@
 import { S3Client } from '@aws-sdk/client-s3';
 import { Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3_CLIENT_TOKEN } from '../constants/file.constants';
+import { FILE_CONSTANTS } from '../file.constants';
 
 export const S3ClientProvider: Provider = {
-  provide: S3_CLIENT_TOKEN,
+  provide: FILE_CONSTANTS.APPLICATION.S3_CLIENT_TOKEN,
   inject: [ConfigService],
   useFactory: (config: ConfigService): S3Client => {
     const region = config.get<string>('BUCKET_REGION');

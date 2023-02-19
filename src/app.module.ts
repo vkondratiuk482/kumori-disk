@@ -22,6 +22,7 @@ import { JwtModule } from './jwt/jwt.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
       envFilePath: ['.env', '.env.development'],
     }),
     ThrottlerModule.forRootAsync({
@@ -59,6 +60,7 @@ import { JwtModule } from './jwt/jwt.module';
       }),
       inject: [ConfigService],
     }),
+    JwtModule,
     EventEmitterModule.forRoot(),
     UserModule,
     AuthModule,
@@ -69,7 +71,6 @@ import { JwtModule } from './jwt/jwt.module';
     PaymentModule,
     HttpModule,
     EventModule,
-    JwtModule,
   ],
 })
 export class AppModule {}

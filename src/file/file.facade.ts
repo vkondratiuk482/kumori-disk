@@ -2,19 +2,19 @@ import { Inject, Injectable } from '@nestjs/common';
 import { UploadFile } from './interfaces/upload-file.interface';
 import { FileFacade } from './interfaces/file-facade.interface';
 import { FileStorageService } from './interfaces/file-storage-service.interface';
-import { FILE_STORAGE_SERVICE_TOKEN } from './constants/file.constants';
 import { FileService } from './services/file.service';
 import { ShareAccess } from 'src/file/interfaces/share-access.interface';
 import { RevokeAccess } from './interfaces/revoke-access.interface';
 import { CopyFile } from './interfaces/copy-file.interface';
 import { RenameFile } from './interfaces/rename-file.interface';
 import { FileNotUploadedError } from './errors/file-not-uploaded.error';
+import { FILE_CONSTANTS } from './file.constants';
 
 @Injectable()
 export class FileFacadeImplementation implements FileFacade {
   constructor(
     private readonly fileService: FileService,
-    @Inject(FILE_STORAGE_SERVICE_TOKEN)
+    @Inject(FILE_CONSTANTS.APPLICATION.STORAGE_SERVICE_TOKEN)
     private readonly fileStorage: FileStorageService,
   ) {}
 

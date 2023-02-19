@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FileNotAccessibleError } from '../errors/file-not-accessible.error';
-import { FILE_REPOSITORY_TOKEN } from '../constants/file.constants';
 import { FileRepository } from '../interfaces/file-repository.interface';
 import { CreateFile } from '../interfaces/create-file.interface';
 import { AttachTenant } from '../interfaces/attach-tenant.interface';
@@ -11,11 +10,12 @@ import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
 import { FileNotFoundError } from '../errors/file-not-found.error';
 import { FileEntity } from '../interfaces/file-entity.interface';
 import { FileKeyNotUpdatedInDatabaseError } from '../errors/file-key-not-updated-in-database.error';
+import { FILE_CONSTANTS } from '../file.constants';
 
 @Injectable()
 export class FileService {
   constructor(
-    @Inject(FILE_REPOSITORY_TOKEN)
+    @Inject(FILE_CONSTANTS.APPLICATION.REPOSITORY_TOKEN)
     private readonly fileRepository: FileRepository,
   ) {}
 

@@ -3,9 +3,6 @@ import { Inject, Injectable } from '@nestjs/common';
 
 import { AUTH_CONSTANTS } from './auth.constants';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
-import { MAILER_SERVICE_TOKEN } from '../mailer/mailer.constants';
-import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
-import { CRYPTOGRAPHY_SERVICE_TOKEN } from 'src/cryptography/cryptography.constants';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 
 import { SignIn } from './interfaces/sign-in.interface';
@@ -27,17 +24,20 @@ import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
 import { UserService } from '../user/user.service';
 import { SignUp } from './interfaces/sign-up.interface';
+import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
+import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
+import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
-    @Inject(MAILER_SERVICE_TOKEN)
+    @Inject(MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly mailerService: MailerService,
-    @Inject(CACHE_SERVICE_TOKEN)
+    @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly cacheService: CacheService,
-    @Inject(CRYPTOGRAPHY_SERVICE_TOKEN)
+    @Inject(CRYPTOGRAPHY_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly cryptographyService: CryptographyService,
     @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly jwtService: JwtService,

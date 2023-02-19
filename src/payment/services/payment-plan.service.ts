@@ -1,13 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PAYMENT_PLAN_REPOSITORY_TOKEN } from '../constants/payment.constant';
 import { PaymentPlanNotFoundByIdError } from '../errors/payment-plan-not-found.error';
 import { PaymentPlanEntity } from '../interfaces/payment-plan-entity.interface';
 import { PaymentPlanRepository } from '../interfaces/payment-plan-repository.interface';
+import { PAYMENT_CONSTANTS } from '../payment.constant';
 
 @Injectable()
 export class PaymentPlanService {
   constructor(
-    @Inject(PAYMENT_PLAN_REPOSITORY_TOKEN)
+    @Inject(PAYMENT_CONSTANTS.APPLICATION.PLAN_REPOSITORY_TOKEN)
     private readonly paymentPlanRepository: PaymentPlanRepository,
   ) {}
 

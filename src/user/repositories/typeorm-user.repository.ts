@@ -2,10 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
-import { DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES } from '../constants/user.constants';
 import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
 import { CreateUser } from '../interfaces/create-user.interface';
 import { UserEntity } from '../interfaces/user-entity.interface';
 import { UserRepository } from '../interfaces/user-repository.interface';
@@ -17,9 +16,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
   ) {}
 
-  public async findSingleById(
-    id: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
+  public async findById(id: string): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('id = :id', { id })
@@ -28,7 +25,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async findSingleByUsername(
+  public async findByUsername(
     username: string,
   ): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
@@ -39,7 +36,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async findSingleByEmail(
+  public async findByEmail(
     email: string,
   ): Promise<TypeOrmUserEntityImplementation> {
     const user = await this.userRepository
@@ -58,7 +55,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
 
   public async updateConfirmationStatus(
     id: string,
-    status: UserConfirmationStatus,
+    status: UserConfirmationStatuses,
   ): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')

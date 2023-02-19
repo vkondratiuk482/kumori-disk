@@ -1,13 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
-import { MailerService } from './interfaces/mailer-service.interface';
+import { MAILER_CONSTANTS } from './mailer.constants';
 import { SendMail } from './interfaces/send-mail.interface';
-import { NODEMAILER_TRANSPORTER } from './mailer.constants';
+import { MailerService } from './interfaces/mailer-service.interface';
 
 @Injectable()
 export class NodemailerMailerServiceImplementation implements MailerService {
   constructor(
-    @Inject(NODEMAILER_TRANSPORTER) private readonly transporter: Transporter,
+    @Inject(MAILER_CONSTANTS.APPLICATION.NODEMAILER_TRANSPORTER_TOKEN)
+    private readonly transporter: Transporter,
   ) {}
 
   public async sendEmail(data: SendMail): Promise<void> {

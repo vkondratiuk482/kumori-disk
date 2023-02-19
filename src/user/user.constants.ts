@@ -1,0 +1,12 @@
+import { deepFreeze } from 'src/common/deep-freeze';
+
+export const USER_CONSTANTS = deepFreeze({
+  APPLICATION: {
+    SHARE_ACCESS_EVENT: 'USER_SHARE_ACCESS_EVENT',
+    REVOKE_ACCESS_EVENT: 'USER_SHARE_ACCESS_EVENT',
+    REPOSITORY_TOKEN: Symbol('USER_REPOSITORY_TOKEN'),
+  },
+  DOMAIN: {
+    DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES: 20000000, // 20 MB
+  },
+});

@@ -10,8 +10,8 @@ export class JwtRefreshOptions implements JwtOptions {
   public readonly secret: string;
 
   constructor(configService: ConfigService) {
-    this.ttl = configService.get<number>('JWT_REFRESH_TTL');
     this.secret = configService.get<string>('JWT_REFRESH_SECRET');
+    this.ttl = parseInt(configService.get<string>('JWT_REFRESH_TTL'));
 
     JwtOptionsFactory.register(JwtTypes.Refresh, this);
   }

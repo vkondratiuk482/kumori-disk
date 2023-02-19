@@ -1,8 +1,8 @@
 import { deepFreeze } from 'src/common/deep-freeze';
 
-export const EVENT_CONSTANTS = deepFreeze({
+export const CACHE_CONSTANTS = deepFreeze({
   APPLICATION: {
-    SERVICE_TOKEN: Symbol('EVENT_SERVICE_TOKEN'),
+    SERVICE_TOKEN: Symbol('CACHE_SERVICE_TOKEN'),
   },
   DOMAIN: {},
 });

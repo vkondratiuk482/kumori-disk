@@ -9,7 +9,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 import { UserEntity } from '../interfaces/user-entity.interface';
 
 @Entity('user')
@@ -29,9 +29,9 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   @Column({
     name: 'confirmation_status',
     type: 'enum',
-    enum: UserConfirmationStatus,
+    enum: UserConfirmationStatuses,
   })
-  public confirmationStatus: UserConfirmationStatus;
+  public confirmationStatus: UserConfirmationStatuses;
 
   @Column({
     name: 'available_storage_space_in_bytes',

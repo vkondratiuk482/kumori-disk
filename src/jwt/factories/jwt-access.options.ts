@@ -10,8 +10,8 @@ export class JwtAccessOptions implements JwtOptions {
   public readonly secret: string;
 
   constructor(configService: ConfigService) {
-    this.ttl = configService.get<number>('JWT_ACCESS_TTL');
     this.secret = configService.get<string>('JWT_ACCESS_SECRET');
+    this.ttl = parseInt(configService.get<string>('JWT_ACCESS_TTL'));
 
     JwtOptionsFactory.register(JwtTypes.Access, this);
   }
