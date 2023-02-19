@@ -1,23 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { JSONWebToken, RS256Strategy } from '@mokuteki/jwt';
+import { JSONWebToken, HS256Strategy } from '@mokuteki/jwt';
 import { JwtTypes } from '../enums/jwt-types.enum';
 import { InvalidJwtError } from '../errors/invalid-jwt.error';
 import { JwtService } from '../interfaces/jwt-service.interface';
 import { JwtOptionsFactory } from '../factories/jwt-options.factory';
 
 @Injectable()
-export class MokutekiJwtServiceImpl implements JwtService {
+export class HS256JwtServiceImpl implements JwtService {
   private readonly jwt: JSONWebToken;
 
   constructor(private readonly configService: ConfigService) {
     const options = JwtOptionsFactory.getInstance(JwtTypes.Access);
 
     this.jwt = new JSONWebToken(
-      new RS256Strategy({
+      new HS256Strategy({
         ttl: options.ttl,
-        publicKey: options.publicKey,
-        privKey: options.privateKey,
+        secret: options.secret,
       }),
     );
   }
@@ -27,8 +26,7 @@ export class MokutekiJwtServiceImpl implements JwtService {
 
     const token = this.jwt.generate(payload, {
       ttl: options.ttl,
-      publicKey: options.publicKey,
-      privKey: options.privateKey,
+      secret: options.secret,
     });
 
     return token;
@@ -36,7 +34,12 @@ export class MokutekiJwtServiceImpl implements JwtService {
 
   public verify<T extends object>(token: string, type: JwtTypes): T {
     try {
-      const payload = this.jwt.verify<T>(token);
+      const options = JwtOptionsFactory.getInstance(type);
+
+      const payload = this.jwt.verify<T>(token, {
+        ttl: options.ttl,
+        secret: options.secret,
+      });
 
       return payload;
     } catch (err) {

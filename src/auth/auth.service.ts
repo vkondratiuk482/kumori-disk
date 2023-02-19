@@ -14,7 +14,6 @@ import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
 import { SendMail } from '../mailer/interfaces/send-mail.interface';
 import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
-import { CreateUser } from '../user/interfaces/create-user.interface';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
@@ -27,7 +26,7 @@ import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash
 
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
 import { UserService } from '../user/user.service';
-import {SignUp} from './interfaces/sign-up.interface';
+import { SignUp } from './interfaces/sign-up.interface';
 
 @Injectable()
 export class AuthService {
@@ -95,9 +94,10 @@ export class AuthService {
       throw new PasswordsNotMatchingError();
     }
 
-    const jwtPair = this.generateJwtPair({
+    const jwtPayload: JwtPayload = {
       id: user.id,
-    });
+    };
+    const jwtPair = this.generateJwtPair(jwtPayload);
 
     return jwtPair;
   }
@@ -152,27 +152,12 @@ export class AuthService {
   }
 
   private generateJwtPair(payload: JwtPayload): JwtPair {
-    const accessToken = this.generateAccessJwt(payload);
-    const refreshToken = this.generateRefreshJwt(payload);
-
     const pair: JwtPair = {
-      accessToken,
-      refreshToken,
+      accessToken: this.jwtService.generate(payload, JwtTypes.Access),
+      refreshToken: this.jwtService.generate(payload, JwtTypes.Refresh),
     };
 
     return pair;
-  }
-
-  private generateAccessJwt(payload: JwtPayload): string {
-    const accessToken = this.jwtService.generate(payload, JwtTypes.Access);
-
-    return accessToken;
-  }
-
-  private generateRefreshJwt(payload: JwtPayload): string {
-    const refreshToken = this.jwtService.generate(payload, JwtTypes.Refresh);
-
-    return refreshToken;
   }
 
   private generateConfirmationLink(hash: string): string {
