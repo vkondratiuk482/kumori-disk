@@ -9,6 +9,19 @@ type UserEntityResponse {
   availableStorageSpaceInBytes: Float!
 }
 
+type JwtPairResponse {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type ConfirmEmailResponse {
+  confirmed: Boolean!
+}
+
+type ResendConfirmationEmailResponse {
+  resent: Boolean!
+}
+
 type Query {
   test(id: Float!): Int!
 }
@@ -18,10 +31,9 @@ type Mutation {
   userShareAccess(schema: UserShareAccessSchema!): Boolean!
   userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
   signUp(schema: SignUpSchema!): UserEntityResponse!
-  signIn(schema: SignInSchema!): UserEntityResponse!
-  signOut: Boolean!
-  confirmEmail(hash: String!): Boolean!
-  resendConfirmationEmail(email: String!): Boolean!
+  signIn(schema: SignInSchema!): JwtPairResponse!
+  confirmEmail(hash: String!): ConfirmEmailResponse!
+  resendConfirmationEmail(email: String!): ResendConfirmationEmailResponse!
 }
 
 input UploadFileSchema {

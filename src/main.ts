@@ -6,8 +6,6 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 
-import session from '@fastify/secure-session';
-
 import mercuriusUpload from 'mercurius-upload';
 import { UploadOptions } from 'graphql-upload';
 
@@ -25,10 +23,6 @@ async function bootstrap(): Promise<void> {
     maxFiles: 10,
     maxFileSize: 10000000,
   } as UploadOptions);
-
-  await app.register(session, {
-    key: Buffer.from(config.get<string>('SESSION_SECRET'), 'hex'),
-  });
 
   const port = config.get<number>('APP_PORT');
 

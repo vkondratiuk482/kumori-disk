@@ -1,5 +1,7 @@
 export interface JwtOptions {
   readonly ttl: number;
 
-  readonly secret: string;
+  readonly publicKey: string;
+
+  readonly privateKey: string;
 }
