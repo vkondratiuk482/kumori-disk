@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
+import { Args, Query, Mutation, Resolver, Int } from '@nestjs/graphql';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
@@ -15,11 +15,8 @@ import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.err
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
-import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
-
-import { SessionAuthGuard } from '../user/guards/session-auth.guard';
 
 import { AuthService } from './auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
@@ -27,13 +24,19 @@ import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { JwtPairResponse } from './responses/jwt-pair.response';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
+import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
+import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
 
 @Resolver()
 export class AuthResolver {
   constructor(private readonly authService: AuthService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Query(() => Int, { name: 'test' })
-  public async test(@Args('id') id: number): Promise<number> {
+  public async test(
+    @Args('id') id: number,
+    @JwtPayloadDecorator() jwtPayload,
+  ): Promise<number> {
     return 1;
   }
 
@@ -52,7 +55,7 @@ export class AuthResolver {
         throw new ConflictException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
@@ -77,7 +80,7 @@ export class AuthResolver {
         throw new ForbiddenException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
@@ -102,7 +105,7 @@ export class AuthResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
@@ -126,7 +129,7 @@ export class AuthResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 }

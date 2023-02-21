@@ -68,6 +68,12 @@ export class UserService {
     return user;
   }
 
+  public async existsById(id: string): Promise<boolean> {
+    const exists = await this.userRepository.existsById(id);
+
+    return exists;
+  }
+
   public async getAvailableStorageSpaceByIdWithException(
     id: string,
   ): Promise<number> {

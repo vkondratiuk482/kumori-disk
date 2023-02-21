@@ -6,7 +6,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { SessionAuthGuard } from 'src/user/guards/session-auth.guard';
 import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.error';
 import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
 import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
@@ -17,19 +16,21 @@ import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
+import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
+import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
+import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(SessionAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => String, { name: 'uploadSingleFile' })
   public async uploadSingleFile(
     @Args('schema') schema: UploadFileSchema,
-    @Context() context: GraphQLContext,
   ): Promise<string> {
     try {
-      const userId: string = context.req.session.get('user_id');
+      const userId = '123e4567-e89b-12d3-a456-426655440000';
       const file = await convertGraphQLFileToFile(schema);
 
       const key = await this.userService.uploadSingleFileWithException(
@@ -41,26 +42,24 @@ export class UserResolver {
     } catch (err) {
       if (
         err instanceof FileNotUploadedToStorageError ||
-        FileNotCreatedInDatabaseError
+        err instanceof FileNotCreatedInDatabaseError
       ) {
         throw new ConflictException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @UseGuards(SessionAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userShareAccess' })
   public async shareAccess(
+    @JwtPayloadDecorator() jwtPayload: JwtPayload,
     @Args('schema') schema: UserShareAccessSchema,
-    @Context() context: GraphQLContext,
   ): Promise<boolean> {
     try {
-      const ownerId: string = context.req.session.get('user_id');
-
       const shared = await this.userService.shareAccessWithException(
-        ownerId,
+        jwtPayload.id,
         schema,
       );
 
@@ -73,21 +72,19 @@ export class UserResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @UseGuards(SessionAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userRevokeAccess' })
   public async revokeAccess(
+    @JwtPayloadDecorator() jwtPayload: JwtPayload,
     @Args('schema') schema: UserRevokeAccessSchema,
-    @Context() context: GraphQLContext,
   ): Promise<boolean> {
     try {
-      const ownerId: string = context.req.session.get('user_id');
-
       const revoked = await this.userService.revokeAccessWithException(
-        ownerId,
+        jwtPayload.id,
         schema,
       );
 
@@ -97,7 +94,7 @@ export class UserResolver {
         throw new ForbiddenException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 }
