@@ -10,10 +10,7 @@ export class UndiciHttpAdapter implements HttpClient {
   constructor(private readonly undiciHttpService: UndiciHttpService) {}
 
   public async request<T>(payload: HttpRequest): Promise<T> {
-    /**
-     * Check if body is string
-     */
-    const body: HttpBody = payload.body && JSON.stringify(payload.body);
+    const body = payload.body && this.adaptBody(payload.body);
     const headers: IncomingHttpHeaders = payload.headers || undefined;
 
     const response = await this.undiciHttpService.request<T>({
@@ -26,5 +23,16 @@ export class UndiciHttpAdapter implements HttpClient {
     });
 
     return response;
+  }
+
+  /**
+   * Replace it with HttpBodyFactory in case there are more body types
+   */
+  private adaptBody(body: HttpBody): string {
+    if (typeof body === 'string') {
+      return body;
+    } else if (typeof body === 'object') {
+      return JSON.stringify(body);
+    }
   }
 }
