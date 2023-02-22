@@ -4,7 +4,7 @@ import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
 import { HTTP_CONSTANTS } from 'src/http/http.constants';
-import { HttpService } from 'src/http/interfaces/http-service.interface';
+import {HttpClient} from 'src/http/interfaces/http-client.interface';
 import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
@@ -26,8 +26,8 @@ export class PaypalPaymentServiceImplementation
     private readonly paymentPlanService: PaymentPlanService,
     @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly cacheService: CacheService,
-    @Inject(HTTP_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly httpService: HttpService,
+    @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
+    private readonly httpService: HttpClient,
   ) {
     const environment =
       this.configService.get<PaypalEnvironments>('PAYPAL_ENV');

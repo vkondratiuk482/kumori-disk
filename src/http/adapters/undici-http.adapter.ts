@@ -1,53 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { serialize } from 'node:v8';
 import { IncomingHttpHeaders } from 'node:http';
-import { Body } from '../interfaces/body.interface';
-import { Request } from '../interfaces/request.interface';
-import { HttpService } from '../interfaces/http-service.interface';
-import { UndiciRequest } from '../interfaces/undici-request.interface';
 import { UndiciHttpService } from '../services/undici-http.service';
+import { HttpClient } from '../interfaces/http-client.interface';
+import { HttpRequest } from '../interfaces/http-request.interface';
+import { HttpBody } from '../interfaces/http-body.interface';
 
 @Injectable()
-export class UndiciHttpAdapter implements HttpService {
+export class UndiciHttpAdapter implements HttpClient {
   constructor(private readonly undiciHttpService: UndiciHttpService) {}
 
-  public async request<T>(data: Request): Promise<T> {
-    const convertedRequest: UndiciRequest = this.convertRequest(data);
+  public async request<T>(payload: HttpRequest): Promise<T> {
+    /**
+     * Check if body is string
+     */
+    const body: HttpBody = payload.body && JSON.stringify(payload.body);
+    const headers: IncomingHttpHeaders = payload.headers || undefined;
 
-    const response = await this.undiciHttpService.request<T>(convertedRequest);
-
-    return response;
-  }
-
-  private convertRequest(data: Request): UndiciRequest {
-    let body: Buffer;
-    let headers: IncomingHttpHeaders;
-
-    if (data.body) {
-      body = this.convertBodyToBuffer(data.body);
-    }
-
-    if (data.headers) {
-      headers = data.headers;
-    }
-
-    const converted: UndiciRequest = {
-      url: data.url,
+    const response = await this.undiciHttpService.request<T>({
+      url: payload.url,
       options: {
         body,
         headers,
-        method: data.method,
+        method: payload.method,
       },
-    };
+    });
 
-    return converted;
-  }
-
-  private convertBodyToBuffer(body: Body): Buffer {
-    if (typeof body === 'object') {
-      return serialize(body);
-    }
-
-    return Buffer.from(body);
+    return response;
   }
 }
