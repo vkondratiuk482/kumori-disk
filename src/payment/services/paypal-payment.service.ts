@@ -4,7 +4,7 @@ import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
 import { HTTP_CONSTANTS } from 'src/http/http.constants';
-import {HttpClient} from 'src/http/interfaces/http-client.interface';
+import { HttpClient } from 'src/http/interfaces/http-client.interface';
 import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
@@ -27,7 +27,7 @@ export class PaypalPaymentServiceImplementation
     @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly cacheService: CacheService,
     @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
-    private readonly httpService: HttpClient,
+    private readonly httpClient: HttpClient,
   ) {
     const environment =
       this.configService.get<PaypalEnvironments>('PAYPAL_ENV');
@@ -102,13 +102,14 @@ export class PaypalPaymentServiceImplementation
     };
     const method = HttpMethod.POST;
 
-    const response =
-      await this.httpService.request<PaypalAuthorizationResponse>({
+    const response = await this.httpClient.request<PaypalAuthorizationResponse>(
+      {
         url,
         body,
         method,
         headers,
-      });
+      },
+    );
 
     if (!response.access_token || !response.expires_in) {
       throw new IncorrectPaypalAuthorizationResponseError();
