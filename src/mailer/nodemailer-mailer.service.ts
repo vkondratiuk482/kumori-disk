@@ -11,7 +11,7 @@ export class NodemailerMailerServiceImplementation implements MailerService {
     private readonly transporter: Transporter,
   ) {}
 
-  public async sendEmail(data: SendMail): Promise<void> {
-    await this.transporter.sendMail(data);
+  public async sendEmail(payload: SendMail): Promise<void> {
+    await this.transporter.sendMail(payload);
   }
 }

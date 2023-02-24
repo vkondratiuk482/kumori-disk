@@ -161,8 +161,8 @@ export class AuthService {
   }
 
   private generateConfirmationLink(hash: string): string {
-    const protocol = this.configService.get<string>('APP_PROTOCOL');
     const domain = this.configService.get<string>('APP_DOMAIN');
+    const protocol = this.configService.get<string>('APP_PROTOCOL');
 
     const link = `${protocol}://${domain}?hash=${hash}`;
 
