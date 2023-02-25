@@ -18,6 +18,7 @@ import { CacheModule } from './cache/cache.module';
 import { EventModule } from './event/event.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtModule } from './jwt/jwt.module';
+import { GithubModule } from './github/github.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { JwtModule } from './jwt/jwt.module';
     PaymentModule,
     HttpModule,
     EventModule,
+    GithubModule,
   ],
 })
 export class AppModule {}

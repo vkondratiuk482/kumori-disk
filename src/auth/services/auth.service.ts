@@ -1,29 +1,29 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 
-import { AUTH_CONSTANTS } from './auth.constants';
+import { AUTH_CONSTANTS } from '../auth.constants';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 
-import { SignIn } from './interfaces/sign-in.interface';
+import { SignIn } from '../interfaces/sign-in.interface';
 import { JwtTypes } from 'src/jwt/enums/jwt-types.enum';
 import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { SendMail } from '../mailer/interfaces/send-mail.interface';
+import { SendMail } from '../../mailer/interfaces/send-mail.interface';
 import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
 import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
-import { MailIsInUseError } from './errors/mail-is-in-use.error';
-import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
-import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
-import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
-import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
+import { MailIsInUseError } from '../errors/mail-is-in-use.error';
+import { EmailNotConfirmedError } from '../errors/email-not-confirmed.error';
+import { PasswordsNotMatchingError } from '../errors/passwords-not-matching.error';
+import { EmailAlreadyConfirmedError } from '../errors/email-already-confirmed.error';
+import { InvalidConfirmationHashError } from '../errors/invalid-confirmation-hash.error';
 
 import { UserEntity } from 'src/user/interfaces/user-entity.interface';
-import { UserService } from '../user/user.service';
-import { SignUp } from './interfaces/sign-up.interface';
+import { UserService } from '../../user/user.service';
+import { SignUp } from '../interfaces/sign-up.interface';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';

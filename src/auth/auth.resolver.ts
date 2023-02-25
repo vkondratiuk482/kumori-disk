@@ -18,7 +18,7 @@ import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
 
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { JwtPairResponse } from './responses/jwt-pair.response';

@@ -11,12 +11,14 @@ export class UndiciHttpAdapter implements HttpClient {
 
   public async request<T>(payload: HttpRequest): Promise<T> {
     const body = payload.body && this.adaptBody(payload.body);
+    const query: Record<string, any> = payload.query || undefined;
     const headers: IncomingHttpHeaders = payload.headers || undefined;
 
     const response = await this.undiciHttpService.request<T>({
       url: payload.url,
       options: {
         body,
+        query,
         headers,
         method: payload.method,
       },
