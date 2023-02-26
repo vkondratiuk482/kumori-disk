@@ -4,7 +4,6 @@ import {
   ForbiddenException,
   NotFoundException,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
 import { Args, Query, Mutation, Resolver, Int } from '@nestjs/graphql';
 
@@ -24,20 +23,27 @@ import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { JwtPairResponse } from './responses/jwt-pair.response';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
-import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
-import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
+import { ObtainGithubOAuthURLResponse } from './responses/obtain-github-oauth-url.response';
+import { GithubAuthService } from './services/github-auth.service';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly githubAuthService: GithubAuthService,
+  ) {}
 
-  @UseGuards(JwtAuthGuard)
-  @Query(() => Int, { name: 'test' })
-  public async test(
-    @Args('id') id: number,
-    @JwtPayloadDecorator() jwtPayload,
-  ): Promise<number> {
-    return 1;
+  @Query(() => ObtainGithubOAuthURLResponse, { name: 'obtainGithubOAuthURL' })
+  public async obtainGithubOAuthURL(): Promise<ObtainGithubOAuthURLResponse> {
+    try {
+      const url = await this.githubAuthService.obtainOAuthAuthorizeURL();
+
+      const response = new ObtainGithubOAuthURLResponse(url);
+
+      return response;
+    } catch (err) {
+      throw new BadRequestException();
+    }
   }
 
   @Mutation(() => UserEntityResponse, { name: 'signUp' })

@@ -22,8 +22,12 @@ type ResendConfirmationEmailResponse {
   resent: Boolean!
 }
 
+type ObtainGithubOAuthURLResponse {
+  url: String!
+}
+
 type Query {
-  test(id: Float!): Int!
+  obtainGithubOAuthURL: ObtainGithubOAuthURLResponse!
 }
 
 type Mutation {

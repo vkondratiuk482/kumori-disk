@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
-import { HttpClientProvider } from './providers/http-client.provider';
 import { UndiciHttpService } from './services/undici-http.service';
+import { HttpClientProvider } from './providers/http-client.provider';
+import { HttpTransformerServiceProvider } from './providers/http-transformer-service.provider';
 
 @Module({
-  providers: [HttpClientProvider, UndiciHttpService],
-  exports: [HttpClientProvider],
+  providers: [
+    HttpClientProvider,
+    UndiciHttpService,
+    HttpTransformerServiceProvider,
+  ],
+  exports: [HttpClientProvider, HttpTransformerServiceProvider],
 })
 export class HttpModule {}

@@ -7,6 +7,7 @@ import { CryptographyModule } from 'src/cryptography/cryptography.module';
 import { CacheModule } from 'src/cache/cache.module';
 import { JwtModule } from 'src/jwt/jwt.module';
 import { GithubModule } from 'src/github/github.module';
+import { GithubAuthService } from './services/github-auth.service';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { GithubModule } from 'src/github/github.module';
     GithubModule,
     CryptographyModule,
   ],
-  providers: [AuthService, AuthResolver],
+  providers: [AuthService, AuthResolver, GithubAuthService],
 })
 export class AuthModule {}
