@@ -25,6 +25,7 @@ import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
 import { ObtainGithubOAuthURLResponse } from './responses/obtain-github-oauth-url.response';
 import { GithubAuthService } from './services/github-auth.service';
+import { AuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
 
 @Resolver()
 export class AuthResolver {
@@ -39,6 +40,21 @@ export class AuthResolver {
       const url = await this.githubAuthService.obtainOAuthAuthorizeURL();
 
       const response = new ObtainGithubOAuthURLResponse(url);
+
+      return response;
+    } catch (err) {
+      throw new BadRequestException();
+    }
+  }
+
+  @Mutation(() => JwtPairResponse, { name: 'authorizeWithGithub' })
+  public async authorizeWithGithub(
+    @Args('schema') schema: AuthorizeWithGithubSchema,
+  ): Promise<JwtPairResponse> {
+    try {
+      const pair = await this.githubAuthService.authorize(schema);
+
+      const response = new JwtPairResponse(pair);
 
       return response;
     } catch (err) {

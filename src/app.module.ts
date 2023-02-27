@@ -24,6 +24,7 @@ import { GithubModule } from './github/github.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      expandVariables: true,
       envFilePath: ['.env', '.env.development'],
     }),
     ThrottlerModule.forRootAsync({

@@ -11,6 +11,8 @@ export interface UserRepository {
 
   existsById(id: string): Promise<boolean>;
 
+  existsByEmail(email: string): Promise<boolean>;
+
   create(data: CreateUser): Promise<UserEntity>;
 
   updateConfirmationStatus(

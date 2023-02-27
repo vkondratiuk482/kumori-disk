@@ -5,6 +5,7 @@ import { JwtTypes } from '../enums/jwt-types.enum';
 import { InvalidJwtError } from '../errors/invalid-jwt.error';
 import { JwtService } from '../interfaces/jwt-service.interface';
 import { JwtOptionsFactory } from '../factories/jwt-options.factory';
+import { JwtPair } from '../interfaces/jwt-pair.interface';
 
 @Injectable()
 export class RS256JwtServiceImpl implements JwtService {
@@ -22,6 +23,15 @@ export class RS256JwtServiceImpl implements JwtService {
     const token = this.jwt.generate(payload, options);
 
     return token;
+  }
+
+  public generatePair(payload: object): JwtPair {
+    const pair: JwtPair = {
+      accessToken: this.generate(payload, JwtTypes.Access),
+      refreshToken: this.generate(payload, JwtTypes.Refresh),
+    };
+
+    return pair;
   }
 
   public verify<T extends object>(token: string, type: JwtTypes): T {

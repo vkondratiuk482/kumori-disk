@@ -57,6 +57,16 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return exists;
   }
 
+  public async existsByEmail(email: string): Promise<boolean> {
+    const exists = await this.userRepository.exist({
+      where: {
+        email,
+      },
+    });
+
+    return exists;
+  }
+
   public async create(data: CreateUser): Promise<UserEntity> {
     const user = this.userRepository.create(data);
 

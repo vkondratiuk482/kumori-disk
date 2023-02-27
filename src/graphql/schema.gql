@@ -34,6 +34,7 @@ type Mutation {
   uploadSingleFile(schema: UploadFileSchema!): String!
   userShareAccess(schema: UserShareAccessSchema!): Boolean!
   userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
+  authorizeWithGithub(schema: AuthorizeWithGithubSchema!): JwtPairResponse!
   signUp(schema: SignUpSchema!): UserEntityResponse!
   signIn(schema: SignInSchema!): JwtPairResponse!
   confirmEmail(hash: String!): ConfirmEmailResponse!
@@ -58,6 +59,10 @@ input UserRevokeAccessSchema {
   tenantId: String!
   tenantType: String!
   fileIds: [String!]!
+}
+
+input AuthorizeWithGithubSchema {
+  code: String!
 }
 
 input SignUpSchema {

@@ -6,9 +6,7 @@ import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 
 import { SignIn } from '../interfaces/sign-in.interface';
-import { JwtTypes } from 'src/jwt/enums/jwt-types.enum';
 import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { SendMail } from '../../mailer/interfaces/send-mail.interface';
 import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { CacheService } from 'src/cache/interfaces/cache-service.interface';
@@ -44,11 +42,9 @@ export class AuthService {
   ) {}
 
   public async signUp(payload: SignUp): Promise<UserEntity> {
-    const mailAvailable = await this.userService.verifyMailAvailability(
-      payload.email,
-    );
+    const emailExists = await this.userService.existsByEmail(payload.email);
 
-    if (!mailAvailable) {
+    if (emailExists) {
       throw new MailIsInUseError();
     }
 
@@ -71,7 +67,10 @@ export class AuthService {
       user.id,
       AUTH_CONSTANTS.DOMAIN.CONFIRMATION_HASH_TTL_SECONDS,
     );
-    await this.sendConfirmationMail(payload.email, link);
+    await this.mailerService.sendConfirmation({
+      link,
+      receiver: payload.email,
+    });
 
     return user;
   }
@@ -97,7 +96,7 @@ export class AuthService {
     const jwtPayload: JwtPayload = {
       id: user.id,
     };
-    const jwtPair = this.generateJwtPair(jwtPayload);
+    const jwtPair = this.jwtService.generatePair(jwtPayload);
 
     return jwtPair;
   }
@@ -143,21 +142,15 @@ export class AuthService {
         user.id,
         AUTH_CONSTANTS.DOMAIN.CONFIRMATION_HASH_TTL_SECONDS,
       );
-      await this.sendConfirmationMail(email, confirmationLink);
+      await this.mailerService.sendConfirmation({
+        receiver: email,
+        link: confirmationLink,
+      });
 
       return true;
     } catch (err) {
       return false;
     }
-  }
-
-  private generateJwtPair(payload: JwtPayload): JwtPair {
-    const pair: JwtPair = {
-      accessToken: this.jwtService.generate(payload, JwtTypes.Access),
-      refreshToken: this.jwtService.generate(payload, JwtTypes.Refresh),
-    };
-
-    return pair;
   }
 
   private generateConfirmationLink(hash: string): string {
@@ -167,21 +160,5 @@ export class AuthService {
     const link = `${protocol}://${domain}?hash=${hash}`;
 
     return link;
-  }
-
-  private async sendConfirmationMail(
-    receiver: string,
-    link: string,
-  ): Promise<void> {
-    const subject = AUTH_CONSTANTS.DOMAIN.CONFIRMATION_MAIL_SUBJECT;
-    const text = `${AUTH_CONSTANTS.DOMAIN.CONFIRMATION_MAIL_BASE_TEXT} - ${link}`;
-
-    const data: SendMail = {
-      text,
-      subject,
-      to: receiver,
-    };
-
-    return this.mailerService.sendEmail(data);
   }
 }

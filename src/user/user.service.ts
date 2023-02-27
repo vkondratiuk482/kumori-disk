@@ -74,22 +74,18 @@ export class UserService {
     return exists;
   }
 
+  public async existsByEmail(email: string): Promise<boolean> {
+    const exists = await this.userRepository.existsByEmail(email);
+
+    return exists;
+  }
+
   public async getAvailableStorageSpaceByIdWithException(
     id: string,
   ): Promise<number> {
     const user = await this.findByIdOrThrow(id);
 
     return user.availableStorageSpaceInBytes;
-  }
-
-  public async verifyMailAvailability(email: string): Promise<boolean> {
-    const user = await this.userRepository.findByEmail(email);
-
-    if (!user) {
-      return true;
-    }
-
-    return false;
   }
 
   public async create(data: CreateUser): Promise<UserEntity> {
