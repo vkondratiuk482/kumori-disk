@@ -53,7 +53,6 @@ export class PaypalPaymentServiceImplementation
 
   public async onModuleInit(): Promise<void> {
     const expirationTimeInMs = await this.getAndCacheAccessToken();
-
     setTimeout(async () => {
       this.onModuleInit();
     }, expirationTimeInMs);

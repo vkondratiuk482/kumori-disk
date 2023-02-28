@@ -34,12 +34,14 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     this.clientId = this.configService.get<string>('GITHUB_OAUTH_CLIENT_ID');
     this.authBaseURL = this.configService.get<string>('GITHUB_AUTH_BASE_URL');
 
-    const oauthQueryParams = this.httpTransformerService.query({
-      client_id: this.clientId,
-      redirect_uri: this.redirectURI,
-      scope: ['read:user', 'user:email'].join(' '),
-    });
-    this.oauthURL = `${this.authBaseURL}/login/oauth/authorize?${oauthQueryParams}`;
+    const oauthUSP = new URLSearchParams();
+    oauthUSP.set('client_id', this.clientId);
+    oauthUSP.set('redirect_uri', this.redirectURI);
+    oauthUSP.set('scope', ['read:user', 'user:email'].join(' '));
+
+    this.oauthURL = `${
+      this.authBaseURL
+    }/login/oauth/authorize?${oauthUSP.toString()}`;
   }
 
   public obtainOAuthAuthorizeURL(): string {

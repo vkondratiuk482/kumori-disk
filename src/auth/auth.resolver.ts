@@ -26,6 +26,8 @@ import { ResendConfirmationEmailResponse } from './responses/resend-confirmation
 import { ObtainGithubOAuthURLResponse } from './responses/obtain-github-oauth-url.response';
 import { GithubAuthService } from './services/github-auth.service';
 import { AuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
+import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error';
 
 @Resolver()
 export class AuthResolver {
@@ -58,6 +60,13 @@ export class AuthResolver {
 
       return response;
     } catch (err) {
+      if (
+        err instanceof GithubIdNotLinkedError ||
+        err instanceof GithubIdsDoNotMatchError
+      ) {
+        throw new UnauthorizedException(err.message);
+      }
+
       throw new BadRequestException();
     }
   }

@@ -9,6 +9,8 @@ export interface UserEntity {
 
   readonly password: string;
 
+  readonly githubId?: string;
+
   readonly availableStorageSpaceInBytes: number;
 
   readonly confirmationStatus: UserConfirmationStatuses;
