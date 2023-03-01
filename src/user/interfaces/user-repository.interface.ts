@@ -20,5 +20,7 @@ export interface UserRepository {
     status: UserConfirmationStatuses,
   ): Promise<boolean>;
 
+  updateGithubId(id: string, githubId: string): Promise<boolean>;
+
   subtractAvailableSpaceInBytes(id: string, bytes: number): Promise<boolean>;
 }

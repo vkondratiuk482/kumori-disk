@@ -100,6 +100,12 @@ export class UserService {
     return user;
   }
 
+  public async updateGithubId(id: string, githubId: string): Promise<boolean> {
+    const updated = await this.userRepository.updateGithubId(id, githubId);
+
+    return updated;
+  }
+
   public async updateConfirmationStatus(
     id: string,
     status: UserConfirmationStatuses,

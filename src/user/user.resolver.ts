@@ -5,20 +5,19 @@ import {
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.error';
 import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
 import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
 import { convertGraphQLFileToFile } from 'src/file/file.utils';
 import { UploadFileSchema } from 'src/file/schema/upload-file.schema';
-import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
 import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
-import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
 import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
+import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
 
 @Resolver()
 export class UserResolver {
@@ -27,14 +26,14 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => String, { name: 'uploadSingleFile' })
   public async uploadSingleFile(
+    @JwtPayloadDecorator() jwtPayload: JwtPayload,
     @Args('schema') schema: UploadFileSchema,
   ): Promise<string> {
     try {
-      const userId = '123e4567-e89b-12d3-a456-426655440000';
       const file = await convertGraphQLFileToFile(schema);
 
       const key = await this.userService.uploadSingleFileWithException(
-        userId,
+        jwtPayload.id,
         file,
       );
 

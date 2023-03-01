@@ -5,7 +5,6 @@ import { HttpMethod } from 'src/http/enums/http-method.enum';
 import { GithubUser } from './interfaces/github-user.interface';
 import { GithubClient } from './interfaces/github-client.interface';
 import { HttpClient } from 'src/http/interfaces/http-client.interface';
-import { HttpTransformerService } from 'src/http/interfaces/http-transformer-service.interface';
 import { GithubObtainAccessTokenResponse } from './interfaces/github-obtain-access-token-response.interface';
 
 @Injectable()
@@ -21,8 +20,6 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     private readonly configService: ConfigService,
     @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
     private readonly httpClient: HttpClient,
-    @Inject(HTTP_CONSTANTS.APPLICATION.TRANSFORMER_SERVICE_TOKEN)
-    private readonly httpTransformerService: HttpTransformerService,
   ) {
     this.redirectURI = this.configService.get<string>(
       'GITHUB_OAUTH_REDIRECT_URI',
