@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { FileFacade } from 'src/file/interfaces/file-facade.interface';
 import { UploadFile } from 'src/file/interfaces/upload-file.interface';
 import { CreateUser } from './interfaces/create-user.interface';
 import { UserRepository } from './interfaces/user-repository.interface';
-
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
@@ -20,16 +20,22 @@ import { USER_CONSTANTS } from './user.constants';
 import { FILE_CONSTANTS } from 'src/file/file.constants';
 import { EVENT_CONSTANTS } from 'src/event/event.constants';
 import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enum';
+import { GITHUB_CONSTANTS } from 'src/github/github.constants';
+import { GithubClient } from 'src/github/interfaces/github-client.interface';
+import { LinkGithubAccount } from './interfaces/link-github-account.interface';
 
 @Injectable()
 export class UserService {
   constructor(
+    private readonly configService: ConfigService,
     @Inject(USER_CONSTANTS.APPLICATION.REPOSITORY_TOKEN)
     private readonly userRepository: UserRepository,
     @Inject(FILE_CONSTANTS.APPLICATION.FACADE_TOKEN)
     private readonly fileFacade: FileFacade,
     @Inject(EVENT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly eventService: EventService,
+    @Inject(GITHUB_CONSTANTS.APPLICATION.CLIENT_TOKEN)
+    private readonly githubClient: GithubClient,
   ) {}
 
   public async findById(id: string): Promise<UserEntity> {
@@ -100,8 +106,25 @@ export class UserService {
     return user;
   }
 
-  public async updateGithubId(id: string, githubId: string): Promise<boolean> {
-    const updated = await this.userRepository.updateGithubId(id, githubId);
+  public async obtainOAuthLinkGithubURL(): Promise<string> {
+    const redirectURI = `${this.configService.get<string>(
+      'APP_PROTOCOL',
+    )}://${this.configService.get<string>('APP_DOMAIN')}/user/githubId`;
+
+    const url = this.githubClient.obtainOAuthAuthorizeURL(redirectURI);
+
+    return url;
+  }
+
+  public async linkGithubAccount(
+    id: string,
+    payload: LinkGithubAccount,
+  ): Promise<boolean> {
+    const accessToken = await this.githubClient.obtainAccessToken(payload.code);
+
+    const githubUser = await this.githubClient.obtainUser(accessToken);
+
+    const updated = await this.userRepository.updateGithubId(id, githubUser.id);
 
     return updated;
   }

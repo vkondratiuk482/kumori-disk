@@ -9,7 +9,7 @@ export interface UserEntity {
 
   readonly password: string;
 
-  readonly githubId?: string;
+  readonly githubId?: number;
 
   readonly availableStorageSpaceInBytes: number;
 

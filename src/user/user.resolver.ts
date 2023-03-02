@@ -2,10 +2,11 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  InternalServerErrorException,
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.error';
 import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
 import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
@@ -18,10 +19,29 @@ import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
 import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
 import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
+import { LinkGithubAccountSchema } from './schema/link-github-account.schema';
+import { LinkGithubAccountResponse } from './responses/link-github-account.response';
+import { HttpClientRequestError } from 'src/http/errors/http-client-request.error';
+import { ObtainGithubOAuthURLResponse } from 'src/auth/responses/obtain-github-oauth-url.response';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
+
+  @Query(() => ObtainGithubOAuthURLResponse, {
+    name: 'obtainOAuthLinkGithubURL',
+  })
+  public async obtainGithubOAuthURL(): Promise<ObtainGithubOAuthURLResponse> {
+    try {
+      const url = await this.userService.obtainOAuthLinkGithubURL();
+
+      const response = new ObtainGithubOAuthURLResponse(url);
+
+      return response;
+    } catch (err) {
+      throw new BadRequestException();
+    }
+  }
 
   @UseGuards(JwtAuthGuard)
   @Mutation(() => String, { name: 'uploadSingleFile' })
@@ -91,6 +111,30 @@ export class UserResolver {
     } catch (err) {
       if (err instanceof FileNotAccessibleError) {
         throw new ForbiddenException(err);
+      }
+
+      throw new BadRequestException();
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => LinkGithubAccountResponse, { name: 'linkGithubAccount' })
+  public async linkGithubAccount(
+    @JwtPayloadDecorator() jwtPayload: JwtPayload,
+    @Args('schema') schema: LinkGithubAccountSchema,
+  ): Promise<LinkGithubAccountResponse> {
+    try {
+      const linked = await this.userService.linkGithubAccount(
+        jwtPayload.id,
+        schema,
+      );
+
+      const response = new LinkGithubAccountResponse(linked);
+
+      return response;
+    } catch (err) {
+      if (err instanceof HttpClientRequestError) {
+        throw new InternalServerErrorException();
       }
 
       throw new BadRequestException();

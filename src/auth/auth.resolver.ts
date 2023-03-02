@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Args, Query, Mutation, Resolver, Int } from '@nestjs/graphql';
+import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
@@ -36,7 +36,9 @@ export class AuthResolver {
     private readonly githubAuthService: GithubAuthService,
   ) {}
 
-  @Query(() => ObtainGithubOAuthURLResponse, { name: 'obtainGithubOAuthURL' })
+  @Query(() => ObtainGithubOAuthURLResponse, {
+    name: 'obtainOAuthAuthorizeGithubURL',
+  })
   public async obtainGithubOAuthURL(): Promise<ObtainGithubOAuthURLResponse> {
     try {
       const url = await this.githubAuthService.obtainOAuthAuthorizeURL();

@@ -2,6 +2,14 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type LinkGithubAccountResponse {
+  linked: Boolean!
+}
+
+type ObtainGithubOAuthURLResponse {
+  url: String!
+}
+
 type UserEntityResponse {
   id: String!
   email: String!
@@ -22,18 +30,16 @@ type ResendConfirmationEmailResponse {
   resent: Boolean!
 }
 
-type ObtainGithubOAuthURLResponse {
-  url: String!
-}
-
 type Query {
-  obtainGithubOAuthURL: ObtainGithubOAuthURLResponse!
+  obtainOAuthLinkGithubURL: ObtainGithubOAuthURLResponse!
+  obtainOAuthAuthorizeGithubURL: ObtainGithubOAuthURLResponse!
 }
 
 type Mutation {
   uploadSingleFile(schema: UploadFileSchema!): String!
   userShareAccess(schema: UserShareAccessSchema!): Boolean!
   userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
+  linkGithubAccount(schema: LinkGithubAccountSchema!): LinkGithubAccountResponse!
   authorizeWithGithub(schema: AuthorizeWithGithubSchema!): JwtPairResponse!
   signUp(schema: SignUpSchema!): UserEntityResponse!
   signIn(schema: SignInSchema!): JwtPairResponse!
@@ -59,6 +65,10 @@ input UserRevokeAccessSchema {
   tenantId: String!
   tenantType: String!
   fileIds: [String!]!
+}
+
+input LinkGithubAccountSchema {
+  code: String!
 }
 
 input AuthorizeWithGithubSchema {

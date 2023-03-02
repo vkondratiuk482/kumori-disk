@@ -26,8 +26,8 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   @Column({ name: 'password', type: 'varchar', length: 321 })
   public password: string;
 
-  @Column({ name: 'github_id', type: 'varchar', length: 321, nullable: true })
-  public githubId?: string;
+  @Column({ name: 'github_id', type: 'int', nullable: true })
+  public githubId?: number;
 
   @Column({
     name: 'confirmation_status',

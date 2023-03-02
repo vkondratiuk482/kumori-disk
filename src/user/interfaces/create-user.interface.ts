@@ -7,7 +7,9 @@ export interface CreateUser {
 
   readonly password: string;
 
-  readonly githubId?: string;
+  readonly githubId?: number;
+
+  readonly availableStorageSpaceInBytes: number;
 
   readonly confirmationStatus: UserConfirmationStatuses;
 }

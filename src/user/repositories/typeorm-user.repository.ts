@@ -73,7 +73,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return this.userRepository.save(user);
   }
 
-  public async updateGithubId(id: string, githubId: string): Promise<boolean> {
+  public async updateGithubId(id: string, githubId: number): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')
       .update(TypeOrmUserEntityImplementation)

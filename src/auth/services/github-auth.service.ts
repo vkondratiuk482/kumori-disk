@@ -15,11 +15,14 @@ import { GithubSignUp } from '../interfaces/github-sign-up.interface';
 import { GithubSignIn } from '../interfaces/github-sign-in.interface';
 import { GithubIdNotLinkedError } from '../errors/github-id-not-linked.error';
 import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.error';
+import { USER_CONSTANTS } from 'src/user/user.constants';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GithubAuthService {
   constructor(
     private readonly userService: UserService,
+    private readonly configService: ConfigService,
     @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly jwtService: JwtService,
     @Inject(GITHUB_CONSTANTS.APPLICATION.CLIENT_TOKEN)
@@ -31,7 +34,11 @@ export class GithubAuthService {
   ) {}
 
   public async obtainOAuthAuthorizeURL(): Promise<string> {
-    const url = this.githubClient.obtainOAuthAuthorizeURL();
+    const redirectURI = `${this.configService.get<string>(
+      'APP_PROTOCOL',
+    )}://${this.configService.get<string>('APP_DOMAIN')}/auth/github`;
+
+    const url = this.githubClient.obtainOAuthAuthorizeURL(redirectURI);
 
     return url;
   }
@@ -40,18 +47,26 @@ export class GithubAuthService {
     const accessToken = await this.githubClient.obtainAccessToken(payload.code);
 
     const githubUser = await this.githubClient.obtainUser(accessToken);
+    const githubEmail = await this.githubClient.obtainVerifiedPrimaryEmail(
+      accessToken,
+    );
 
-    const user = await this.userService.findByEmail(githubUser.email);
+    const user = await this.userService.findByEmail(githubEmail);
 
     if (!user) {
       return this.signUp({
+        email: githubEmail,
         githubId: githubUser.id,
-        email: githubUser.email,
         username: githubUser.login,
       });
     }
 
-    return this.signIn({ user, candidateGithubId: githubUser.id });
+    const jwtPair: JwtPair = await this.signIn({
+      user,
+      candidateGithubId: githubUser.id,
+    });
+
+    return jwtPair;
   }
 
   public async signUp(payload: GithubSignUp): Promise<JwtPair> {
@@ -64,6 +79,8 @@ export class GithubAuthService {
       username: payload.username,
       githubId: payload.githubId,
       confirmationStatus: UserConfirmationStatuses.Confirmed,
+      availableStorageSpaceInBytes:
+        USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
 
     await this.mailerService.sendGithubGeneratedPassword({

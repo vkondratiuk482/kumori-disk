@@ -4,25 +4,34 @@ import { UndiciHttpService } from '../services/undici-http.service';
 import { HttpClient } from '../interfaces/http-client.interface';
 import { HttpRequest } from '../interfaces/http-request.interface';
 import { HttpBody } from '../interfaces/http-body.interface';
+import { UndiciRequest } from '../interfaces/undici-request.interface';
 
 @Injectable()
 export class UndiciHttpAdapter implements HttpClient {
   constructor(private readonly undiciHttpService: UndiciHttpService) {}
 
   public async request<T>(payload: HttpRequest): Promise<T> {
-    const body = payload.body && this.adaptBody(payload.body);
-    const query: Record<string, any> = payload.query || undefined;
-    const headers: IncomingHttpHeaders = payload.headers || undefined;
-
-    const response = await this.undiciHttpService.request<T>({
+    const request: UndiciRequest = {
       url: payload.url,
       options: {
-        body,
-        query,
-        headers,
         method: payload.method,
+        headers: payload.headers || {},
       },
-    });
+    };
+
+    if (payload.body) {
+      const body = this.adaptBody(payload.body);
+
+      request.options.body = body;
+    }
+
+    if (payload.query) {
+      const query = payload.query;
+
+      request.options.query = query;
+    }
+
+    const response = await this.undiciHttpService.request<T>(request);
 
     return response;
   }

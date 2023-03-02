@@ -8,7 +8,7 @@ export const NodemailerTransporterProvider: Provider = {
   useFactory: (config: ConfigService): Transporter => {
     const transporter = createTransport({
       host: config.get<string>('MAILER_HOST'),
-      port: config.get<number>('MAILER_PORT'),
+      port: Number(config.get<string>('MAILER_PORT')),
       auth: {
         user: config.get<string>('MAILER_USERNAME'),
         pass: config.get<string>('MAILER_PASSWORD'),

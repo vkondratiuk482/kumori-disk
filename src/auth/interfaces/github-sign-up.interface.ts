@@ -3,5 +3,5 @@ export interface GithubSignUp {
 
   readonly username: string;
 
-  readonly githubId: string;
+  readonly githubId: number;
 }

@@ -25,6 +25,7 @@ import { SignUp } from '../interfaces/sign-up.interface';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
+import { USER_CONSTANTS } from 'src/user/user.constants';
 
 @Injectable()
 export class AuthService {
@@ -57,6 +58,8 @@ export class AuthService {
       password: hashedPassword,
       username: payload.username,
       confirmationStatus: UserConfirmationStatuses.Pending,
+      availableStorageSpaceInBytes:
+        USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
 
     const confirmationHash = this.cryptographyService.randomUUID();
