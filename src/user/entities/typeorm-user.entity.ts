@@ -7,10 +7,12 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 import { UserEntity } from '../interfaces/user-entity.interface';
+import { TypeormUsersAuthProvidersEntityImpl } from './typeorm-users-auth-providers.entity';
 
 @Entity('user')
 export class TypeOrmUserEntityImplementation implements UserEntity {
@@ -58,4 +60,10 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   )
   @JoinColumn({ name: 'plan_id', referencedColumnName: 'id' })
   public plan: TypeOrmPaymentPlanEntityImplementation;
+
+  @OneToMany(
+    () => TypeormUsersAuthProvidersEntityImpl,
+    (usersAuthProviders) => usersAuthProviders.userId,
+  )
+  public usersAuthProviders: TypeormUsersAuthProvidersEntityImpl;
 }

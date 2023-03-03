@@ -1,22 +1,22 @@
+import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
+import { USER_CONSTANTS } from 'src/user/user.constants';
+import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
 import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { GithubClient } from 'src/github/interfaces/github-client.interface';
-import { AuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
-import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
-import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
-import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
-import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
-import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
-import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { GithubSignUp } from '../interfaces/github-sign-up.interface';
 import { GithubSignIn } from '../interfaces/github-sign-in.interface';
+import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
+import { GithubClient } from 'src/github/interfaces/github-client.interface';
 import { GithubIdNotLinkedError } from '../errors/github-id-not-linked.error';
+import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
+import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
 import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.error';
-import { USER_CONSTANTS } from 'src/user/user.constants';
-import { ConfigService } from '@nestjs/config';
+import { AuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
+import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
+import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 @Injectable()
 export class GithubAuthService {
