@@ -20,7 +20,7 @@ export class UserEntityResponse {
   public readonly confirmationStatus: UserConfirmationStatuses;
 
   @Field()
-  public readonly availableStorageSpaceInBytes: number;
+  public readonly diskSpace: number;
 
   @HideField()
   public readonly planId: string;

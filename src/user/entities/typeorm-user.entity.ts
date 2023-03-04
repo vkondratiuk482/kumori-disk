@@ -1,5 +1,3 @@
-import { TypeOrmFileEntityImplementation } from 'src/file/entities/typeorm-file.entity';
-import { TypeOrmPaymentPlanEntityImplementation } from 'src/payment/entities/typeorm-payment-plan.entity';
 import {
   Column,
   Entity,
@@ -10,9 +8,11 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 import { UserEntity } from '../interfaces/user-entity.interface';
-import { TypeormUsersAuthProvidersEntityImpl } from './typeorm-users-auth-providers.entity';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
+import { TypeOrmFileEntityImplementation } from 'src/file/entities/typeorm-file.entity';
+import { TypeOrmPaymentPlanEntityImplementation } from 'src/payment/entities/typeorm-payment-plan.entity';
+import { TypeormUsersAuthProvidersEntityImpl } from 'src/auth/entities/typeorm-users-auth-providers.entity';
 
 @Entity('user')
 export class TypeOrmUserEntityImplementation implements UserEntity {
@@ -39,10 +39,10 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   public confirmationStatus: UserConfirmationStatuses;
 
   @Column({
-    name: 'available_storage_space_in_bytes',
+    name: 'disk_space',
     type: 'bigint',
   })
-  public availableStorageSpaceInBytes: number;
+  public diskSpace: number;
 
   @Column({ name: 'plan_id', type: 'uuid', nullable: true })
   public planId: string;
@@ -63,7 +63,7 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
 
   @OneToMany(
     () => TypeormUsersAuthProvidersEntityImpl,
-    (usersAuthProviders) => usersAuthProviders.userId,
+    (usersAuthProviders) => usersAuthProviders.user,
   )
   public usersAuthProviders: TypeormUsersAuthProvidersEntityImpl;
 }

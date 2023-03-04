@@ -58,7 +58,7 @@ export class AuthService {
       password: hashedPassword,
       username: payload.username,
       confirmationStatus: UserConfirmationStatuses.Pending,
-      availableStorageSpaceInBytes:
+      diskSpace:
         USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
 

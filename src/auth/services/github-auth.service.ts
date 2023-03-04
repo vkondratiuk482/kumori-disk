@@ -17,6 +17,9 @@ import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.erro
 import { AuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
+import { AUTH_CONSTANTS } from '../auth.constants';
+import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
+import { AuthProviders } from '../enums/auth-providers.enum';
 
 @Injectable()
 export class GithubAuthService {
@@ -31,6 +34,8 @@ export class GithubAuthService {
     private readonly cryptographyService: CryptographyService,
     @Inject(MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly mailerService: MailerService,
+    @Inject(AUTH_CONSTANTS.APPLICATION.USERS_AUTH_PROVIDERS_REPOSITORY_TOKEN)
+    private readonly usersAuthProvidersRepository: UsersAuthProvidersRepository,
   ) {}
 
   public async obtainOAuthAuthorizeURL(): Promise<string> {
@@ -51,7 +56,15 @@ export class GithubAuthService {
       accessToken,
     );
 
+    /**
+     * Propagate the transaction using AsyncLocalStorage
+     */
     const user = await this.userService.findByEmail(githubEmail);
+    const usersAuthProviders =
+      await this.usersAuthProvidersRepository.findByUserIdAndProvider(
+        user.id,
+        AuthProviders.Github,
+      );
 
     if (!user) {
       return this.signUp({
@@ -62,8 +75,9 @@ export class GithubAuthService {
     }
 
     const jwtPair: JwtPair = await this.signIn({
-      user,
+      userId: user.id,
       candidateGithubId: githubUser.id,
+      userGithubId: usersAuthProviders.providerUserId,
     });
 
     return jwtPair;
@@ -73,15 +87,20 @@ export class GithubAuthService {
     const password = this.cryptographyService.randomUUID();
     const hashedPassword = await this.cryptographyService.hash(password);
 
+    /**
+     * Propagate the transaction using AsyncLocalStorage
+     */
     const user = await this.userService.create({
       email: payload.email,
       password: hashedPassword,
       username: payload.username,
-      githubId: payload.githubId,
       confirmationStatus: UserConfirmationStatuses.Confirmed,
-      availableStorageSpaceInBytes:
-        USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
+      diskSpace: USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
+
+    /**
+     * Create usersAuthProviders record for the user
+     */
 
     await this.mailerService.sendGithubGeneratedPassword({
       password,
@@ -92,14 +111,14 @@ export class GithubAuthService {
   }
 
   public async signIn(payload: GithubSignIn): Promise<JwtPair> {
-    if (!payload.user.githubId) {
+    if (!payload.userGithubId) {
       throw new GithubIdNotLinkedError();
     }
 
-    if (payload.user.githubId !== payload.candidateGithubId) {
+    if (payload.userGithubId !== String(payload.candidateGithubId)) {
       throw new GithubIdsDoNotMatchError();
     }
 
-    return this.jwtService.generatePair({ id: payload.user.id });
+    return this.jwtService.generatePair({ id: payload.userId });
   }
 }

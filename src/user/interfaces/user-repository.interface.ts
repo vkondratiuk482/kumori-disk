@@ -5,9 +5,9 @@ import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.en
 export interface UserRepository {
   findById(id: string): Promise<UserEntity>;
 
-  findByUsername(username: string): Promise<UserEntity>;
-
   findByEmail(email: string): Promise<UserEntity>;
+
+  findByUsername(username: string): Promise<UserEntity>;
 
   existsById(id: string): Promise<boolean>;
 

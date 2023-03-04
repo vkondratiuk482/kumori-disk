@@ -1,7 +1,7 @@
-import { UserEntity } from 'src/user/interfaces/user-entity.interface';
-
 export interface GithubSignIn {
-  readonly user: UserEntity;
+  readonly userId: string;
+
+  readonly userGithubId?: string;
 
   readonly candidateGithubId: number;
 }

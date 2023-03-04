@@ -14,7 +14,7 @@ type UserEntityResponse {
   id: String!
   email: String!
   username: String!
-  availableStorageSpaceInBytes: Float!
+  diskSpace: Float!
 }
 
 type JwtPairResponse {

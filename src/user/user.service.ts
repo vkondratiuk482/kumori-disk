@@ -97,7 +97,7 @@ export class UserService {
   ): Promise<number> {
     const user = await this.findByIdOrThrow(id);
 
-    return user.availableStorageSpaceInBytes;
+    return user.diskSpace;
   }
 
   public async create(data: CreateUser): Promise<UserEntity> {
@@ -238,10 +238,11 @@ export class UserService {
     userId: string,
     bytes: number,
   ): Promise<boolean> {
-    const availableStorageSpaceInBytes =
-      await this.getAvailableStorageSpaceByIdWithException(userId);
+    const diskSpace = await this.getAvailableStorageSpaceByIdWithException(
+      userId,
+    );
 
-    const exceedsPersonalLimit = bytes > availableStorageSpaceInBytes;
+    const exceedsPersonalLimit = bytes > diskSpace;
 
     return exceedsPersonalLimit;
   }

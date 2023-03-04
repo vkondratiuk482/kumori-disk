@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 
-import { Repository } from 'typeorm';
+import { DataSource, EntityManager, Repository } from 'typeorm';
 import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
@@ -14,6 +14,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
   constructor(
     @InjectRepository(TypeOrmUserEntityImplementation)
     private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
+    @InjectDataSource() private readonly dataSource: DataSource,
   ) {}
 
   public async findById(id: string): Promise<TypeOrmUserEntityImplementation> {
@@ -118,7 +119,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
         .where('id = :id', { id })
         .getOne();
 
-      user.availableStorageSpaceInBytes -= bytes;
+      user.diskSpace -= bytes;
 
       await this.userRepository.save(user);
 
