@@ -1,5 +1,6 @@
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
+import { AsyncLocalStorage } from 'async_hooks';
+import { EntityManager, QueryRunner } from 'typeorm';
 import { TypeormUsersAuthProvidersEntityImpl } from '../entities/typeorm-users-auth-providers.entity';
 import { AuthProviders } from '../enums/auth-providers.enum';
 import { CreateUsersAuthProviders } from '../interfaces/create-users-auth-providers.interface';
@@ -9,13 +10,18 @@ import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers
 export class TypeormUsersAuthProvidersRepositoryImpl
   implements UsersAuthProvidersRepository
 {
-  constructor(@InjectEntityManager() private readonly manager: EntityManager) {}
+  constructor(
+    private readonly als: AsyncLocalStorage<QueryRunner>,
+    @InjectEntityManager() private readonly manager: EntityManager,
+  ) {}
 
   public async findByUserIdAndProvider(
     userId: string,
     provider: AuthProviders,
   ): Promise<UsersAuthProvidersEntity> {
-    const usersAuthProviders = await this.manager
+    const manager = this.als.getStore()?.manager || this.manager;
+
+    const usersAuthProviders = await manager
       .getRepository(TypeormUsersAuthProvidersEntityImpl)
       .createQueryBuilder('uap')
       .where('user_id = :userId', { userId })
@@ -28,10 +34,12 @@ export class TypeormUsersAuthProvidersRepositoryImpl
   public async create(
     data: CreateUsersAuthProviders,
   ): Promise<UsersAuthProvidersEntity> {
-    const usersAuthProviders = this.manager
+    const manager = this.als.getStore()?.manager || this.manager;
+
+    const usersAuthProviders = manager
       .getRepository(TypeormUsersAuthProvidersEntityImpl)
       .create(data);
 
-    return this.manager.save(usersAuthProviders);
+    return manager.save(usersAuthProviders);
   }
 }

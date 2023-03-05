@@ -13,6 +13,8 @@ import { TypeormAuthProviderEntityImpl } from './entities/typeorm-auth-provider.
 import { TypeormUsersAuthProvidersEntityImpl } from './entities/typeorm-users-auth-providers.entity';
 import { UsersAuthProvidersRepositoryProvider } from './providers/users-auth-providers-repository.provider';
 import { AuthProviderRepositoryProvider } from './providers/auth-provider-repository.provider';
+import { AlsModule } from 'src/als/als.module';
+import { TransactionModule } from 'src/transaction/transaction.module';
 
 @Module({
   imports: [
@@ -20,11 +22,13 @@ import { AuthProviderRepositoryProvider } from './providers/auth-provider-reposi
       TypeormAuthProviderEntityImpl,
       TypeormUsersAuthProvidersEntityImpl,
     ]),
+    AlsModule,
     JwtModule,
     UserModule,
     CacheModule,
     MailerModule,
     GithubModule,
+    TransactionModule,
     CryptographyModule,
   ],
   providers: [

@@ -62,6 +62,7 @@ export class AuthResolver {
 
       return response;
     } catch (err) {
+      console.log(err);
       if (
         err instanceof GithubIdNotLinkedError ||
         err instanceof GithubIdsDoNotMatchError

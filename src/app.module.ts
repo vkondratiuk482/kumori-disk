@@ -19,6 +19,8 @@ import { EventModule } from './event/event.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { JwtModule } from './jwt/jwt.module';
 import { GithubModule } from './github/github.module';
+import { AlsModule } from './als/als.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
@@ -52,6 +54,7 @@ import { GithubModule } from './github/github.module';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
         type: 'postgres',
+        logging: true,
         host: config.get<string>('DATABASE_HOST'),
         port: config.get<number>('DATABASE_PORT'),
         database: config.get<string>('DATABASE_NAME'),
@@ -74,6 +77,8 @@ import { GithubModule } from './github/github.module';
     HttpModule,
     EventModule,
     GithubModule,
+    AlsModule,
+    TransactionModule,
   ],
 })
 export class AppModule {}

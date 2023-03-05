@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AlsModule } from 'src/als/als.module';
 import { EventModule } from 'src/event/event.module';
 import { FileModule } from 'src/file/file.module';
 import { GithubModule } from 'src/github/github.module';
@@ -12,6 +13,7 @@ import { UserService } from './user.service';
 @Module({
   imports: [
     TypeOrmModule.forFeature([TypeOrmUserEntityImplementation]),
+    AlsModule,
     JwtModule,
     FileModule,
     EventModule,

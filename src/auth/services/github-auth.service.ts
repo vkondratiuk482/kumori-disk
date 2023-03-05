@@ -21,6 +21,9 @@ import { AUTH_CONSTANTS } from '../auth.constants';
 import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 import { AuthProviders } from '../enums/auth-providers.enum';
 import { AuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
+import { AsyncLocalStorage } from 'async_hooks';
+import { TRANSACTION_CONSTANTS } from 'src/transaction/transaction.constants';
+import { ITransactionService } from 'src/transaction/interfaces/transaction-service.interface';
 
 @Injectable()
 export class GithubAuthService {
@@ -39,6 +42,9 @@ export class GithubAuthService {
     private readonly usersAuthProvidersRepository: UsersAuthProvidersRepository,
     @Inject(AUTH_CONSTANTS.APPLICATION.PROVIDER_REPOSITORY_TOKEN)
     private readonly authProviderRepository: AuthProviderRepository,
+    private readonly als: AsyncLocalStorage<Record<string, any>>,
+    @Inject(TRANSACTION_CONSTANTS.APPLICATION.SERVICE_TOKEN)
+    private readonly transactionService: ITransactionService,
   ) {}
 
   public async getOAuthAuthorizeURL(): Promise<string> {
@@ -52,32 +58,53 @@ export class GithubAuthService {
   }
 
   public async authorize(payload: AuthorizeWithGithub): Promise<JwtPair> {
-    const accessToken = await this.githubClient.getAccessToken(payload.code);
+    let jwtPair: JwtPair;
 
-    const githubUser = await this.githubClient.getUser(accessToken);
-    const githubEmail = await this.githubClient.getVerifiedPrimaryEmail(
-      accessToken,
-    );
+    const transaction = await this.transactionService.start();
 
-    const user = await this.userService.findByEmail(githubEmail);
-    const usersAuthProviders =
-      await this.usersAuthProvidersRepository.findByUserIdAndProvider(
-        user.id,
-        AuthProviders.Github,
-      );
+    await this.als.run(transaction, async () => {
+      try {
+        const accessToken = await this.githubClient.getAccessToken(
+          payload.code,
+        );
 
-    if (!user) {
-      return this.signUp({
-        email: githubEmail,
-        githubId: githubUser.id,
-        username: githubUser.login,
-      });
-    }
+        const githubUser = await this.githubClient.getUser(accessToken);
+        const githubEmail = await this.githubClient.getVerifiedPrimaryEmail(
+          accessToken,
+        );
 
-    const jwtPair: JwtPair = await this.signIn({
-      userId: user.id,
-      candidateGithubId: githubUser.id,
-      userGithubId: usersAuthProviders.providerUserId,
+        const user = await this.userService.findByEmail(githubEmail);
+
+        if (!user) {
+          jwtPair = await this.signUp({
+            email: githubEmail,
+            githubId: githubUser.id,
+            username: githubUser.login,
+          });
+
+          await this.transactionService.commit();
+
+          return;
+        }
+
+        const usersAuthProviders =
+          await this.usersAuthProvidersRepository.findByUserIdAndProvider(
+            user.id,
+            AuthProviders.Github,
+          );
+
+        jwtPair = await this.signIn({
+          userId: user.id,
+          candidateGithubId: githubUser.id,
+          userGithubId: usersAuthProviders.providerUserId,
+        });
+
+        await this.transactionService.commit();
+      } catch (err) {
+        await this.transactionService.rollback();
+
+        throw err;
+      }
     });
 
     return jwtPair;
@@ -97,6 +124,7 @@ export class GithubAuthService {
     const authProvider = await this.authProviderRepository.findByName(
       AuthProviders.Github,
     );
+
     await this.usersAuthProvidersRepository.create({
       userId: user.id,
       providerId: authProvider.id,

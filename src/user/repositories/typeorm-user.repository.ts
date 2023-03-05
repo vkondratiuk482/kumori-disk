@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
+import {
+  InjectDataSource,
+  InjectEntityManager,
+  InjectRepository,
+} from '@nestjs/typeorm';
+import { AsyncLocalStorage } from 'async_hooks';
 
-import { DataSource, EntityManager, Repository } from 'typeorm';
+import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
@@ -12,9 +17,11 @@ import { UserRepository } from '../interfaces/user-repository.interface';
 @Injectable()
 export class TypeOrmUserRepositoryImplementation implements UserRepository {
   constructor(
+    @InjectEntityManager() private readonly manager: EntityManager,
     @InjectRepository(TypeOrmUserEntityImplementation)
     private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
     @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly als: AsyncLocalStorage<QueryRunner>,
   ) {}
 
   public async findById(id: string): Promise<TypeOrmUserEntityImplementation> {
@@ -40,7 +47,13 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
   public async findByEmail(
     email: string,
   ): Promise<TypeOrmUserEntityImplementation> {
-    const user = await this.userRepository
+    const queryRunner = this.als.getStore();
+
+    const userRepository =
+      queryRunner?.manager?.getRepository(TypeOrmUserEntityImplementation) ||
+      this.userRepository;
+
+    const user = await userRepository
       .createQueryBuilder('u')
       .where('email = :email', { email })
       .getOne();
@@ -69,9 +82,13 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
   }
 
   public async create(data: CreateUser): Promise<UserEntity> {
-    const user = this.userRepository.create(data);
+    const manager = this.als.getStore()?.manager || this.manager;
 
-    return this.userRepository.save(user);
+    const user = manager
+      .getRepository(TypeOrmUserEntityImplementation)
+      .create(data);
+
+    return manager.save(user);
   }
 
   public async updateGithubId(id: string, githubId: number): Promise<boolean> {

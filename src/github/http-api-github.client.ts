@@ -73,9 +73,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     return response;
   }
 
-  public async getVerifiedPrimaryEmail(
-    accessToken: string,
-  ): Promise<string> {
+  public async getVerifiedPrimaryEmail(accessToken: string): Promise<string> {
     const response = await this.httpClient.request<GithubEmail[]>({
       method: HttpMethod.GET,
       headers: {
