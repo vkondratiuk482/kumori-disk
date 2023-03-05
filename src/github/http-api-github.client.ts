@@ -6,7 +6,7 @@ import { GithubUser } from './interfaces/github-user.interface';
 import { GithubEmail } from './interfaces/github-email.interface';
 import { GithubClient } from './interfaces/github-client.interface';
 import { HttpClient } from 'src/http/interfaces/http-client.interface';
-import { GithubObtainAccessTokenResponse } from './interfaces/github-obtain-access-token-response.interface';
+import { GithubGetAccessTokenResponse } from './interfaces/github-get-access-token-response.interface';
 
 @Injectable()
 export class HttpAPIGithubClientImpl implements GithubClient {
@@ -28,7 +28,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     this.authBaseURL = this.configService.get<string>('GITHUB_AUTH_BASE_URL');
   }
 
-  public obtainOAuthAuthorizeURL(redirectURI: string): string {
+  public getOAuthAuthorizeURL(redirectURI: string): string {
     const oauthUSP = new URLSearchParams();
 
     oauthUSP.set('client_id', this.clientId);
@@ -42,9 +42,9 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     return oauthURL;
   }
 
-  public async obtainAccessToken(code: string): Promise<string> {
+  public async getAccessToken(code: string): Promise<string> {
     const response =
-      await this.httpClient.request<GithubObtainAccessTokenResponse>({
+      await this.httpClient.request<GithubGetAccessTokenResponse>({
         method: HttpMethod.POST,
         headers: {
           Accept: 'application/json',
@@ -60,7 +60,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     return response.access_token;
   }
 
-  public async obtainUser(accessToken: string): Promise<GithubUser> {
+  public async getUser(accessToken: string): Promise<GithubUser> {
     const response = await this.httpClient.request<GithubUser>({
       method: HttpMethod.GET,
       headers: {
@@ -73,7 +73,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     return response;
   }
 
-  public async obtainVerifiedPrimaryEmail(
+  public async getVerifiedPrimaryEmail(
     accessToken: string,
   ): Promise<string> {
     const response = await this.httpClient.request<GithubEmail[]>({

@@ -6,7 +6,7 @@ type LinkGithubAccountResponse {
   linked: Boolean!
 }
 
-type ObtainGithubOAuthURLResponse {
+type GetGithubOAuthURLResponse {
   url: String!
 }
 
@@ -31,8 +31,8 @@ type ResendConfirmationEmailResponse {
 }
 
 type Query {
-  obtainOAuthLinkGithubURL: ObtainGithubOAuthURLResponse!
-  obtainOAuthAuthorizeGithubURL: ObtainGithubOAuthURLResponse!
+  getOAuthLinkGithubURL: GetGithubOAuthURLResponse!
+  getOAuthAuthorizeGithubURL: GetGithubOAuthURLResponse!
 }
 
 type Mutation {

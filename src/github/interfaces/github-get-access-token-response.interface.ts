@@ -1,4 +1,4 @@
-export interface GithubObtainAccessTokenResponse {
+export interface GithubGetAccessTokenResponse {
   readonly scope: string;
 
   readonly token_type: string;

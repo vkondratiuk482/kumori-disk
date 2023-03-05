@@ -20,6 +20,7 @@ import { CryptographyService } from 'src/cryptography/interfaces/cryptography-se
 import { AUTH_CONSTANTS } from '../auth.constants';
 import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 import { AuthProviders } from '../enums/auth-providers.enum';
+import { AuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
 
 @Injectable()
 export class GithubAuthService {
@@ -36,29 +37,28 @@ export class GithubAuthService {
     private readonly mailerService: MailerService,
     @Inject(AUTH_CONSTANTS.APPLICATION.USERS_AUTH_PROVIDERS_REPOSITORY_TOKEN)
     private readonly usersAuthProvidersRepository: UsersAuthProvidersRepository,
+    @Inject(AUTH_CONSTANTS.APPLICATION.PROVIDER_REPOSITORY_TOKEN)
+    private readonly authProviderRepository: AuthProviderRepository,
   ) {}
 
-  public async obtainOAuthAuthorizeURL(): Promise<string> {
+  public async getOAuthAuthorizeURL(): Promise<string> {
     const redirectURI = `${this.configService.get<string>(
       'APP_PROTOCOL',
     )}://${this.configService.get<string>('APP_DOMAIN')}/auth/github`;
 
-    const url = this.githubClient.obtainOAuthAuthorizeURL(redirectURI);
+    const url = this.githubClient.getOAuthAuthorizeURL(redirectURI);
 
     return url;
   }
 
   public async authorize(payload: AuthorizeWithGithub): Promise<JwtPair> {
-    const accessToken = await this.githubClient.obtainAccessToken(payload.code);
+    const accessToken = await this.githubClient.getAccessToken(payload.code);
 
-    const githubUser = await this.githubClient.obtainUser(accessToken);
-    const githubEmail = await this.githubClient.obtainVerifiedPrimaryEmail(
+    const githubUser = await this.githubClient.getUser(accessToken);
+    const githubEmail = await this.githubClient.getVerifiedPrimaryEmail(
       accessToken,
     );
 
-    /**
-     * Propagate the transaction using AsyncLocalStorage
-     */
     const user = await this.userService.findByEmail(githubEmail);
     const usersAuthProviders =
       await this.usersAuthProvidersRepository.findByUserIdAndProvider(
@@ -87,9 +87,6 @@ export class GithubAuthService {
     const password = this.cryptographyService.randomUUID();
     const hashedPassword = await this.cryptographyService.hash(password);
 
-    /**
-     * Propagate the transaction using AsyncLocalStorage
-     */
     const user = await this.userService.create({
       email: payload.email,
       password: hashedPassword,
@@ -97,10 +94,14 @@ export class GithubAuthService {
       confirmationStatus: UserConfirmationStatuses.Confirmed,
       diskSpace: USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
-
-    /**
-     * Create usersAuthProviders record for the user
-     */
+    const authProvider = await this.authProviderRepository.findByName(
+      AuthProviders.Github,
+    );
+    await this.usersAuthProvidersRepository.create({
+      userId: user.id,
+      providerId: authProvider.id,
+      providerUserId: String(payload.githubId),
+    });
 
     await this.mailerService.sendGithubGeneratedPassword({
       password,

@@ -106,12 +106,12 @@ export class UserService {
     return user;
   }
 
-  public async obtainOAuthLinkGithubURL(): Promise<string> {
+  public async getOAuthLinkGithubURL(): Promise<string> {
     const redirectURI = `${this.configService.get<string>(
       'APP_PROTOCOL',
     )}://${this.configService.get<string>('APP_DOMAIN')}/user/githubId`;
 
-    const url = this.githubClient.obtainOAuthAuthorizeURL(redirectURI);
+    const url = this.githubClient.getOAuthAuthorizeURL(redirectURI);
 
     return url;
   }
@@ -120,9 +120,9 @@ export class UserService {
     id: string,
     payload: LinkGithubAccount,
   ): Promise<boolean> {
-    const accessToken = await this.githubClient.obtainAccessToken(payload.code);
+    const accessToken = await this.githubClient.getAccessToken(payload.code);
 
-    const githubUser = await this.githubClient.obtainUser(accessToken);
+    const githubUser = await this.githubClient.getUser(accessToken);
 
     const updated = await this.userRepository.updateGithubId(id, githubUser.id);
 

@@ -11,20 +11,28 @@ import { GithubAuthService } from './services/github-auth.service';
 import { CryptographyModule } from 'src/cryptography/cryptography.module';
 import { TypeormAuthProviderEntityImpl } from './entities/typeorm-auth-provider.entity';
 import { TypeormUsersAuthProvidersEntityImpl } from './entities/typeorm-users-auth-providers.entity';
+import { UsersAuthProvidersRepositoryProvider } from './providers/users-auth-providers-repository.provider';
+import { AuthProviderRepositoryProvider } from './providers/auth-provider-repository.provider';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([
+      TypeormAuthProviderEntityImpl,
+      TypeormUsersAuthProvidersEntityImpl,
+    ]),
     JwtModule,
     UserModule,
     CacheModule,
     MailerModule,
     GithubModule,
     CryptographyModule,
-    TypeOrmModule.forFeature([
-      TypeormAuthProviderEntityImpl,
-      TypeormUsersAuthProvidersEntityImpl,
-    ]),
   ],
-  providers: [AuthService, AuthResolver, GithubAuthService],
+  providers: [
+    AuthService,
+    AuthResolver,
+    GithubAuthService,
+    AuthProviderRepositoryProvider,
+    UsersAuthProvidersRepositoryProvider,
+  ],
 })
 export class AuthModule {}

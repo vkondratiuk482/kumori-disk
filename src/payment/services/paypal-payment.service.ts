@@ -63,7 +63,7 @@ export class PaypalPaymentServiceImplementation
   }
 
   /**
-   * Obtains and caches access token required for Bearer auth
+   * Gets and caches access token required for Bearer auth
    * Returns expiration time of the token in ms
    */
   private async getAndCacheAccessToken(): Promise<number> {

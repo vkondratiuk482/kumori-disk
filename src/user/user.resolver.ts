@@ -22,20 +22,20 @@ import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
 import { LinkGithubAccountSchema } from './schema/link-github-account.schema';
 import { LinkGithubAccountResponse } from './responses/link-github-account.response';
 import { HttpClientRequestError } from 'src/http/errors/http-client-request.error';
-import { ObtainGithubOAuthURLResponse } from 'src/auth/responses/obtain-github-oauth-url.response';
+import { GetGithubOAuthURLResponse } from 'src/auth/responses/get-github-oauth-url.response';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @Query(() => ObtainGithubOAuthURLResponse, {
-    name: 'obtainOAuthLinkGithubURL',
+  @Query(() => GetGithubOAuthURLResponse, {
+    name: 'getOAuthLinkGithubURL',
   })
-  public async obtainGithubOAuthURL(): Promise<ObtainGithubOAuthURLResponse> {
+  public async getGithubOAuthURL(): Promise<GetGithubOAuthURLResponse> {
     try {
-      const url = await this.userService.obtainOAuthLinkGithubURL();
+      const url = await this.userService.getOAuthLinkGithubURL();
 
-      const response = new ObtainGithubOAuthURLResponse(url);
+      const response = new GetGithubOAuthURLResponse(url);
 
       return response;
     } catch (err) {

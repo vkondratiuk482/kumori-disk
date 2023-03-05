@@ -23,7 +23,7 @@ import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { JwtPairResponse } from './responses/jwt-pair.response';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
-import { ObtainGithubOAuthURLResponse } from './responses/obtain-github-oauth-url.response';
+import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
 import { GithubAuthService } from './services/github-auth.service';
 import { AuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
 import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
@@ -36,14 +36,14 @@ export class AuthResolver {
     private readonly githubAuthService: GithubAuthService,
   ) {}
 
-  @Query(() => ObtainGithubOAuthURLResponse, {
-    name: 'obtainOAuthAuthorizeGithubURL',
+  @Query(() => GetGithubOAuthURLResponse, {
+    name: 'getOAuthAuthorizeGithubURL',
   })
-  public async obtainGithubOAuthURL(): Promise<ObtainGithubOAuthURLResponse> {
+  public async getGithubOAuthURL(): Promise<GetGithubOAuthURLResponse> {
     try {
-      const url = await this.githubAuthService.obtainOAuthAuthorizeURL();
+      const url = await this.githubAuthService.getOAuthAuthorizeURL();
 
-      const response = new ObtainGithubOAuthURLResponse(url);
+      const response = new GetGithubOAuthURLResponse(url);
 
       return response;
     } catch (err) {
