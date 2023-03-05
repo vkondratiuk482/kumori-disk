@@ -4,7 +4,7 @@ import { JwtModule } from 'src/jwt/jwt.module';
 import { AuthResolver } from './auth.resolver';
 import { UserModule } from '../user/user.module';
 import { CacheModule } from 'src/cache/cache.module';
-import { AuthService } from './services/auth.service';
+import { LocalAuthService } from './services/local-auth.service';
 import { MailerModule } from '../mailer/mailer.module';
 import { GithubModule } from 'src/github/github.module';
 import { GithubAuthService } from './services/github-auth.service';
@@ -32,7 +32,7 @@ import { TransactionModule } from 'src/transaction/transaction.module';
     CryptographyModule,
   ],
   providers: [
-    AuthService,
+    LocalAuthService,
     AuthResolver,
     GithubAuthService,
     AuthProviderRepositoryProvider,

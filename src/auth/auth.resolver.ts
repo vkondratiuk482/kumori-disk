@@ -17,7 +17,7 @@ import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email
 import { SignUpSchema } from './schema/sign-up.schema';
 import { SignInSchema } from './schema/sign-in.schema';
 
-import { AuthService } from './services/auth.service';
+import { LocalAuthService } from './services/local-auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { JwtPairResponse } from './responses/jwt-pair.response';
@@ -32,7 +32,7 @@ import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error
 @Resolver()
 export class AuthResolver {
   constructor(
-    private readonly authService: AuthService,
+    private readonly localAuthService: LocalAuthService,
     private readonly githubAuthService: GithubAuthService,
   ) {}
 
@@ -79,7 +79,7 @@ export class AuthResolver {
     @Args('schema') schema: SignUpSchema,
   ): Promise<UserEntityResponse> {
     try {
-      const user = await this.authService.signUp(schema);
+      const user = await this.localAuthService.signUp(schema);
 
       const response = new UserEntityResponse(user);
 
@@ -98,7 +98,7 @@ export class AuthResolver {
     @Args('schema') schema: SignInSchema,
   ): Promise<JwtPairResponse> {
     try {
-      const pair = await this.authService.singIn(schema);
+      const pair = await this.localAuthService.singIn(schema);
 
       const response = new JwtPairResponse(pair);
 
@@ -123,7 +123,7 @@ export class AuthResolver {
     @Args('hash') hash: string,
   ): Promise<ConfirmEmailResponse> {
     try {
-      const confirmed = await this.authService.confirmEmail(hash);
+      const confirmed = await this.localAuthService.confirmEmail(hash);
 
       const response = new ConfirmEmailResponse(confirmed);
 
@@ -150,7 +150,7 @@ export class AuthResolver {
     @Args('email') email: string,
   ): Promise<ResendConfirmationEmailResponse> {
     try {
-      const resent = await this.authService.resendConfirmationEmail(email);
+      const resent = await this.localAuthService.resendConfirmationEmail(email);
 
       const response = new ResendConfirmationEmailResponse(resent);
 

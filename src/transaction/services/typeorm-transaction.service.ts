@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { AsyncLocalStorage } from 'async_hooks';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { DataSource, QueryRunner } from 'typeorm';
 import { ITransactionService } from '../interfaces/transaction-service.interface';
 

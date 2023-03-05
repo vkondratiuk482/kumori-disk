@@ -58,11 +58,9 @@ export class GithubAuthService {
   }
 
   public async authorize(payload: AuthorizeWithGithub): Promise<JwtPair> {
-    let jwtPair: JwtPair;
-
     const transaction = await this.transactionService.start();
 
-    await this.als.run(transaction, async () => {
+    const callback = async (): Promise<JwtPair> => {
       try {
         const accessToken = await this.githubClient.getAccessToken(
           payload.code,
@@ -76,7 +74,7 @@ export class GithubAuthService {
         const user = await this.userService.findByEmail(githubEmail);
 
         if (!user) {
-          jwtPair = await this.signUp({
+          const jwtPair = await this.signUp({
             email: githubEmail,
             githubId: githubUser.id,
             username: githubUser.login,
@@ -84,7 +82,7 @@ export class GithubAuthService {
 
           await this.transactionService.commit();
 
-          return;
+          return jwtPair;
         }
 
         const usersAuthProviders =
@@ -93,21 +91,23 @@ export class GithubAuthService {
             AuthProviders.Github,
           );
 
-        jwtPair = await this.signIn({
+        const jwtPair = await this.signIn({
           userId: user.id,
           candidateGithubId: githubUser.id,
           userGithubId: usersAuthProviders.providerUserId,
         });
 
         await this.transactionService.commit();
+
+        return jwtPair;
       } catch (err) {
         await this.transactionService.rollback();
 
         throw err;
       }
-    });
+    };
 
-    return jwtPair;
+    return this.als.run<Promise<JwtPair>, any[]>(transaction, callback);
   }
 
   public async signUp(payload: GithubSignUp): Promise<JwtPair> {

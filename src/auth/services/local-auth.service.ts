@@ -28,7 +28,7 @@ import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants'
 import { USER_CONSTANTS } from 'src/user/user.constants';
 
 @Injectable()
-export class AuthService {
+export class LocalAuthService {
   constructor(
     private readonly userService: UserService,
     private readonly configService: ConfigService,
