@@ -1,4 +1,4 @@
-export interface CreateUsersAuthProviders {
+export interface ICreateUsersAuthProviders {
   readonly userId: string;
 
   readonly providerId: string;

@@ -12,7 +12,7 @@ import { UserEntity } from '../interfaces/user-entity.interface';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 import { TypeOrmFileEntityImplementation } from 'src/file/entities/typeorm-file.entity';
 import { TypeOrmPaymentPlanEntityImplementation } from 'src/payment/entities/typeorm-payment-plan.entity';
-import { TypeormUsersAuthProvidersEntityImpl } from 'src/auth/entities/typeorm-users-auth-providers.entity';
+import { TypeormUsersAuthProvidersEntity } from 'src/auth/entities/typeorm-users-auth-providers.entity';
 
 @Entity('user')
 export class TypeOrmUserEntityImplementation implements UserEntity {
@@ -62,8 +62,8 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   public plan: TypeOrmPaymentPlanEntityImplementation;
 
   @OneToMany(
-    () => TypeormUsersAuthProvidersEntityImpl,
+    () => TypeormUsersAuthProvidersEntity,
     (usersAuthProviders) => usersAuthProviders.user,
   )
-  public usersAuthProviders: TypeormUsersAuthProvidersEntityImpl;
+  public usersAuthProviders: TypeormUsersAuthProvidersEntity;
 }

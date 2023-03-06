@@ -5,13 +5,12 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { TypeormAuthProviderEntityImpl } from './typeorm-auth-provider.entity';
 import { TypeOrmUserEntityImplementation } from 'src/user/entities/typeorm-user.entity';
-import { UsersAuthProvidersEntity } from '../interfaces/users-auth-providers-entity.interface';
-
+import { IUsersAuthProvidersEntity } from '../interfaces/users-auth-providers-entity.interface';
+import { TypeormAuthProviderEntity } from './typeorm-auth-provider.entity';
 @Entity('users_auth_providers')
-export class TypeormUsersAuthProvidersEntityImpl
-  implements UsersAuthProvidersEntity
+export class TypeormUsersAuthProvidersEntity
+  implements IUsersAuthProvidersEntity
 {
   @PrimaryGeneratedColumn('uuid')
   public readonly id: string;
@@ -33,9 +32,9 @@ export class TypeormUsersAuthProvidersEntityImpl
   public user: TypeOrmUserEntityImplementation;
 
   @ManyToOne(
-    () => TypeormAuthProviderEntityImpl,
+    () => TypeormAuthProviderEntity,
     (provider) => provider.usersAuthProviders,
   )
   @JoinColumn({ name: 'provider_id', referencedColumnName: 'id' })
-  public provider: TypeormAuthProviderEntityImpl;
+  public provider: TypeormAuthProviderEntity;
 }

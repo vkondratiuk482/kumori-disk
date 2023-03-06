@@ -1,13 +1,8 @@
 import { Module } from '@nestjs/common';
-import { AsyncLocalStorage } from 'node:async_hooks';
+import { AsyncLocalStorageProvider } from './providers/async-local-storage.provider';
 
 @Module({
-  providers: [
-    {
-      provide: AsyncLocalStorage,
-      useValue: new AsyncLocalStorage(),
-    },
-  ],
-  exports: [AsyncLocalStorage],
+  providers: [AsyncLocalStorageProvider],
+  exports: [AsyncLocalStorageProvider],
 })
 export class AlsModule {}

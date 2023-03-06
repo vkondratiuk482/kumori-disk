@@ -1,14 +1,14 @@
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { AsyncLocalStorage } from 'async_hooks';
 import { EntityManager, QueryRunner } from 'typeorm';
-import { TypeormUsersAuthProvidersEntityImpl } from '../entities/typeorm-users-auth-providers.entity';
 import { AuthProviders } from '../enums/auth-providers.enum';
-import { CreateUsersAuthProviders } from '../interfaces/create-users-auth-providers.interface';
-import { UsersAuthProvidersEntity } from '../interfaces/users-auth-providers-entity.interface';
-import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
+import { ICreateUsersAuthProviders } from '../interfaces/create-users-auth-providers.interface';
+import { IUsersAuthProvidersEntity } from '../interfaces/users-auth-providers-entity.interface';
+import { TypeormUsersAuthProvidersEntity } from '../entities/typeorm-users-auth-providers.entity';
+import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 
 export class TypeormUsersAuthProvidersRepositoryImpl
-  implements UsersAuthProvidersRepository
+  implements IUsersAuthProvidersRepository
 {
   constructor(
     private readonly als: AsyncLocalStorage<QueryRunner>,
@@ -18,11 +18,11 @@ export class TypeormUsersAuthProvidersRepositoryImpl
   public async findByUserIdAndProvider(
     userId: string,
     provider: AuthProviders,
-  ): Promise<UsersAuthProvidersEntity> {
+  ): Promise<IUsersAuthProvidersEntity> {
     const manager = this.als.getStore()?.manager || this.manager;
 
     const usersAuthProviders = await manager
-      .getRepository(TypeormUsersAuthProvidersEntityImpl)
+      .getRepository(TypeormUsersAuthProvidersEntity)
       .createQueryBuilder('uap')
       .where('user_id = :userId', { userId })
       .innerJoin('uap.provider', 'p', 'p.name = :name', { name: provider })
@@ -32,12 +32,12 @@ export class TypeormUsersAuthProvidersRepositoryImpl
   }
 
   public async create(
-    data: CreateUsersAuthProviders,
-  ): Promise<UsersAuthProvidersEntity> {
+    data: ICreateUsersAuthProviders,
+  ): Promise<IUsersAuthProvidersEntity> {
     const manager = this.als.getStore()?.manager || this.manager;
 
     const usersAuthProviders = manager
-      .getRepository(TypeormUsersAuthProvidersEntityImpl)
+      .getRepository(TypeormUsersAuthProvidersEntity)
       .create(data);
 
     return manager.save(usersAuthProviders);

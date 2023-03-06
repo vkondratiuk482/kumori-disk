@@ -1,4 +1,4 @@
-export interface UsersAuthProvidersEntity {
+export interface IUsersAuthProvidersEntity {
   readonly id: string;
 
   userId: string;

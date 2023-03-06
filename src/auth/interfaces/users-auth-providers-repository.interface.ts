@@ -1,12 +1,12 @@
 import { AuthProviders } from '../enums/auth-providers.enum';
-import { CreateUsersAuthProviders } from './create-users-auth-providers.interface';
-import { UsersAuthProvidersEntity } from './users-auth-providers-entity.interface';
+import { ICreateUsersAuthProviders } from './create-users-auth-providers.interface';
+import { IUsersAuthProvidersEntity } from './users-auth-providers-entity.interface';
 
-export interface UsersAuthProvidersRepository {
+export interface IUsersAuthProvidersRepository {
   findByUserIdAndProvider(
     userId: string,
     provider: AuthProviders,
-  ): Promise<UsersAuthProvidersEntity>;
+  ): Promise<IUsersAuthProvidersEntity>;
 
-  create(data: CreateUsersAuthProviders): Promise<UsersAuthProvidersEntity>;
+  create(data: ICreateUsersAuthProviders): Promise<IUsersAuthProvidersEntity>;
 }

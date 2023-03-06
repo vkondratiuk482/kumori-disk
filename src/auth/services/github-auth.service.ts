@@ -1,8 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { AUTH_CONSTANTS } from '../auth.constants';
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { USER_CONSTANTS } from 'src/user/user.constants';
+import { AuthProviders } from '../enums/auth-providers.enum';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
 import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
@@ -10,20 +13,17 @@ import { GithubSignUp } from '../interfaces/github-sign-up.interface';
 import { GithubSignIn } from '../interfaces/github-sign-in.interface';
 import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { GithubClient } from 'src/github/interfaces/github-client.interface';
+import { TRANSACTION_CONSTANTS } from 'src/transaction/transaction.constants';
 import { GithubIdNotLinkedError } from '../errors/github-id-not-linked.error';
 import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
 import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.error';
 import { AuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
-import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
-import { AUTH_CONSTANTS } from '../auth.constants';
-import { UsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
-import { AuthProviders } from '../enums/auth-providers.enum';
-import { AuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
-import { AsyncLocalStorage } from 'async_hooks';
-import { TRANSACTION_CONSTANTS } from 'src/transaction/transaction.constants';
+import { IAuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
 import { ITransactionService } from 'src/transaction/interfaces/transaction-service.interface';
+import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
+import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 
 @Injectable()
 export class GithubAuthService {
@@ -39,9 +39,9 @@ export class GithubAuthService {
     @Inject(MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly mailerService: MailerService,
     @Inject(AUTH_CONSTANTS.APPLICATION.USERS_AUTH_PROVIDERS_REPOSITORY_TOKEN)
-    private readonly usersAuthProvidersRepository: UsersAuthProvidersRepository,
+    private readonly usersAuthProvidersRepository: IUsersAuthProvidersRepository,
     @Inject(AUTH_CONSTANTS.APPLICATION.PROVIDER_REPOSITORY_TOKEN)
-    private readonly authProviderRepository: AuthProviderRepository,
+    private readonly authProviderRepository: IAuthProviderRepository,
     private readonly als: AsyncLocalStorage<Record<string, any>>,
     @Inject(TRANSACTION_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly transactionService: ITransactionService,

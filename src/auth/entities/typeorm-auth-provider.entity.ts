@@ -1,10 +1,10 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AuthProviders } from '../enums/auth-providers.enum';
-import { AuthProviderEntity } from '../interfaces/auth-provider-entity.interface';
-import { TypeormUsersAuthProvidersEntityImpl } from './typeorm-users-auth-providers.entity';
+import { IAuthProviderEntity } from '../interfaces/auth-provider-entity.interface';
+import { TypeormUsersAuthProvidersEntity } from './typeorm-users-auth-providers.entity';
 
 @Entity('auth_provider')
-export class TypeormAuthProviderEntityImpl implements AuthProviderEntity {
+export class TypeormAuthProviderEntity implements IAuthProviderEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
@@ -12,8 +12,8 @@ export class TypeormAuthProviderEntityImpl implements AuthProviderEntity {
   public name: AuthProviders;
 
   @OneToMany(
-    () => TypeormUsersAuthProvidersEntityImpl,
+    () => TypeormUsersAuthProvidersEntity,
     (usersAuthProviders) => usersAuthProviders.providerId,
   )
-  public usersAuthProviders: TypeormUsersAuthProvidersEntityImpl;
+  public usersAuthProviders: TypeormUsersAuthProvidersEntity;
 }
