@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { request } from 'undici';
-import { RequestExecutionError } from '../errors/request-execution.error';
-import { UndiciRequest } from '../interfaces/undici-request.interface';
+import { IHttpClientRequestError } from '../errors/http-client-request.error';
+import { IUndiciRequest } from '../interfaces/undici-request.interface';
 
 @Injectable()
 export class UndiciHttpService {
-  public async request<T>(data: UndiciRequest): Promise<T> {
+  public async request<T>(payload: IUndiciRequest): Promise<T> {
     try {
-      const response = await request(data.url, data.options);
+      const response = await request(payload.url, payload.options);
 
-      const responseData = (await response.body.json()) as T;
+      const body = (await response.body.json()) as T;
 
-      return responseData;
+      return body;
     } catch (err) {
-      throw new RequestExecutionError();
+      throw new IHttpClientRequestError();
     }
   }
 }

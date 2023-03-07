@@ -1,6 +1,6 @@
 import { Dispatcher } from 'undici';
 
-export interface UndiciRequest {
+export interface IUndiciRequest {
   readonly url: string;
 
   readonly options: Omit<Dispatcher.RequestOptions, 'origin' | 'path'>;

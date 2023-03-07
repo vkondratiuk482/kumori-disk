@@ -1,6 +1,6 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface RenameFile {
+export interface IRenameFile {
   readonly fileId: string;
   readonly ownerId: string;
   readonly ownerType: FileConsumer;

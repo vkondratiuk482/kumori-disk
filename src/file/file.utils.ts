@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
 import { MimeType } from './enums/mime-type.enum';
-import { File } from './interfaces/file.interface';
-import { UploadGraphQLFile } from './interfaces/upload-graphql-file.interface';
+import { IFile } from './interfaces/file.interface';
+import { IUploadGraphQLFile } from './interfaces/upload-graphql-file.interface';
 
 export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
   const chunks = [];
@@ -16,15 +16,15 @@ export async function convertStreamToBuffer(stream: Readable): Promise<Buffer> {
 }
 
 export async function convertGraphQLFileToFile(
-  data: UploadGraphQLFile,
-): Promise<File> {
+  data: IUploadGraphQLFile,
+): Promise<IFile> {
   const resolvedFile = await data.file;
 
   const fileBuffer = await convertStreamToBuffer(
     resolvedFile.createReadStream(),
   );
 
-  const file: File = {
+  const file: IFile = {
     path: data.path,
     buffer: fileBuffer,
     name: resolvedFile.filename,

@@ -1,4 +1,11 @@
-export const CRYPTOGRAPHY_SERVICE_TOKEN = Symbol('CRYPTOGRAPHY_SERVICE_TOKEN');
+import { deepFreeze } from 'src/common/deep-freeze';
 
-export const HASH_KEYLEN = 32;
-export const HASH_SEPARATOR = ';';
+export const CRYPTOGRAPHY_CONSTANTS = deepFreeze({
+  APPLICATION: {
+    SERVICE_TOKEN: Symbol('CRYPTOGRAPHY_SERVICE_TOKEN'),
+  },
+  DOMAIN: {
+    HASH_KEYLEN: 32,
+    HASH_SEPARATOR: ';',
+  },
+});

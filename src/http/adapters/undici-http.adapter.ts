@@ -1,53 +1,49 @@
 import { Injectable } from '@nestjs/common';
-import { serialize } from 'node:v8';
 import { IncomingHttpHeaders } from 'node:http';
-import { Body } from '../interfaces/body.interface';
-import { Request } from '../interfaces/request.interface';
-import { HttpService } from '../interfaces/http-service.interface';
-import { UndiciRequest } from '../interfaces/undici-request.interface';
 import { UndiciHttpService } from '../services/undici-http.service';
+import { IHttpClient } from '../interfaces/http-client.interface';
+import { IHttpRequest } from '../interfaces/http-request.interface';
+import { IHttpBody } from '../interfaces/http-body.interface';
+import { IUndiciRequest } from '../interfaces/undici-request.interface';
 
 @Injectable()
-export class UndiciHttpAdapter implements HttpService {
+export class UndiciHttpAdapter implements IHttpClient {
   constructor(private readonly undiciHttpService: UndiciHttpService) {}
 
-  public async request<T>(data: Request): Promise<T> {
-    const convertedRequest: UndiciRequest = this.convertRequest(data);
+  public async request<T>(payload: IHttpRequest): Promise<T> {
+    const request: IUndiciRequest = {
+      url: payload.url,
+      options: {
+        method: payload.method,
+        headers: payload.headers || {},
+      },
+    };
 
-    const response = await this.undiciHttpService.request<T>(convertedRequest);
+    if (payload.body) {
+      const body = this.adaptBody(payload.body);
+
+      request.options.body = body;
+    }
+
+    if (payload.query) {
+      const query = payload.query;
+
+      request.options.query = query;
+    }
+
+    const response = await this.undiciHttpService.request<T>(request);
 
     return response;
   }
 
-  private convertRequest(data: Request): UndiciRequest {
-    let body: Buffer;
-    let headers: IncomingHttpHeaders;
-
-    if (data.body) {
-      body = this.convertBodyToBuffer(data.body);
+  /**
+   * Replace it with HttpBodyFactory in case there are more body types
+   */
+  private adaptBody(body: IHttpBody): string {
+    if (typeof body === 'string') {
+      return body;
+    } else if (typeof body === 'object') {
+      return JSON.stringify(body);
     }
-
-    if (data.headers) {
-      headers = data.headers;
-    }
-
-    const converted: UndiciRequest = {
-      url: data.url,
-      options: {
-        body,
-        headers,
-        method: data.method,
-      },
-    };
-
-    return converted;
-  }
-
-  private convertBodyToBuffer(body: Body): Buffer {
-    if (typeof body === 'object') {
-      return serialize(body);
-    }
-
-    return Buffer.from(body);
   }
 }

@@ -1,0 +1,11 @@
+import { deepFreeze } from 'src/common/deep-freeze';
+
+export const PAYMENT_CONSTANTS = deepFreeze({
+  APPLICATION: {
+    PAYPAL_AUTH_REQUEST_DELAY_SECONDS: 10,
+    SERVICE_TOKEN: Symbol('PAYMENT_SERVICE_TOKEN'),
+    PAYPAL_ACCESS_TOKEN_CACHING_KEY: 'PAYPAL_ACCESS_TOKEN',
+    PLAN_REPOSITORY_TOKEN: Symbol('PAYMENT_PLAN_REPOSITORY_TOKEN'),
+  },
+  DOMAIN: {},
+});

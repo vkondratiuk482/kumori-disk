@@ -1,6 +1,6 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
-import { UserEntity } from '../interfaces/user-entity.interface';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
+import { IUserEntity } from '../interfaces/user-entity.interface';
 
 @ObjectType()
 export class UserEntityResponse {
@@ -17,16 +17,15 @@ export class UserEntityResponse {
   public readonly password: string;
 
   @HideField()
-  public readonly confirmationStatus: UserConfirmationStatus;
+  public readonly confirmationStatus: UserConfirmationStatuses;
 
   @Field()
-  public readonly availableStorageSpaceInBytes: number;
+  public readonly diskSpace: number;
 
   @HideField()
   public readonly planId: string;
 
-  constructor(entity: UserEntity) {
+  constructor(entity: IUserEntity) {
     Object.assign(this, entity);
   }
 }
-

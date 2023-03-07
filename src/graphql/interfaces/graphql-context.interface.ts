@@ -1,5 +1,5 @@
 import { FastifyRequest } from 'fastify';
 
-export interface GraphQLContext {
+export interface IGraphQLContext {
   readonly req: FastifyRequest;
 }

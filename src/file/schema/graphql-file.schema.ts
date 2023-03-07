@@ -1,8 +1,8 @@
 import { Readable } from 'node:stream';
 import { IsMimeType, IsString } from 'class-validator';
-import { GraphQLFile } from '../interfaces/graphql-file.interface';
+import { IGraphQLFile } from '../interfaces/graphql-file.interface';
 
-export class GraphQLFileSchema implements GraphQLFile {
+export class GraphQLFileSchema implements IGraphQLFile {
   @IsString()
   public readonly filename: string;
 

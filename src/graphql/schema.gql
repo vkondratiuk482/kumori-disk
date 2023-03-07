@@ -2,26 +2,49 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type LinkGithubAccountResponse {
+  linked: Boolean!
+}
+
+type GetGithubOAuthURLResponse {
+  url: String!
+}
+
 type UserEntityResponse {
   id: String!
   email: String!
   username: String!
-  availableStorageSpaceInBytes: Float!
+  diskSpace: Float!
+}
+
+type IJwtPairResponse {
+  accessToken: String!
+  refreshToken: String!
+}
+
+type ConfirmEmailResponse {
+  confirmed: Boolean!
+}
+
+type ResendConfirmationEmailResponse {
+  resent: Boolean!
 }
 
 type Query {
-  test(id: Float!): Int!
+  getOAuthLinkGithubURL: GetGithubOAuthURLResponse!
+  getOAuthAuthorizeGithubURL: GetGithubOAuthURLResponse!
 }
 
 type Mutation {
   uploadSingleFile(schema: UploadFileSchema!): String!
   userShareAccess(schema: UserShareAccessSchema!): Boolean!
   userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
-  signUp(schema: SignUpSchema!): UserEntityResponse!
-  signIn(schema: SignInSchema!): UserEntityResponse!
-  signOut: Boolean!
-  confirmEmail(hash: String!): Boolean!
-  resendConfirmationEmail(email: String!): Boolean!
+  linkGithubAccount(schema: LinkGithubAccountSchema!): LinkGithubAccountResponse!
+  authorizeWithGithub(schema: IAuthorizeWithGithubSchema!): IJwtPairResponse!
+  signUp(schema: ILocalSignUpSchema!): UserEntityResponse!
+  signIn(schema: ILocalSignInSchema!): IJwtPairResponse!
+  confirmEmail(hash: String!): ConfirmEmailResponse!
+  resendConfirmationEmail(email: String!): ResendConfirmationEmailResponse!
 }
 
 input UploadFileSchema {
@@ -44,13 +67,21 @@ input UserRevokeAccessSchema {
   fileIds: [String!]!
 }
 
-input SignUpSchema {
+input LinkGithubAccountSchema {
+  code: String!
+}
+
+input IAuthorizeWithGithubSchema {
+  code: String!
+}
+
+input ILocalSignUpSchema {
   email: String!
   username: String!
   password: String!
 }
 
-input SignInSchema {
+input ILocalSignInSchema {
   email: String!
   password: String!
 }

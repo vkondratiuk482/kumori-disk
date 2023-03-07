@@ -1,24 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
+import {
+  InjectDataSource,
+  InjectEntityManager,
+  InjectRepository,
+} from '@nestjs/typeorm';
+import { AsyncLocalStorage } from 'async_hooks';
 
-import { Repository } from 'typeorm';
-import { DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES } from '../constants/user.constants';
-import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
+import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
+import { TypeOrmUserEntity } from '../entities/typeorm-user.entity';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
-import { CreateUser } from '../interfaces/create-user.interface';
-import { UserRepository } from '../interfaces/user-repository.interface';
+import { ICreateUser } from '../interfaces/create-user.interface';
+import { IUserEntity } from '../interfaces/user-entity.interface';
+import { IUserRepository } from '../interfaces/user-repository.interface';
 
 @Injectable()
-export class TypeOrmUserRepositoryImplementation implements UserRepository {
+export class TypeOrmUserRepository implements IUserRepository {
   constructor(
-    @InjectRepository(TypeOrmUserEntityImplementation)
-    private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
+    @InjectEntityManager() private readonly manager: EntityManager,
+    @InjectRepository(TypeOrmUserEntity)
+    private readonly userRepository: Repository<TypeOrmUserEntity>,
+    @InjectDataSource() private readonly dataSource: DataSource,
+    private readonly als: AsyncLocalStorage<QueryRunner>,
   ) {}
 
-  public async findSingleById(
-    id: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
+  public async findById(id: string): Promise<TypeOrmUserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('id = :id', { id })
@@ -27,9 +33,9 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async findSingleByUsername(
+  public async findByUsername(
     username: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
+  ): Promise<TypeOrmUserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('username = :username', { username })
@@ -38,10 +44,16 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async findSingleByEmail(
+  public async findByEmail(
     email: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
-    const user = await this.userRepository
+  ): Promise<TypeOrmUserEntity> {
+    const queryRunner = this.als.getStore();
+
+    const userRepository =
+      queryRunner?.manager?.getRepository(TypeOrmUserEntity) ||
+      this.userRepository;
+
+    const user = await userRepository
       .createQueryBuilder('u')
       .where('email = :email', { email })
       .getOne();
@@ -49,28 +61,59 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return user;
   }
 
-  public async createSinglePending(
-    data: CreateUser,
-  ): Promise<TypeOrmUserEntityImplementation> {
-    const confirmationStatus = UserConfirmationStatus.Pending;
-    const availableStorageSpaceInBytes = DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES;
-
-    const user = this.userRepository.create({
-      ...data,
-      confirmationStatus,
-      availableStorageSpaceInBytes,
+  public async existsById(id: string): Promise<boolean> {
+    const exists = await this.userRepository.exist({
+      where: {
+        id,
+      },
     });
 
-    return this.userRepository.save(user);
+    return exists;
+  }
+
+  public async existsByEmail(email: string): Promise<boolean> {
+    const exists = await this.userRepository.exist({
+      where: {
+        email,
+      },
+    });
+
+    return exists;
+  }
+
+  public async create(data: ICreateUser): Promise<IUserEntity> {
+    const manager = this.als.getStore()?.manager || this.manager;
+
+    const user = manager
+      .getRepository(TypeOrmUserEntity)
+      .create(data);
+
+    return manager.save(user);
+  }
+
+  public async updateGithubId(id: string, githubId: number): Promise<boolean> {
+    const result = await this.userRepository
+      .createQueryBuilder('u')
+      .update(TypeOrmUserEntity)
+      .set({
+        githubId,
+      })
+      .where('id = :id', { id })
+      .returning('*')
+      .execute();
+
+    const updated = result.affected && result.affected > 0;
+
+    return updated;
   }
 
   public async updateConfirmationStatus(
     id: string,
-    status: UserConfirmationStatus,
+    status: UserConfirmationStatuses,
   ): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')
-      .update(TypeOrmUserEntityImplementation)
+      .update(TypeOrmUserEntity)
       .set({
         confirmationStatus: status,
       })
@@ -93,7 +136,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
         .where('id = :id', { id })
         .getOne();
 
-      user.availableStorageSpaceInBytes -= bytes;
+      user.diskSpace -= bytes;
 
       await this.userRepository.save(user);
 

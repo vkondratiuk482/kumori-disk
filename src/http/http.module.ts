@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { HttpServiceProvider } from './providers/http-service.provider';
 import { UndiciHttpService } from './services/undici-http.service';
+import { IHttpClientProvider } from './providers/http-client.provider';
 
 @Module({
-  providers: [HttpServiceProvider, UndiciHttpService],
-  exports: [HttpServiceProvider],
+  providers: [IHttpClientProvider, UndiciHttpService],
+  exports: [IHttpClientProvider],
 })
 export class HttpModule {}

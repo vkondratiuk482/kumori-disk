@@ -1,9 +1,9 @@
 import { CACHE_MANAGER, Inject, Injectable } from '@nestjs/common';
 import { Cache } from 'cache-manager';
-import { CacheService } from './interfaces/cache-service.interface';
+import { ICacheService } from './interfaces/cache-service.interface';
 
 @Injectable()
-export class RedisCacheServiceImplementation implements CacheService {
+export class RedisCacheService implements ICacheService {
   constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   public async get<T>(key: string): Promise<T | undefined> {

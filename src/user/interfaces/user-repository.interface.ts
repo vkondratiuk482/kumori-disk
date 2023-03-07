@@ -1,20 +1,26 @@
-import { CreateUser } from './create-user.interface';
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
-import { UserEntity } from './user-entity.interface';
+import { ICreateUser } from './create-user.interface';
+import { IUserEntity } from './user-entity.interface';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-export interface UserRepository {
-  findSingleById(id: string): Promise<UserEntity>;
+export interface IUserRepository {
+  findById(id: string): Promise<IUserEntity>;
 
-  findSingleByUsername(username: string): Promise<UserEntity>;
+  findByEmail(email: string): Promise<IUserEntity>;
 
-  findSingleByEmail(email: string): Promise<UserEntity>;
+  findByUsername(username: string): Promise<IUserEntity>;
 
-  createSinglePending(data: CreateUser): Promise<UserEntity>;
+  existsById(id: string): Promise<boolean>;
+
+  existsByEmail(email: string): Promise<boolean>;
+
+  create(data: ICreateUser): Promise<IUserEntity>;
 
   updateConfirmationStatus(
     id: string,
-    status: UserConfirmationStatus,
+    status: UserConfirmationStatuses,
   ): Promise<boolean>;
+
+  updateGithubId(id: string, githubId: number): Promise<boolean>;
 
   subtractAvailableSpaceInBytes(id: string, bytes: number): Promise<boolean>;
 }

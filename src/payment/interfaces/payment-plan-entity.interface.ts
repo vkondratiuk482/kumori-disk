@@ -1,6 +1,6 @@
 import { PaymentCurrencies } from '../enums/payment-currencies.enum';
 
-export interface PaymentPlanEntity {
+export interface IPaymentPlanEntity {
   id: string;
 
   charge: number;

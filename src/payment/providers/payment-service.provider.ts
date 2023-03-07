@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { PAYMENT_SERVICE_TOKEN } from '../constants/payment.constant';
-import { PaypalPaymentServiceImplementation } from '../services/paypal-payment.service';
+import { PAYMENT_CONSTANTS } from '../payment.constant';
+import { PaypalPaymentService } from '../services/paypal-payment.service';
 
 export const PaymentServiceProvider: Provider = {
-  provide: PAYMENT_SERVICE_TOKEN,
-  useClass: PaypalPaymentServiceImplementation,
+  provide: PAYMENT_CONSTANTS.APPLICATION.SERVICE_TOKEN,
+  useClass: PaypalPaymentService,
 };

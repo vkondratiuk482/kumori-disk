@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { MAILER_SERVICE_TOKEN } from '../mailer.constants';
-import { NodemailerMailerServiceImplementation } from '../nodemailer-mailer.service';
+import { MAILER_CONSTANTS } from '../mailer.constants';
+import { NodemailerMailerService } from '../nodemailer-mailer.service';
 
 export const MailerServiceProvider: Provider = {
-  provide: MAILER_SERVICE_TOKEN,
-  useClass: NodemailerMailerServiceImplementation,
+  useClass: NodemailerMailerService,
+  provide: MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN,
 };

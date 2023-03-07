@@ -1,29 +1,29 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { FileNotAccessibleError } from '../errors/file-not-accessible.error';
-import { FILE_REPOSITORY_TOKEN } from '../constants/file.constants';
-import { FileRepository } from '../interfaces/file-repository.interface';
-import { CreateFile } from '../interfaces/create-file.interface';
-import { AttachTenant } from '../interfaces/attach-tenant.interface';
+import { IFileRepository } from '../interfaces/file-repository.interface';
+import { ICreateFile } from '../interfaces/create-file.interface';
+import { IAttachTenant } from '../interfaces/attach-tenant.interface';
 import { FileConsumer } from '../enums/file-consumer.enum';
 import { TenantNotAttachedError } from '../errors/tenant-not-attached.error';
-import { DettachTenant } from '../interfaces/dettach-tenant.interface';
+import { IDettachTenant } from '../interfaces/dettach-tenant.interface';
 import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
 import { FileNotFoundError } from '../errors/file-not-found.error';
-import { FileEntity } from '../interfaces/file-entity.interface';
+import { IFileEntity } from '../interfaces/file-entity.interface';
 import { FileKeyNotUpdatedInDatabaseError } from '../errors/file-key-not-updated-in-database.error';
+import { FILE_CONSTANTS } from '../file.constants';
 
 @Injectable()
 export class FileService {
   constructor(
-    @Inject(FILE_REPOSITORY_TOKEN)
-    private readonly fileRepository: FileRepository,
+    @Inject(FILE_CONSTANTS.APPLICATION.REPOSITORY_TOKEN)
+    private readonly fileRepository: IFileRepository,
   ) {}
 
   public async findSingleByIdAndOwnerWithException(
     id: string,
     ownerId: string,
     ownerType: FileConsumer,
-  ): Promise<FileEntity> {
+  ): Promise<IFileEntity> {
     const file = await this.fileRepository.findSingleById(id);
 
     if (!file) {
@@ -43,7 +43,7 @@ export class FileService {
     ids: string[],
     ownerId: string,
     ownerType: FileConsumer,
-  ): Promise<FileEntity[]> {
+  ): Promise<IFileEntity[]> {
     const files = await this.fileRepository.findManyByIdsWithOwners(
       ids,
       ownerType,
@@ -60,7 +60,7 @@ export class FileService {
     return files;
   }
 
-  public async createSingle(data: CreateFile): Promise<FileEntity> {
+  public async createSingle(data: ICreateFile): Promise<IFileEntity> {
     const file = await this.fileRepository.createSingle(data);
 
     return file;
@@ -79,7 +79,7 @@ export class FileService {
     return updated;
   }
 
-  public async attachTenantWithException(data: AttachTenant): Promise<boolean> {
+  public async attachTenantWithException(data: IAttachTenant): Promise<boolean> {
     const attached = await this.fileRepository.attachTenant(data);
 
     if (!attached) {
@@ -90,7 +90,7 @@ export class FileService {
   }
 
   public async detachTenantWithException(
-    data: DettachTenant,
+    data: IDettachTenant,
   ): Promise<boolean> {
     const dettached = await this.fileRepository.dettachTenant(data);
 
@@ -102,7 +102,7 @@ export class FileService {
   }
 
   private async fileAccessible(
-    file: FileEntity,
+    file: IFileEntity,
     ownerId: string,
     ownerType: FileConsumer,
   ): Promise<boolean> {

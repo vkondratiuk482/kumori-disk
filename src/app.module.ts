@@ -17,10 +17,16 @@ import { HttpModule } from './http/http.module';
 import { CacheModule } from './cache/cache.module';
 import { EventModule } from './event/event.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { JwtModule } from './jwt/jwt.module';
+import { GithubModule } from './github/github.module';
+import { AlsModule } from './als/als.module';
+import { TransactionModule } from './transaction/transaction.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
+      isGlobal: true,
+      expandVariables: true,
       envFilePath: ['.env', '.env.development'],
     }),
     ThrottlerModule.forRootAsync({
@@ -48,6 +54,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       imports: [ConfigModule],
       useFactory: async (config: ConfigService) => ({
         type: 'postgres',
+        logging: true,
         host: config.get<string>('DATABASE_HOST'),
         port: config.get<number>('DATABASE_PORT'),
         database: config.get<string>('DATABASE_NAME'),
@@ -58,6 +65,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
       }),
       inject: [ConfigService],
     }),
+    JwtModule,
     EventEmitterModule.forRoot(),
     UserModule,
     AuthModule,
@@ -68,6 +76,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     PaymentModule,
     HttpModule,
     EventModule,
+    GithubModule,
+    AlsModule,
+    TransactionModule,
   ],
 })
 export class AppModule {}

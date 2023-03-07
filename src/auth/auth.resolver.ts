@@ -4,9 +4,8 @@ import {
   ForbiddenException,
   NotFoundException,
   UnauthorizedException,
-  UseGuards,
 } from '@nestjs/common';
-import { Args, Query, Mutation, Resolver, Int, Context } from '@nestjs/graphql';
+import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
@@ -15,31 +14,72 @@ import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.err
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
-import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
-import { SignUpSchema } from './schema/sign-up.schema';
-import { SignInSchema } from './schema/sign-in.schema';
+import { ILocalSignUpSchema } from './schema/sign-up.schema';
+import { ILocalSignInSchema } from './schema/sign-in.schema';
 
-import { SessionAuthGuard } from '../user/guards/session-auth.guard';
-
-import { AuthService } from './auth.service';
+import { LocalAuthService } from './services/local-auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
+import { IJwtPairResponse } from './responses/jwt-pair.response';
+import { ConfirmEmailResponse } from './responses/confirm-email.response';
+import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
+import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
+import { GithubAuthService } from './services/github-auth.service';
+import { IAuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
+import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error';
 
 @Resolver()
 export class AuthResolver {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly localAuthService: LocalAuthService,
+    private readonly githubAuthService: GithubAuthService,
+  ) {}
 
-  @Query(() => Int, { name: 'test' })
-  public async test(@Args('id') id: number): Promise<number> {
-    return 1;
+  @Query(() => GetGithubOAuthURLResponse, {
+    name: 'getOAuthAuthorizeGithubURL',
+  })
+  public async getGithubOAuthURL(): Promise<GetGithubOAuthURLResponse> {
+    try {
+      const url = await this.githubAuthService.getOAuthAuthorizeURL();
+
+      const response = new GetGithubOAuthURLResponse(url);
+
+      return response;
+    } catch (err) {
+      throw new BadRequestException();
+    }
+  }
+
+  @Mutation(() => IJwtPairResponse, { name: 'authorizeWithGithub' })
+  public async authorizeWithGithub(
+    @Args('schema') schema: IAuthorizeWithGithubSchema,
+  ): Promise<IJwtPairResponse> {
+    try {
+      const pair = await this.githubAuthService.authorize(schema);
+
+      const response = new IJwtPairResponse(pair);
+
+      return response;
+    } catch (err) {
+      console.log(err);
+      if (
+        err instanceof GithubIdNotLinkedError ||
+        err instanceof GithubIdsDoNotMatchError
+      ) {
+        throw new UnauthorizedException(err.message);
+      }
+
+      throw new BadRequestException();
+    }
   }
 
   @Mutation(() => UserEntityResponse, { name: 'signUp' })
   public async signUp(
-    @Args('schema') schema: SignUpSchema,
+    @Args('schema') schema: ILocalSignUpSchema,
   ): Promise<UserEntityResponse> {
     try {
-      const user = await this.authService.signUp(schema);
+      const user = await this.localAuthService.signUp(schema);
 
       const response = new UserEntityResponse(user);
 
@@ -49,21 +89,18 @@ export class AuthResolver {
         throw new ConflictException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @Mutation(() => UserEntityResponse, { name: 'signIn' })
+  @Mutation(() => IJwtPairResponse, { name: 'signIn' })
   public async signIn(
-    @Args('schema') schema: SignInSchema,
-    @Context() context: GraphQLContext,
-  ): Promise<UserEntityResponse> {
+    @Args('schema') schema: ILocalSignInSchema,
+  ): Promise<IJwtPairResponse> {
     try {
-      const user = await this.authService.singIn(schema);
+      const pair = await this.localAuthService.singIn(schema);
 
-      const response = new UserEntityResponse(user);
-
-      context.req.session.set('user_id', user.id);
+      const response = new IJwtPairResponse(pair);
 
       return response;
     } catch (err) {
@@ -77,30 +114,20 @@ export class AuthResolver {
         throw new ForbiddenException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @UseGuards(SessionAuthGuard)
-  @Mutation(() => Boolean, { name: 'signOut' })
-  public async signOut(@Context() context: GraphQLContext): Promise<boolean> {
+  @Mutation(() => ConfirmEmailResponse, { name: 'confirmEmail' })
+  public async confirmEmail(
+    @Args('hash') hash: string,
+  ): Promise<ConfirmEmailResponse> {
     try {
-      context.req.session.delete();
+      const confirmed = await this.localAuthService.confirmEmail(hash);
 
-      const sessionDeleted = context.req.session.deleted;
+      const response = new ConfirmEmailResponse(confirmed);
 
-      return sessionDeleted;
-    } catch (err) {
-      throw new BadRequestException(err);
-    }
-  }
-
-  @Mutation(() => Boolean, { name: 'confirmEmail' })
-  public async confirmEmail(@Args('hash') hash: string): Promise<boolean> {
-    try {
-      const confirmed = await this.authService.confirmEmail(hash);
-
-      return confirmed;
+      return response;
     } catch (err) {
       if (
         err instanceof InvalidConfirmationHashError ||
@@ -112,18 +139,22 @@ export class AuthResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @Mutation(() => Boolean, { name: 'resendConfirmationEmail' })
+  @Mutation(() => ResendConfirmationEmailResponse, {
+    name: 'resendConfirmationEmail',
+  })
   public async resendConfirmationEmail(
     @Args('email') email: string,
-  ): Promise<boolean> {
+  ): Promise<ResendConfirmationEmailResponse> {
     try {
-      const resent = await this.authService.resendConfirmationEmail(email);
+      const resent = await this.localAuthService.resendConfirmationEmail(email);
 
-      return resent;
+      const response = new ResendConfirmationEmailResponse(resent);
+
+      return response;
     } catch (err) {
       if (err instanceof EmailAlreadyConfirmedError) {
         throw new ConflictException(err);
@@ -132,7 +163,7 @@ export class AuthResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 }

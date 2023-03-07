@@ -1,5 +1,3 @@
-import { TypeOrmFileEntityImplementation } from 'src/file/entities/typeorm-file.entity';
-import { TypeOrmPaymentPlanEntityImplementation } from 'src/payment/entities/typeorm-payment-plan.entity';
 import {
   Column,
   Entity,
@@ -7,13 +5,17 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
-import { UserEntity } from '../interfaces/user-entity.interface';
+import { IUserEntity } from '../interfaces/user-entity.interface';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
+import { TypeOrmFileEntity } from 'src/file/entities/typeorm-file.entity';
+import { TypeOrmPaymentPlanEntity } from 'src/payment/entities/typeorm-payment-plan.entity';
+import { TypeormUsersAuthProvidersEntity } from 'src/auth/entities/typeorm-users-auth-providers.entity';
 
 @Entity('user')
-export class TypeOrmUserEntityImplementation implements UserEntity {
+export class TypeOrmUserEntity implements IUserEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 
@@ -26,33 +28,42 @@ export class TypeOrmUserEntityImplementation implements UserEntity {
   @Column({ name: 'password', type: 'varchar', length: 321 })
   public password: string;
 
+  @Column({ name: 'github_id', type: 'int', nullable: true })
+  public githubId?: number;
+
   @Column({
     name: 'confirmation_status',
     type: 'enum',
-    enum: UserConfirmationStatus,
+    enum: UserConfirmationStatuses,
   })
-  public confirmationStatus: UserConfirmationStatus;
+  public confirmationStatus: UserConfirmationStatuses;
 
   @Column({
-    name: 'available_storage_space_in_bytes',
+    name: 'disk_space',
     type: 'bigint',
   })
-  public availableStorageSpaceInBytes: number;
+  public diskSpace: number;
 
   @Column({ name: 'plan_id', type: 'uuid', nullable: true })
   public planId: string;
 
   @ManyToMany(
-    () => TypeOrmFileEntityImplementation,
-    (file: TypeOrmFileEntityImplementation) => file.users,
+    () => TypeOrmFileEntity,
+    (file: TypeOrmFileEntity) => file.users,
   )
   @JoinTable({ name: 'users_files' })
-  public files: TypeOrmFileEntityImplementation[];
+  public files: TypeOrmFileEntity[];
 
   @ManyToOne(
-    () => TypeOrmPaymentPlanEntityImplementation,
-    (paymentPlan: TypeOrmPaymentPlanEntityImplementation) => paymentPlan.users,
+    () => TypeOrmPaymentPlanEntity,
+    (paymentPlan: TypeOrmPaymentPlanEntity) => paymentPlan.users,
   )
   @JoinColumn({ name: 'plan_id', referencedColumnName: 'id' })
-  public plan: TypeOrmPaymentPlanEntityImplementation;
+  public plan: TypeOrmPaymentPlanEntity;
+
+  @OneToMany(
+    () => TypeormUsersAuthProvidersEntity,
+    (usersAuthProviders) => usersAuthProviders.user,
+  )
+  public usersAuthProviders: TypeormUsersAuthProvidersEntity;
 }

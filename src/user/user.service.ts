@@ -1,50 +1,51 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FILE_FACADE_TOKEN } from 'src/file/constants/file.constants';
-import { FileFacade } from 'src/file/interfaces/file-facade.interface';
-import { UploadFile } from 'src/file/interfaces/upload-file.interface';
-import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepository } from './interfaces/user-repository.interface';
-
-import {
-  USER_REPOSITORY_TOKEN,
-  USER_REVOKE_ACCESS_EVENT,
-  USER_SHARE_ACCESS_EVENT,
-} from './constants/user.constants';
-import { UserConfirmationStatus } from './enums/user-confirmation-status.enum';
-
+import { ConfigService } from '@nestjs/config';
+import { IFileFacade } from 'src/file/interfaces/file-facade.interface';
+import { IUploadFile } from 'src/file/interfaces/upload-file.interface';
+import { ICreateUser } from './interfaces/create-user.interface';
+import { IUserRepository } from './interfaces/user-repository.interface';
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
-import { File } from 'src/file/interfaces/file.interface';
+import { IFile } from 'src/file/interfaces/file.interface';
 import { FileConsumer } from 'src/file/enums/file-consumer.enum';
-import { UserShareAccess } from './interfaces/user-share-access.interface';
-import { UserRevokeAccess } from './interfaces/user-revoke-access.interface';
-import { UserEntity } from './interfaces/user-entity.interface';
-import { EVENT_SERVICE_TOKEN } from 'src/event/event.constants';
-import { EventService } from 'src/event/interface/event-service.interface';
-import { UserShareAccessEvent } from './interfaces/user-share-access-event.interface';
-import { UserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
+import { IUserShareAccess } from './interfaces/user-share-access.interface';
+import { IUserRevokeAccess } from './interfaces/user-revoke-access.interface';
+import { IUserEntity } from './interfaces/user-entity.interface';
+import { IEventService } from 'src/event/interface/event-service.interface';
+import { IUserShareAccessEvent } from './interfaces/user-share-access-event.interface';
+import { IUserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
+import { USER_CONSTANTS } from './user.constants';
+import { FILE_CONSTANTS } from 'src/file/file.constants';
+import { EVENT_CONSTANTS } from 'src/event/event.constants';
+import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enum';
+import { GITHUB_CONSTANTS } from 'src/github/github.constants';
+import { IGithubClient } from 'src/github/interfaces/github-client.interface';
+import { ILinkGithubAccount } from './interfaces/link-github-account.interface';
 
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(USER_REPOSITORY_TOKEN)
-    private readonly userRepository: UserRepository,
-    @Inject(FILE_FACADE_TOKEN)
-    private readonly fileFacade: FileFacade,
-    @Inject(EVENT_SERVICE_TOKEN)
-    private readonly eventService: EventService,
+    private readonly configService: ConfigService,
+    @Inject(USER_CONSTANTS.APPLICATION.REPOSITORY_TOKEN)
+    private readonly userRepository: IUserRepository,
+    @Inject(FILE_CONSTANTS.APPLICATION.FACADE_TOKEN)
+    private readonly fileFacade: IFileFacade,
+    @Inject(EVENT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
+    private readonly eventService: IEventService,
+    @Inject(GITHUB_CONSTANTS.APPLICATION.CLIENT_TOKEN)
+    private readonly githubClient: IGithubClient,
   ) {}
 
-  public async findSingleById(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleById(id);
+  public async findById(id: string): Promise<IUserEntity> {
+    const user = await this.userRepository.findById(id);
 
     return user;
   }
 
-  public async findSingleByIdWithException(id: string): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleById(id);
+  public async findByIdOrThrow(id: string): Promise<IUserEntity> {
+    const user = await this.userRepository.findById(id);
 
     if (!user) {
       throw new UserNotFoundByIdError();
@@ -53,10 +54,8 @@ export class UserService {
     return user;
   }
 
-  public async findSingleByUsernameWithException(
-    username: string,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleByUsername(username);
+  public async findByUsernameOrThrow(username: string): Promise<IUserEntity> {
+    const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
       throw new UserNotFoundByUsernameError();
@@ -65,10 +64,14 @@ export class UserService {
     return user;
   }
 
-  public async findSingleByEmailWithException(
-    email: string,
-  ): Promise<UserEntity> {
-    const user = await this.userRepository.findSingleByEmail(email);
+  public async findByEmail(email: string): Promise<IUserEntity> {
+    const user = await this.userRepository.findByEmail(email);
+
+    return user;
+  }
+
+  public async findByEmailOrThrow(email: string): Promise<IUserEntity> {
+    const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
       throw new UserNotFoundByEmailError();
@@ -77,35 +80,58 @@ export class UserService {
     return user;
   }
 
+  public async existsById(id: string): Promise<boolean> {
+    const exists = await this.userRepository.existsById(id);
+
+    return exists;
+  }
+
+  public async existsByEmail(email: string): Promise<boolean> {
+    const exists = await this.userRepository.existsByEmail(email);
+
+    return exists;
+  }
+
   public async getAvailableStorageSpaceByIdWithException(
     id: string,
   ): Promise<number> {
-    const user = await this.userRepository.findSingleById(id);
+    const user = await this.findByIdOrThrow(id);
 
-    if (!user) {
-      throw new UserNotFoundByIdError();
-    }
-
-    return user.availableStorageSpaceInBytes;
+    return user.diskSpace;
   }
 
-  public async mailUsed(email: string): Promise<boolean> {
-    const user = await this.userRepository.findSingleByEmail(email);
-
-    const mailUsed = Boolean(user);
-
-    return mailUsed;
-  }
-
-  public async createSingleForSignUp(data: CreateUser): Promise<UserEntity> {
-    const user = await this.userRepository.createSinglePending(data);
+  public async create(data: ICreateUser): Promise<IUserEntity> {
+    const user = await this.userRepository.create(data);
 
     return user;
   }
 
+  public async getOAuthLinkGithubURL(): Promise<string> {
+    const redirectURI = `${this.configService.get<string>(
+      'APP_PROTOCOL',
+    )}://${this.configService.get<string>('APP_DOMAIN')}/user/githubId`;
+
+    const url = this.githubClient.getOAuthAuthorizeURL(redirectURI);
+
+    return url;
+  }
+
+  public async linkGithubAccount(
+    id: string,
+    payload: ILinkGithubAccount,
+  ): Promise<boolean> {
+    const accessToken = await this.githubClient.getAccessToken(payload.code);
+
+    const githubUser = await this.githubClient.getUser(accessToken);
+
+    const updated = await this.userRepository.updateGithubId(id, githubUser.id);
+
+    return updated;
+  }
+
   public async updateConfirmationStatus(
     id: string,
-    status: UserConfirmationStatus,
+    status: UserConfirmationStatuses,
   ): Promise<boolean> {
     const updated = await this.userRepository.updateConfirmationStatus(
       id,
@@ -129,7 +155,7 @@ export class UserService {
 
   public async uploadSingleFileWithException(
     ownerId: string,
-    data: File,
+    data: IFile,
   ): Promise<string> {
     const bytes = Buffer.byteLength(data.buffer);
 
@@ -142,7 +168,7 @@ export class UserService {
       throw new UserExceedsPersonalStorageLimitError();
     }
 
-    const file: UploadFile = {
+    const file: IUploadFile = {
       ownerId,
       path: data.path,
       name: data.name,
@@ -160,7 +186,7 @@ export class UserService {
 
   public async shareAccessWithException(
     ownerId: string,
-    data: UserShareAccess,
+    data: IUserShareAccess,
   ): Promise<boolean> {
     const shared = await this.fileFacade.shareAccessWithException({
       ownerId,
@@ -170,19 +196,22 @@ export class UserService {
       fileIds: data.fileIds,
     });
 
-    const payload: UserShareAccessEvent = {
+    const payload: IUserShareAccessEvent = {
       fileIds: data.fileIds,
       tenantId: data.tenantId,
       tenantType: data.tenantType,
     };
-    this.eventService.emit(USER_SHARE_ACCESS_EVENT, payload);
+    this.eventService.emit(
+      USER_CONSTANTS.APPLICATION.SHARE_ACCESS_EVENT,
+      payload,
+    );
 
     return shared;
   }
 
   public async revokeAccessWithException(
     ownerId: string,
-    data: UserRevokeAccess,
+    data: IUserRevokeAccess,
   ): Promise<boolean> {
     const revoked = await this.fileFacade.revokeAccessWithException({
       ownerId,
@@ -192,12 +221,15 @@ export class UserService {
       fileIds: data.fileIds,
     });
 
-    const payload: UserRevokeAccessEvent = {
+    const payload: IUserRevokeAccessEvent = {
       fileIds: data.fileIds,
       tenantId: data.tenantId,
       tenantType: data.tenantType,
     };
-    this.eventService.emit(USER_REVOKE_ACCESS_EVENT, payload);
+    this.eventService.emit(
+      USER_CONSTANTS.APPLICATION.REVOKE_ACCESS_EVENT,
+      payload,
+    );
 
     return revoked;
   }
@@ -206,10 +238,11 @@ export class UserService {
     userId: string,
     bytes: number,
   ): Promise<boolean> {
-    const availableStorageSpaceInBytes =
-      await this.getAvailableStorageSpaceByIdWithException(userId);
+    const diskSpace = await this.getAvailableStorageSpaceByIdWithException(
+      userId,
+    );
 
-    const exceedsPersonalLimit = bytes > availableStorageSpaceInBytes;
+    const exceedsPersonalLimit = bytes > diskSpace;
 
     return exceedsPersonalLimit;
   }

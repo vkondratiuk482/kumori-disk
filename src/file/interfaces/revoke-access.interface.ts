@@ -1,6 +1,6 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface RevokeAccess {
+export interface IRevokeAccess {
   readonly ownerId: string;
   readonly ownerType: FileConsumer;
   readonly tenantId: string;

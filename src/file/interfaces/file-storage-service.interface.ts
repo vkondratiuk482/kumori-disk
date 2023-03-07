@@ -1,7 +1,7 @@
 import { Readable } from 'node:stream';
-import { UploadFile } from './upload-file.interface';
+import { IUploadFile } from './upload-file.interface';
 
-export interface FileStorageService {
+export interface IFileStorageService {
   getFileHierarchy(path: string): Promise<object>;
 
   getDirectoryHierarchy(path: string): Promise<object>;
@@ -23,9 +23,9 @@ export interface FileStorageService {
 
   list(path: string): Promise<object>;
 
-  uploadSingleWithException(file: UploadFile): Promise<string>;
+  uploadSingleWithException(file: IUploadFile): Promise<string>;
 
-  uploadManyWithException(file: UploadFile[]): Promise<string[]>;
+  uploadManyWithException(file: IUploadFile[]): Promise<string[]>;
 
   downloadSingleWithException(key: string): Promise<Readable>;
 

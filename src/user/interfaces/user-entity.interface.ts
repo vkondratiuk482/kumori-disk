@@ -1,6 +1,6 @@
-import { UserConfirmationStatus } from '../enums/user-confirmation-status.enum';
+import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-export abstract class UserEntity {
+export interface IUserEntity {
   readonly id: string;
 
   readonly email: string;
@@ -9,7 +9,9 @@ export abstract class UserEntity {
 
   readonly password: string;
 
-  readonly confirmationStatus: UserConfirmationStatus;
+  readonly githubId?: number;
 
-  readonly availableStorageSpaceInBytes: number;
+  readonly diskSpace: number;
+
+  readonly confirmationStatus: UserConfirmationStatuses;
 }

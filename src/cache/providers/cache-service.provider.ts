@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
-import { CACHE_SERVICE_TOKEN } from '../constants/cache.constants';
-import { RedisCacheServiceImplementation } from '../redis-cache.service';
+import { CACHE_CONSTANTS } from '../cache.constants';
+import { RedisCacheService } from '../redis-cache.service';
 
 export const CacheServiceProvider: Provider = {
-  provide: CACHE_SERVICE_TOKEN,
-  useClass: RedisCacheServiceImplementation,
+  useClass: RedisCacheService,
+  provide: CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN,
 };

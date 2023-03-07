@@ -1,10 +1,10 @@
 import { Provider } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createTransport, Transporter } from 'nodemailer';
-import { NODEMAILER_TRANSPORTER } from '../mailer.constants';
+import { MAILER_CONSTANTS } from '../mailer.constants';
 
 export const NodemailerTransporterProvider: Provider = {
-  provide: NODEMAILER_TRANSPORTER,
+  provide: MAILER_CONSTANTS.APPLICATION.NODEMAILER_TRANSPORTER_TOKEN,
   useFactory: (config: ConfigService): Transporter => {
     const transporter = createTransport({
       host: config.get<string>('MAILER_HOST'),

@@ -1,8 +1,13 @@
-import { EncryptedData } from './encrypted-data.interface';
+import { IEncryptedData } from './encrypted-data.interface';
 
-export interface CryptographyService {
-  encrypt(data: string): EncryptedData;
-  decrypt(data: EncryptedData): string;
+export interface ICryptographyService {
+  encrypt(data: string): IEncryptedData;
+
+  decrypt(data: IEncryptedData): string;
+
   hash(data: string, salt?: string): Promise<string>;
+
   compareHashed(data: string, hashed: string): Promise<boolean>;
+
+  randomUUID(): string;
 }

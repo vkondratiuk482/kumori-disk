@@ -1,18 +1,18 @@
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TypeOrmPaymentPlanEntityImplementation } from '../entities/typeorm-payment-plan.entity';
-import { PaymentPlanEntity } from '../interfaces/payment-plan-entity.interface';
-import { PaymentPlanRepository } from '../interfaces/payment-plan-repository.interface';
+import { TypeOrmPaymentPlanEntity } from '../entities/typeorm-payment-plan.entity';
+import { IPaymentPlanEntity } from '../interfaces/payment-plan-entity.interface';
+import { IPaymentPlanRepository } from '../interfaces/payment-plan-repository.interface';
 
-export class TypeOrmPaymentPlanRepositoryImplementation
-  implements PaymentPlanRepository
+export class TypeOrmPaymentPlanRepository
+  implements IPaymentPlanRepository
 {
   constructor(
-    @InjectRepository(TypeOrmPaymentPlanEntityImplementation)
-    private readonly paymentPlanRepository: Repository<TypeOrmPaymentPlanEntityImplementation>,
+    @InjectRepository(TypeOrmPaymentPlanEntity)
+    private readonly paymentPlanRepository: Repository<TypeOrmPaymentPlanEntity>,
   ) {}
 
-  public async findSingleById(id: string): Promise<PaymentPlanEntity> {
+  public async findSingleById(id: string): Promise<IPaymentPlanEntity> {
     const paymentPlan = await this.paymentPlanRepository
       .createQueryBuilder('pp')
       .where('id = :id', { id })
@@ -21,7 +21,7 @@ export class TypeOrmPaymentPlanRepositoryImplementation
     return paymentPlan;
   }
 
-  public async findAll(): Promise<TypeOrmPaymentPlanEntityImplementation[]> {
+  public async findAll(): Promise<TypeOrmPaymentPlanEntity[]> {
     const paymentPlans = await this.paymentPlanRepository.find();
 
     return paymentPlans;

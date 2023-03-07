@@ -1,36 +1,33 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { CACHE_SERVICE_TOKEN } from 'src/cache/constants/cache.constants';
-import { CacheService } from 'src/cache/interfaces/cache-service.interface';
-import { HTTP_SERVICE_TOKEN } from 'src/http/constants/http.constants';
+import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
+import { ICacheService } from 'src/cache/interfaces/cache-service.interface';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
-import { HttpService } from 'src/http/interfaces/http-service.interface';
-import {
-  PAYPAL_ACCESS_TOKEN_CACHING_KEY,
-  PAYPAL_AUTH_REQUEST_DELAY_SECONDS,
-} from '../constants/payment.constant';
+import { HTTP_CONSTANTS } from 'src/http/http.constants';
+import { IHttpClient } from 'src/http/interfaces/http-client.interface';
 import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
 import { PaypalAccessTokenNotFoundInCacheError } from '../errors/paypal-access-token-not-found-in-cache.error';
-import { PaymentService } from '../interfaces/payment-service.interface';
-import { PaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
-import { SubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
+import { IPaymentService } from '../interfaces/payment-service.interface';
+import { IPaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
+import { ISubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
+import { PAYMENT_CONSTANTS } from '../payment.constant';
 import { PaymentPlanService } from './payment-plan.service';
 
 @Injectable()
-export class PaypalPaymentServiceImplementation
-  implements PaymentService, OnModuleInit
+export class PaypalPaymentService
+  implements IPaymentService, OnModuleInit
 {
   private readonly domain: string;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly paymentPlanService: PaymentPlanService,
-    @Inject(CACHE_SERVICE_TOKEN)
-    private readonly cacheService: CacheService,
-    @Inject(HTTP_SERVICE_TOKEN)
-    private readonly httpService: HttpService,
+    @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
+    private readonly cacheService: ICacheService,
+    @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
+    private readonly httpClient: IHttpClient,
   ) {
     const environment =
       this.configService.get<PaypalEnvironments>('PAYPAL_ENV');
@@ -56,25 +53,24 @@ export class PaypalPaymentServiceImplementation
 
   public async onModuleInit(): Promise<void> {
     const expirationTimeInMs = await this.getAndCacheAccessToken();
-
     setTimeout(async () => {
       this.onModuleInit();
     }, expirationTimeInMs);
   }
 
-  public async subscribe(data: SubscribeToPaymentPlan): Promise<string> {
+  public async subscribe(data: ISubscribeToPaymentPlan): Promise<string> {
     return 'mock';
   }
 
   /**
-   * Obtains and caches access token required for Bearer auth
+   * Gets and caches access token required for Bearer auth
    * Returns expiration time of the token in ms
    */
   private async getAndCacheAccessToken(): Promise<number> {
     const authorization = await this.authorizeWithException();
 
     const accessToken = await this.cacheService.set<string>(
-      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+      PAYMENT_CONSTANTS.APPLICATION.PAYPAL_ACCESS_TOKEN_CACHING_KEY,
       authorization.access_token,
       authorization.expires_in,
     );
@@ -84,12 +80,14 @@ export class PaypalPaymentServiceImplementation
     }
 
     const expirationTimeInMs =
-      (authorization.expires_in - PAYPAL_AUTH_REQUEST_DELAY_SECONDS) * 1000;
+      (authorization.expires_in -
+        PAYMENT_CONSTANTS.APPLICATION.PAYPAL_AUTH_REQUEST_DELAY_SECONDS) *
+      1000;
 
     return expirationTimeInMs;
   }
 
-  private async authorizeWithException(): Promise<PaypalAuthorizationResponse> {
+  private async authorizeWithException(): Promise<IPaypalAuthorizationResponse> {
     const url = this.getUrlWithDomain('/v1/oauth2/token');
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
@@ -103,13 +101,14 @@ export class PaypalPaymentServiceImplementation
     };
     const method = HttpMethod.POST;
 
-    const response =
-      await this.httpService.request<PaypalAuthorizationResponse>({
+    const response = await this.httpClient.request<IPaypalAuthorizationResponse>(
+      {
         url,
         body,
         method,
         headers,
-      });
+      },
+    );
 
     if (!response.access_token || !response.expires_in) {
       throw new IncorrectPaypalAuthorizationResponseError();
@@ -132,7 +131,7 @@ export class PaypalPaymentServiceImplementation
 
   private async getBearerAuthorizationHeadersWithException(): Promise<string> {
     const accessToken = await this.cacheService.get<string>(
-      PAYPAL_ACCESS_TOKEN_CACHING_KEY,
+      PAYMENT_CONSTANTS.APPLICATION.PAYPAL_ACCESS_TOKEN_CACHING_KEY,
     );
 
     if (!accessToken) {

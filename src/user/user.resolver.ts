@@ -2,38 +2,58 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  InternalServerErrorException,
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
-import { Args, Context, Mutation, Resolver } from '@nestjs/graphql';
-import { SessionAuthGuard } from 'src/user/guards/session-auth.guard';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { FileNotAccessibleError } from 'src/file/errors/file-not-accessible.error';
 import { FileNotCreatedInDatabaseError } from 'src/file/errors/file-not-created-in-database.error';
 import { FileNotUploadedToStorageError } from 'src/file/errors/file-not-uploaded-to-storage.error';
 import { convertGraphQLFileToFile } from 'src/file/file.utils';
 import { UploadFileSchema } from 'src/file/schema/upload-file.schema';
-import { GraphQLContext } from 'src/graphql/interfaces/graphql-context.interface';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
+import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
+import { IJwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
+import { IJwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
+import { LinkGithubAccountSchema } from './schema/link-github-account.schema';
+import { LinkGithubAccountResponse } from './responses/link-github-account.response';
+import { IHttpClientRequestError } from 'src/http/errors/http-client-request.error';
+import { GetGithubOAuthURLResponse } from 'src/auth/responses/get-github-oauth-url.response';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(SessionAuthGuard)
+  @Query(() => GetGithubOAuthURLResponse, {
+    name: 'getOAuthLinkGithubURL',
+  })
+  public async getGithubOAuthURL(): Promise<GetGithubOAuthURLResponse> {
+    try {
+      const url = await this.userService.getOAuthLinkGithubURL();
+
+      const response = new GetGithubOAuthURLResponse(url);
+
+      return response;
+    } catch (err) {
+      throw new BadRequestException();
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => String, { name: 'uploadSingleFile' })
   public async uploadSingleFile(
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UploadFileSchema,
-    @Context() context: GraphQLContext,
   ): Promise<string> {
     try {
-      const userId: string = context.req.session.get('user_id');
       const file = await convertGraphQLFileToFile(schema);
 
       const key = await this.userService.uploadSingleFileWithException(
-        userId,
+        jwtPayload.id,
         file,
       );
 
@@ -41,26 +61,24 @@ export class UserResolver {
     } catch (err) {
       if (
         err instanceof FileNotUploadedToStorageError ||
-        FileNotCreatedInDatabaseError
+        err instanceof FileNotCreatedInDatabaseError
       ) {
         throw new ConflictException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @UseGuards(SessionAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userShareAccess' })
   public async shareAccess(
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UserShareAccessSchema,
-    @Context() context: GraphQLContext,
   ): Promise<boolean> {
     try {
-      const ownerId: string = context.req.session.get('user_id');
-
       const shared = await this.userService.shareAccessWithException(
-        ownerId,
+        jwtPayload.id,
         schema,
       );
 
@@ -73,21 +91,19 @@ export class UserResolver {
         throw new NotFoundException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
     }
   }
 
-  @UseGuards(SessionAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userRevokeAccess' })
   public async revokeAccess(
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UserRevokeAccessSchema,
-    @Context() context: GraphQLContext,
   ): Promise<boolean> {
     try {
-      const ownerId: string = context.req.session.get('user_id');
-
       const revoked = await this.userService.revokeAccessWithException(
-        ownerId,
+        jwtPayload.id,
         schema,
       );
 
@@ -97,7 +113,31 @@ export class UserResolver {
         throw new ForbiddenException(err);
       }
 
-      throw new BadRequestException(err);
+      throw new BadRequestException();
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Mutation(() => LinkGithubAccountResponse, { name: 'linkGithubAccount' })
+  public async linkGithubAccount(
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
+    @Args('schema') schema: LinkGithubAccountSchema,
+  ): Promise<LinkGithubAccountResponse> {
+    try {
+      const linked = await this.userService.linkGithubAccount(
+        jwtPayload.id,
+        schema,
+      );
+
+      const response = new LinkGithubAccountResponse(linked);
+
+      return response;
+    } catch (err) {
+      if (err instanceof IHttpClientRequestError) {
+        throw new InternalServerErrorException();
+      }
+
+      throw new BadRequestException();
     }
   }
 }
