@@ -8,7 +8,7 @@ import { IJwtOptionsFactory } from '../factories/jwt-options.factory';
 import { IJwtPair } from '../interfaces/jwt-pair.interface';
 
 @Injectable()
-export class RS256JwtServiceImpl implements IJwtService {
+export class RS256JwtService implements IJwtService {
   private readonly jwt: JSONWebToken;
 
   constructor(private readonly configService: ConfigService) {

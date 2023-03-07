@@ -11,7 +11,7 @@ import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 import { FILE_CONSTANTS } from './file.constants';
 
 @Injectable()
-export class FileFacadeImplementation implements IFileFacade {
+export class FileFacade implements IFileFacade {
   constructor(
     private readonly fileService: FileService,
     @Inject(FILE_CONSTANTS.APPLICATION.STORAGE_SERVICE_TOKEN)

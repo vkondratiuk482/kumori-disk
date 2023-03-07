@@ -5,10 +5,10 @@ import { FileFacadeProvider } from './providers/file-facade.provider';
 import { FileRepositoryProvider } from './providers/file-repository.provider';
 import { FileStorageServiceProvider } from './providers/file-storage-service.provider';
 import { FileService } from './services/file.service';
-import { TypeOrmFileEntityImplementation } from './entities/typeorm-file.entity';
+import { TypeOrmFileEntity } from './entities/typeorm-file.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([TypeOrmFileEntityImplementation])],
+  imports: [TypeOrmModule.forFeature([TypeOrmFileEntity])],
   providers: [
     FileService,
     S3ClientProvider,

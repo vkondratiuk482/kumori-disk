@@ -16,7 +16,7 @@ import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storag
 import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
 import { FILE_CONSTANTS } from '../file.constants';
 
-export class S3FileStorageServiceImplementation /*implements IFileStorageService */ {
+export class S3FileStorageService /*implements IFileStorageService */ {
   private readonly bucket: string;
 
   constructor(

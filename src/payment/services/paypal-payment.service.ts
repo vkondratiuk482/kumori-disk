@@ -16,7 +16,7 @@ import { PAYMENT_CONSTANTS } from '../payment.constant';
 import { PaymentPlanService } from './payment-plan.service';
 
 @Injectable()
-export class PaypalPaymentServiceImplementation
+export class PaypalPaymentService
   implements IPaymentService, OnModuleInit
 {
   private readonly domain: string;

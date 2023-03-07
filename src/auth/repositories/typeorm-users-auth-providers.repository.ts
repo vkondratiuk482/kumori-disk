@@ -7,7 +7,7 @@ import { IUsersAuthProvidersEntity } from '../interfaces/users-auth-providers-en
 import { TypeormUsersAuthProvidersEntity } from '../entities/typeorm-users-auth-providers.entity';
 import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 
-export class TypeormUsersAuthProvidersRepositoryImpl
+export class TypeormUsersAuthProvidersRepository
   implements IUsersAuthProvidersRepository
 {
   constructor(

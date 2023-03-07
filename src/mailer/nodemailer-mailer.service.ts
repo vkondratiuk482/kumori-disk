@@ -7,7 +7,7 @@ import { ISendConfirmationMail } from './interfaces/send-confirmation-mail.inter
 import { ISendGithubGeneratedPasswordMail } from './interfaces/send-github-generated-password.interface';
 
 @Injectable()
-export class NodemailerMailerServiceImplementation implements IMailerService {
+export class NodemailerMailerService implements IMailerService {
   constructor(
     @Inject(MAILER_CONSTANTS.APPLICATION.NODEMAILER_TRANSPORTER_TOKEN)
     private readonly transporter: Transporter,

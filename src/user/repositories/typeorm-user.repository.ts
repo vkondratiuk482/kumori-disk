@@ -7,7 +7,7 @@ import {
 import { AsyncLocalStorage } from 'async_hooks';
 
 import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
-import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
+import { TypeOrmUserEntity } from '../entities/typeorm-user.entity';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
 import { ICreateUser } from '../interfaces/create-user.interface';
@@ -15,16 +15,16 @@ import { IUserEntity } from '../interfaces/user-entity.interface';
 import { IUserRepository } from '../interfaces/user-repository.interface';
 
 @Injectable()
-export class TypeOrmUserRepositoryImplementation implements IUserRepository {
+export class TypeOrmUserRepository implements IUserRepository {
   constructor(
     @InjectEntityManager() private readonly manager: EntityManager,
-    @InjectRepository(TypeOrmUserEntityImplementation)
-    private readonly userRepository: Repository<TypeOrmUserEntityImplementation>,
+    @InjectRepository(TypeOrmUserEntity)
+    private readonly userRepository: Repository<TypeOrmUserEntity>,
     @InjectDataSource() private readonly dataSource: DataSource,
     private readonly als: AsyncLocalStorage<QueryRunner>,
   ) {}
 
-  public async findById(id: string): Promise<TypeOrmUserEntityImplementation> {
+  public async findById(id: string): Promise<TypeOrmUserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('id = :id', { id })
@@ -35,7 +35,7 @@ export class TypeOrmUserRepositoryImplementation implements IUserRepository {
 
   public async findByUsername(
     username: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
+  ): Promise<TypeOrmUserEntity> {
     const user = await this.userRepository
       .createQueryBuilder('u')
       .where('username = :username', { username })
@@ -46,11 +46,11 @@ export class TypeOrmUserRepositoryImplementation implements IUserRepository {
 
   public async findByEmail(
     email: string,
-  ): Promise<TypeOrmUserEntityImplementation> {
+  ): Promise<TypeOrmUserEntity> {
     const queryRunner = this.als.getStore();
 
     const userRepository =
-      queryRunner?.manager?.getRepository(TypeOrmUserEntityImplementation) ||
+      queryRunner?.manager?.getRepository(TypeOrmUserEntity) ||
       this.userRepository;
 
     const user = await userRepository
@@ -85,7 +85,7 @@ export class TypeOrmUserRepositoryImplementation implements IUserRepository {
     const manager = this.als.getStore()?.manager || this.manager;
 
     const user = manager
-      .getRepository(TypeOrmUserEntityImplementation)
+      .getRepository(TypeOrmUserEntity)
       .create(data);
 
     return manager.save(user);
@@ -94,7 +94,7 @@ export class TypeOrmUserRepositoryImplementation implements IUserRepository {
   public async updateGithubId(id: string, githubId: number): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')
-      .update(TypeOrmUserEntityImplementation)
+      .update(TypeOrmUserEntity)
       .set({
         githubId,
       })
@@ -113,7 +113,7 @@ export class TypeOrmUserRepositoryImplementation implements IUserRepository {
   ): Promise<boolean> {
     const result = await this.userRepository
       .createQueryBuilder('u')
-      .update(TypeOrmUserEntityImplementation)
+      .update(TypeOrmUserEntity)
       .set({
         confirmationStatus: status,
       })

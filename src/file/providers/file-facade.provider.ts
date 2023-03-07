@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
 import { FILE_CONSTANTS } from '../file.constants';
-import { FileFacadeImplementation } from '../file.facade';
+import { FileFacade } from '../file.facade';
 
 export const FileFacadeProvider: Provider = {
-  useClass: FileFacadeImplementation,
+  useClass: FileFacade,
   provide: FILE_CONSTANTS.APPLICATION.FACADE_TOKEN,
 };

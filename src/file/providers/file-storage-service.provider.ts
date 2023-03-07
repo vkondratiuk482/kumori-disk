@@ -1,8 +1,8 @@
 import { Provider } from '@nestjs/common';
 import { FILE_CONSTANTS } from '../file.constants';
-import { S3FileStorageServiceImplementation } from '../services/s3-file-storage.service';
+import { S3FileStorageService } from '../services/s3-file-storage.service';
 
 export const FileStorageServiceProvider: Provider = {
-  useClass: S3FileStorageServiceImplementation,
+  useClass: S3FileStorageService,
   provide: FILE_CONSTANTS.APPLICATION.STORAGE_SERVICE_TOKEN,
 };
