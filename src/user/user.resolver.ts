@@ -17,11 +17,11 @@ import { UserService } from './user.service';
 import { UserShareAccessSchema } from './schema/user-share-access.schema';
 import { UserRevokeAccessSchema } from './schema/user-revoke-access.schema';
 import { JwtAuthGuard } from 'src/jwt/guards/jwt-auth.guard';
-import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
-import { JwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
+import { IJwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
+import { IJwtPayloadDecorator } from 'src/jwt/decorators/jwt-payload.decorator';
 import { LinkGithubAccountSchema } from './schema/link-github-account.schema';
 import { LinkGithubAccountResponse } from './responses/link-github-account.response';
-import { HttpClientRequestError } from 'src/http/errors/http-client-request.error';
+import { IHttpClientRequestError } from 'src/http/errors/http-client-request.error';
 import { GetGithubOAuthURLResponse } from 'src/auth/responses/get-github-oauth-url.response';
 
 @Resolver()
@@ -46,7 +46,7 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => String, { name: 'uploadSingleFile' })
   public async uploadSingleFile(
-    @JwtPayloadDecorator() jwtPayload: JwtPayload,
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UploadFileSchema,
   ): Promise<string> {
     try {
@@ -73,7 +73,7 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userShareAccess' })
   public async shareAccess(
-    @JwtPayloadDecorator() jwtPayload: JwtPayload,
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UserShareAccessSchema,
   ): Promise<boolean> {
     try {
@@ -98,7 +98,7 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => Boolean, { name: 'userRevokeAccess' })
   public async revokeAccess(
-    @JwtPayloadDecorator() jwtPayload: JwtPayload,
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: UserRevokeAccessSchema,
   ): Promise<boolean> {
     try {
@@ -120,7 +120,7 @@ export class UserResolver {
   @UseGuards(JwtAuthGuard)
   @Mutation(() => LinkGithubAccountResponse, { name: 'linkGithubAccount' })
   public async linkGithubAccount(
-    @JwtPayloadDecorator() jwtPayload: JwtPayload,
+    @IJwtPayloadDecorator() jwtPayload: IJwtPayload,
     @Args('schema') schema: LinkGithubAccountSchema,
   ): Promise<LinkGithubAccountResponse> {
     try {
@@ -133,7 +133,7 @@ export class UserResolver {
 
       return response;
     } catch (err) {
-      if (err instanceof HttpClientRequestError) {
+      if (err instanceof IHttpClientRequestError) {
         throw new InternalServerErrorException();
       }
 

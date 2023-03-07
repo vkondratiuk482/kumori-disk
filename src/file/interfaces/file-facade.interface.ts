@@ -1,17 +1,17 @@
-import { UploadFile } from './upload-file.interface';
-import { ShareAccess } from './share-access.interface';
-import { RevokeAccess } from './revoke-access.interface';
-import { CopyFile } from './copy-file.interface';
-import { RenameFile } from './rename-file.interface';
+import { IUploadFile } from './upload-file.interface';
+import { IShareAccess } from './share-access.interface';
+import { IRevokeAccess } from './revoke-access.interface';
+import { ICopyFile } from './copy-file.interface';
+import { IRenameFile } from './rename-file.interface';
 
-export interface FileFacade {
-  uploadSingleFileWithException(data: UploadFile): Promise<string>;
+export interface IFileFacade {
+  uploadSingleFileWithException(data: IUploadFile): Promise<string>;
 
-  shareAccessWithException(data: ShareAccess): Promise<boolean>;
+  shareAccessWithException(data: IShareAccess): Promise<boolean>;
 
-  revokeAccessWithException(data: RevokeAccess): Promise<boolean>;
+  revokeAccessWithException(data: IRevokeAccess): Promise<boolean>;
 
-  copySingleWithException(data: CopyFile): Promise<string>;
+  copySingleWithException(data: ICopyFile): Promise<string>;
 
-  renameSingleWithException(data: RenameFile): Promise<string>;
+  renameSingleWithException(data: IRenameFile): Promise<string>;
 }

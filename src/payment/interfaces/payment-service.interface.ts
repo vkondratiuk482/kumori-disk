@@ -1,5 +1,5 @@
-import { SubscribeToPaymentPlan } from './subscribe-to-payment-plan.interface';
+import { ISubscribeToPaymentPlan } from './subscribe-to-payment-plan.interface';
 
-export interface PaymentService {
-  subscribe(data: SubscribeToPaymentPlan): Promise<string>;
+export interface IPaymentService {
+  subscribe(data: ISubscribeToPaymentPlan): Promise<string>;
 }

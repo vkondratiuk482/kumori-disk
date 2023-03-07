@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { IncomingHttpHeaders } from 'node:http';
 import { UndiciHttpService } from '../services/undici-http.service';
-import { HttpClient } from '../interfaces/http-client.interface';
-import { HttpRequest } from '../interfaces/http-request.interface';
-import { HttpBody } from '../interfaces/http-body.interface';
-import { UndiciRequest } from '../interfaces/undici-request.interface';
+import { IHttpClient } from '../interfaces/http-client.interface';
+import { IHttpRequest } from '../interfaces/http-request.interface';
+import { IHttpBody } from '../interfaces/http-body.interface';
+import { IUndiciRequest } from '../interfaces/undici-request.interface';
 
 @Injectable()
-export class UndiciHttpAdapter implements HttpClient {
+export class UndiciHttpAdapter implements IHttpClient {
   constructor(private readonly undiciHttpService: UndiciHttpService) {}
 
-  public async request<T>(payload: HttpRequest): Promise<T> {
-    const request: UndiciRequest = {
+  public async request<T>(payload: IHttpRequest): Promise<T> {
+    const request: IUndiciRequest = {
       url: payload.url,
       options: {
         method: payload.method,
@@ -39,7 +39,7 @@ export class UndiciHttpAdapter implements HttpClient {
   /**
    * Replace it with HttpBodyFactory in case there are more body types
    */
-  private adaptBody(body: HttpBody): string {
+  private adaptBody(body: IHttpBody): string {
     if (typeof body === 'string') {
       return body;
     } else if (typeof body === 'object') {

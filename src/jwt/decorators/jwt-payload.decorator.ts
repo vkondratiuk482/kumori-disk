@@ -9,4 +9,4 @@ export const GetAuhtorizationHeaders = createParamDecorator(
   },
 );
 
-export const JwtPayloadDecorator = () => GetAuhtorizationHeaders(JwtPipe);
+export const IJwtPayloadDecorator = () => GetAuhtorizationHeaders(JwtPipe);

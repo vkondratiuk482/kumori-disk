@@ -10,12 +10,12 @@ import { DataSource, EntityManager, QueryRunner, Repository } from 'typeorm';
 import { TypeOrmUserEntityImplementation } from '../entities/typeorm-user.entity';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-import { CreateUser } from '../interfaces/create-user.interface';
-import { UserEntity } from '../interfaces/user-entity.interface';
-import { UserRepository } from '../interfaces/user-repository.interface';
+import { ICreateUser } from '../interfaces/create-user.interface';
+import { IUserEntity } from '../interfaces/user-entity.interface';
+import { IUserRepository } from '../interfaces/user-repository.interface';
 
 @Injectable()
-export class TypeOrmUserRepositoryImplementation implements UserRepository {
+export class TypeOrmUserRepositoryImplementation implements IUserRepository {
   constructor(
     @InjectEntityManager() private readonly manager: EntityManager,
     @InjectRepository(TypeOrmUserEntityImplementation)
@@ -81,7 +81,7 @@ export class TypeOrmUserRepositoryImplementation implements UserRepository {
     return exists;
   }
 
-  public async create(data: CreateUser): Promise<UserEntity> {
+  public async create(data: ICreateUser): Promise<IUserEntity> {
     const manager = this.als.getStore()?.manager || this.manager;
 
     const user = manager

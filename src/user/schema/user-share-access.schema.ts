@@ -1,10 +1,9 @@
 import { Field, InputType } from '@nestjs/graphql';
 import { IsArray, IsEnum, IsString, IsUUID } from 'class-validator';
 import { FileConsumer } from 'src/file/enums/file-consumer.enum';
-import { UserShareAccess } from '../interfaces/user-share-access.interface';
 
 @InputType()
-export class UserShareAccessSchema implements UserShareAccess {
+export class UserShareAccessSchema {
   @IsUUID()
   @Field()
   public readonly tenantId: string;

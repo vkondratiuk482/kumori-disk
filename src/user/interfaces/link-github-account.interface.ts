@@ -1,3 +1,3 @@
-export interface LinkGithubAccount {
+export interface ILinkGithubAccount {
   readonly code: string;
 }

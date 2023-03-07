@@ -1,6 +1,6 @@
 import { MimeType } from '../enums/mime-type.enum';
 
-export interface File {
+export interface IFile {
   readonly name: string;
 
   readonly extension: MimeType;

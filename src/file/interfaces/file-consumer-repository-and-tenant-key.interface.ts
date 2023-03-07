@@ -1,6 +1,6 @@
 import { ObjectLiteral, Repository } from 'typeorm';
 
-export interface FileConsumerRepositoryAndTenantKey {
+export interface IFileConsumerRepositoryAndTenantKey {
   readonly repository: Repository<ObjectLiteral>;
 
   readonly tenantKey: string;

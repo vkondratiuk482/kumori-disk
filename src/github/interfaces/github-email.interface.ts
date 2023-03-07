@@ -1,4 +1,4 @@
-export interface GithubEmail {
+export interface IGithubEmail {
   readonly email: string;
 
   readonly primary: boolean;

@@ -1,6 +1,6 @@
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-export interface CreateUser {
+export interface ICreateUser {
   readonly email: string;
 
   readonly username: string;

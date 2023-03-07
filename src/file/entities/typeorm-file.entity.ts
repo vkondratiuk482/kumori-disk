@@ -1,10 +1,10 @@
 import { TypeOrmUserEntityImplementation } from 'src/user/entities/typeorm-user.entity';
 import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { FileConsumer } from '../enums/file-consumer.enum';
-import { FileEntity } from '../interfaces/file-entity.interface';
+import { IFileEntity } from '../interfaces/file-entity.interface';
 
 @Entity('file')
-export class TypeOrmFileEntityImplementation implements FileEntity {
+export class TypeOrmFileEntityImplementation implements IFileEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 

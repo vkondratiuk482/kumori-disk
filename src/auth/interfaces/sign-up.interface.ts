@@ -1,4 +1,4 @@
-export interface SignUp {
+export interface ILocalSignUp {
   readonly email: string;
 
   readonly username: string;

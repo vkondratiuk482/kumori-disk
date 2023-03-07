@@ -1,50 +1,50 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { FileFacade } from 'src/file/interfaces/file-facade.interface';
-import { UploadFile } from 'src/file/interfaces/upload-file.interface';
-import { CreateUser } from './interfaces/create-user.interface';
-import { UserRepository } from './interfaces/user-repository.interface';
+import { IFileFacade } from 'src/file/interfaces/file-facade.interface';
+import { IUploadFile } from 'src/file/interfaces/upload-file.interface';
+import { ICreateUser } from './interfaces/create-user.interface';
+import { IUserRepository } from './interfaces/user-repository.interface';
 import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
 import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
 import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
-import { File } from 'src/file/interfaces/file.interface';
+import { IFile } from 'src/file/interfaces/file.interface';
 import { FileConsumer } from 'src/file/enums/file-consumer.enum';
-import { UserShareAccess } from './interfaces/user-share-access.interface';
-import { UserRevokeAccess } from './interfaces/user-revoke-access.interface';
-import { UserEntity } from './interfaces/user-entity.interface';
-import { EventService } from 'src/event/interface/event-service.interface';
-import { UserShareAccessEvent } from './interfaces/user-share-access-event.interface';
-import { UserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
+import { IUserShareAccess } from './interfaces/user-share-access.interface';
+import { IUserRevokeAccess } from './interfaces/user-revoke-access.interface';
+import { IUserEntity } from './interfaces/user-entity.interface';
+import { IEventService } from 'src/event/interface/event-service.interface';
+import { IUserShareAccessEvent } from './interfaces/user-share-access-event.interface';
+import { IUserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
 import { USER_CONSTANTS } from './user.constants';
 import { FILE_CONSTANTS } from 'src/file/file.constants';
 import { EVENT_CONSTANTS } from 'src/event/event.constants';
 import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enum';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
-import { GithubClient } from 'src/github/interfaces/github-client.interface';
-import { LinkGithubAccount } from './interfaces/link-github-account.interface';
+import { IGithubClient } from 'src/github/interfaces/github-client.interface';
+import { ILinkGithubAccount } from './interfaces/link-github-account.interface';
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly configService: ConfigService,
     @Inject(USER_CONSTANTS.APPLICATION.REPOSITORY_TOKEN)
-    private readonly userRepository: UserRepository,
+    private readonly userRepository: IUserRepository,
     @Inject(FILE_CONSTANTS.APPLICATION.FACADE_TOKEN)
-    private readonly fileFacade: FileFacade,
+    private readonly fileFacade: IFileFacade,
     @Inject(EVENT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly eventService: EventService,
+    private readonly eventService: IEventService,
     @Inject(GITHUB_CONSTANTS.APPLICATION.CLIENT_TOKEN)
-    private readonly githubClient: GithubClient,
+    private readonly githubClient: IGithubClient,
   ) {}
 
-  public async findById(id: string): Promise<UserEntity> {
+  public async findById(id: string): Promise<IUserEntity> {
     const user = await this.userRepository.findById(id);
 
     return user;
   }
 
-  public async findByIdOrThrow(id: string): Promise<UserEntity> {
+  public async findByIdOrThrow(id: string): Promise<IUserEntity> {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
@@ -54,7 +54,7 @@ export class UserService {
     return user;
   }
 
-  public async findByUsernameOrThrow(username: string): Promise<UserEntity> {
+  public async findByUsernameOrThrow(username: string): Promise<IUserEntity> {
     const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
@@ -64,13 +64,13 @@ export class UserService {
     return user;
   }
 
-  public async findByEmail(email: string): Promise<UserEntity> {
+  public async findByEmail(email: string): Promise<IUserEntity> {
     const user = await this.userRepository.findByEmail(email);
 
     return user;
   }
 
-  public async findByEmailOrThrow(email: string): Promise<UserEntity> {
+  public async findByEmailOrThrow(email: string): Promise<IUserEntity> {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
@@ -100,7 +100,7 @@ export class UserService {
     return user.diskSpace;
   }
 
-  public async create(data: CreateUser): Promise<UserEntity> {
+  public async create(data: ICreateUser): Promise<IUserEntity> {
     const user = await this.userRepository.create(data);
 
     return user;
@@ -118,7 +118,7 @@ export class UserService {
 
   public async linkGithubAccount(
     id: string,
-    payload: LinkGithubAccount,
+    payload: ILinkGithubAccount,
   ): Promise<boolean> {
     const accessToken = await this.githubClient.getAccessToken(payload.code);
 
@@ -155,7 +155,7 @@ export class UserService {
 
   public async uploadSingleFileWithException(
     ownerId: string,
-    data: File,
+    data: IFile,
   ): Promise<string> {
     const bytes = Buffer.byteLength(data.buffer);
 
@@ -168,7 +168,7 @@ export class UserService {
       throw new UserExceedsPersonalStorageLimitError();
     }
 
-    const file: UploadFile = {
+    const file: IUploadFile = {
       ownerId,
       path: data.path,
       name: data.name,
@@ -186,7 +186,7 @@ export class UserService {
 
   public async shareAccessWithException(
     ownerId: string,
-    data: UserShareAccess,
+    data: IUserShareAccess,
   ): Promise<boolean> {
     const shared = await this.fileFacade.shareAccessWithException({
       ownerId,
@@ -196,7 +196,7 @@ export class UserService {
       fileIds: data.fileIds,
     });
 
-    const payload: UserShareAccessEvent = {
+    const payload: IUserShareAccessEvent = {
       fileIds: data.fileIds,
       tenantId: data.tenantId,
       tenantType: data.tenantType,
@@ -211,7 +211,7 @@ export class UserService {
 
   public async revokeAccessWithException(
     ownerId: string,
-    data: UserRevokeAccess,
+    data: IUserRevokeAccess,
   ): Promise<boolean> {
     const revoked = await this.fileFacade.revokeAccessWithException({
       ownerId,
@@ -221,7 +221,7 @@ export class UserService {
       fileIds: data.fileIds,
     });
 
-    const payload: UserRevokeAccessEvent = {
+    const payload: IUserRevokeAccessEvent = {
       fileIds: data.fileIds,
       tenantId: data.tenantId,
       tenantType: data.tenantType,

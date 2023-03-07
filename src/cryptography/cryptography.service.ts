@@ -4,17 +4,17 @@ import { ConfigService } from '@nestjs/config';
 import * as util from 'node:util';
 import * as crypto from 'node:crypto';
 
-import { EncryptedData } from './interfaces/encrypted-data.interface';
-import { CryptographyService } from './interfaces/cryptography-service.interface';
+import { IEncryptedData } from './interfaces/encrypted-data.interface';
+import { ICryptographyService } from './interfaces/cryptography-service.interface';
 import { CRYPTOGRAPHY_CONSTANTS } from './cryptography.constants';
 
 @Injectable()
-export class NativeCryptoCryptographyServiceImplementation
-  implements CryptographyService
+export class CryptographyService
+  implements ICryptographyService
 {
   constructor(private readonly config: ConfigService) {}
 
-  public encrypt(data: string): EncryptedData {
+  public encrypt(data: string): IEncryptedData {
     const key = this.config.get<string>('CRYPTO_KEY');
     const algorithm = this.config.get<string>('CRYPTO_ALGORITHM');
 
@@ -26,7 +26,7 @@ export class NativeCryptoCryptographyServiceImplementation
 
     const encrypted = `${update}${final}`;
 
-    const encryptedData: EncryptedData = {
+    const encryptedData: IEncryptedData = {
       iv,
       data: encrypted,
     };
@@ -34,7 +34,7 @@ export class NativeCryptoCryptographyServiceImplementation
     return encryptedData;
   }
 
-  public decrypt(data: EncryptedData): string {
+  public decrypt(data: IEncryptedData): string {
     const key = this.config.get<string>('CRYPTO_KEY');
     const algorithm = this.config.get<string>('CRYPTO_ALGORITHM');
 

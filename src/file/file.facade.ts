@@ -1,25 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { UploadFile } from './interfaces/upload-file.interface';
-import { FileFacade } from './interfaces/file-facade.interface';
-import { FileStorageService } from './interfaces/file-storage-service.interface';
+import { IUploadFile } from './interfaces/upload-file.interface';
+import { IFileFacade } from './interfaces/file-facade.interface';
+import { IFileStorageService } from './interfaces/file-storage-service.interface';
 import { FileService } from './services/file.service';
-import { ShareAccess } from 'src/file/interfaces/share-access.interface';
-import { RevokeAccess } from './interfaces/revoke-access.interface';
-import { CopyFile } from './interfaces/copy-file.interface';
-import { RenameFile } from './interfaces/rename-file.interface';
+import { IShareAccess } from 'src/file/interfaces/share-access.interface';
+import { IRevokeAccess } from './interfaces/revoke-access.interface';
+import { ICopyFile } from './interfaces/copy-file.interface';
+import { IRenameFile } from './interfaces/rename-file.interface';
 import { FileNotUploadedError } from './errors/file-not-uploaded.error';
 import { FILE_CONSTANTS } from './file.constants';
 
 @Injectable()
-export class FileFacadeImplementation implements FileFacade {
+export class FileFacadeImplementation implements IFileFacade {
   constructor(
     private readonly fileService: FileService,
     @Inject(FILE_CONSTANTS.APPLICATION.STORAGE_SERVICE_TOKEN)
-    private readonly fileStorage: FileStorageService,
+    private readonly fileStorage: IFileStorageService,
   ) {}
 
   public async uploadSingleFileWithException(
-    data: UploadFile,
+    data: IUploadFile,
   ): Promise<string> {
     const key = await this.fileStorage.uploadSingleWithException(data);
 
@@ -39,7 +39,7 @@ export class FileFacadeImplementation implements FileFacade {
     }
   }
 
-  public async shareAccessWithException(data: ShareAccess): Promise<boolean> {
+  public async shareAccessWithException(data: IShareAccess): Promise<boolean> {
     const files = await this.fileService.findManyByIdsAndOwnerWithException(
       data.fileIds,
       data.ownerId,
@@ -55,7 +55,7 @@ export class FileFacadeImplementation implements FileFacade {
     return attached;
   }
 
-  public async revokeAccessWithException(data: RevokeAccess): Promise<boolean> {
+  public async revokeAccessWithException(data: IRevokeAccess): Promise<boolean> {
     const files = await this.fileService.findManyByIdsAndOwnerWithException(
       data.fileIds,
       data.ownerId,
@@ -71,7 +71,7 @@ export class FileFacadeImplementation implements FileFacade {
     return dettached;
   }
 
-  public async copySingleWithException(data: CopyFile): Promise<string> {
+  public async copySingleWithException(data: ICopyFile): Promise<string> {
     const source = await this.fileService.findSingleByIdAndOwnerWithException(
       data.fileId,
       data.ownerId,
@@ -92,7 +92,7 @@ export class FileFacadeImplementation implements FileFacade {
     }
   }
 
-  public async renameSingleWithException(data: RenameFile): Promise<string> {
+  public async renameSingleWithException(data: IRenameFile): Promise<string> {
     const source = await this.fileService.findSingleByIdAndOwnerWithException(
       data.fileId,
       data.ownerId,

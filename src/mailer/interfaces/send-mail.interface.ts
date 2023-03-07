@@ -1,4 +1,4 @@
-export interface SendMail {
+export interface ISendMail {
   readonly to: string;
 
   readonly subject: string;

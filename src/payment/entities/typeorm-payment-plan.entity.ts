@@ -2,11 +2,11 @@ import { TypeOrmUserEntityImplementation } from 'src/user/entities/typeorm-user.
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { PaymentCurrencies } from '../enums/payment-currencies.enum';
 import { PaymentPlanChargeIntervals } from '../enums/payment-plan-charge-intervals.enum';
-import { PaymentPlanEntity } from '../interfaces/payment-plan-entity.interface';
+import { IPaymentPlanEntity } from '../interfaces/payment-plan-entity.interface';
 
 @Entity('payment_plan')
 export class TypeOrmPaymentPlanEntityImplementation
-  implements PaymentPlanEntity
+  implements IPaymentPlanEntity
 {
   @PrimaryGeneratedColumn('increment')
   public id: string;

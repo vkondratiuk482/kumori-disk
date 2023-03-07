@@ -1,1 +1,1 @@
-export type HttpBody = object | string;
+export type IHttpBody = object | string;

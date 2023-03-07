@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 
-export interface GraphQLFile {
+export interface IGraphQLFile {
   readonly filename: string;
 
   readonly mimetype: string;

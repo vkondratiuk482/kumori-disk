@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { EventService } from './interface/event-service.interface';
+import { IEventService } from './interface/event-service.interface';
 
 @Injectable()
-export class EventEmitterEventServiceImplementation implements EventService {
+export class EventService implements IEventService {
   constructor(private readonly eventEmitter: EventEmitter2) {}
 
   public emit<T>(event: string, payload: T): void {

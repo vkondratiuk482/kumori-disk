@@ -1,6 +1,6 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface CopyFile {
+export interface ICopyFile {
   readonly fileId: string;
   readonly ownerId: string;
   readonly ownerType: FileConsumer;

@@ -1,7 +1,7 @@
 import { MimeType } from '../enums/mime-type.enum';
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface UploadFile {
+export interface IUploadFile {
   readonly ownerId: string;
 
   readonly ownerType: FileConsumer;

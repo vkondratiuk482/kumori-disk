@@ -1,4 +1,4 @@
-export interface JwtOptions {
+export interface IJwtOptions {
   readonly ttl: number;
 
   readonly publicKey: string;

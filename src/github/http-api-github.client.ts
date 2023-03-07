@@ -2,14 +2,14 @@ import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { HTTP_CONSTANTS } from 'src/http/http.constants';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
-import { GithubUser } from './interfaces/github-user.interface';
-import { GithubEmail } from './interfaces/github-email.interface';
-import { GithubClient } from './interfaces/github-client.interface';
-import { HttpClient } from 'src/http/interfaces/http-client.interface';
-import { GithubGetAccessTokenResponse } from './interfaces/github-get-access-token-response.interface';
+import { IGithubUser } from './interfaces/github-user.interface';
+import { IGithubEmail } from './interfaces/github-email.interface';
+import { IGithubClient } from './interfaces/github-client.interface';
+import { IHttpClient } from 'src/http/interfaces/http-client.interface';
+import { IGithubGetAccessTokenResponse } from './interfaces/github-get-access-token-response.interface';
 
 @Injectable()
-export class HttpAPIGithubClientImpl implements GithubClient {
+export class HttpAPIGithubClient implements IGithubClient {
   private readonly clientId: string;
   private readonly apiBaseURL: string;
   private readonly authBaseURL: string;
@@ -18,7 +18,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
   constructor(
     private readonly configService: ConfigService,
     @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
-    private readonly httpClient: HttpClient,
+    private readonly httpClient: IHttpClient,
   ) {
     this.clientSecret = this.configService.get<string>(
       'GITHUB_OAUTH_CLIENT_SECRET',
@@ -44,7 +44,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
 
   public async getAccessToken(code: string): Promise<string> {
     const response =
-      await this.httpClient.request<GithubGetAccessTokenResponse>({
+      await this.httpClient.request<IGithubGetAccessTokenResponse>({
         method: HttpMethod.POST,
         headers: {
           Accept: 'application/json',
@@ -60,8 +60,8 @@ export class HttpAPIGithubClientImpl implements GithubClient {
     return response.access_token;
   }
 
-  public async getUser(accessToken: string): Promise<GithubUser> {
-    const response = await this.httpClient.request<GithubUser>({
+  public async getUser(accessToken: string): Promise<IGithubUser> {
+    const response = await this.httpClient.request<IGithubUser>({
       method: HttpMethod.GET,
       headers: {
         'User-Agent': 'request',
@@ -74,7 +74,7 @@ export class HttpAPIGithubClientImpl implements GithubClient {
   }
 
   public async getVerifiedPrimaryEmail(accessToken: string): Promise<string> {
-    const response = await this.httpClient.request<GithubEmail[]>({
+    const response = await this.httpClient.request<IGithubEmail[]>({
       method: HttpMethod.GET,
       headers: {
         'User-Agent': 'request',

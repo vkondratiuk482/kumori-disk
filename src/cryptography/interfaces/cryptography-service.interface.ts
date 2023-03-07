@@ -1,9 +1,9 @@
-import { EncryptedData } from './encrypted-data.interface';
+import { IEncryptedData } from './encrypted-data.interface';
 
-export interface CryptographyService {
-  encrypt(data: string): EncryptedData;
+export interface ICryptographyService {
+  encrypt(data: string): IEncryptedData;
 
-  decrypt(data: EncryptedData): string;
+  decrypt(data: IEncryptedData): string;
 
   hash(data: string, salt?: string): Promise<string>;
 

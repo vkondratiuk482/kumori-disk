@@ -14,18 +14,18 @@ import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.err
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
 
-import { SignUpSchema } from './schema/sign-up.schema';
-import { SignInSchema } from './schema/sign-in.schema';
+import { ILocalSignUpSchema } from './schema/sign-up.schema';
+import { ILocalSignInSchema } from './schema/sign-in.schema';
 
 import { LocalAuthService } from './services/local-auth.service';
 import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
-import { JwtPairResponse } from './responses/jwt-pair.response';
+import { IJwtPairResponse } from './responses/jwt-pair.response';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
 import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
 import { GithubAuthService } from './services/github-auth.service';
-import { AuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { IAuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
 import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
 import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error';
 
@@ -51,14 +51,14 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => JwtPairResponse, { name: 'authorizeWithGithub' })
+  @Mutation(() => IJwtPairResponse, { name: 'authorizeWithGithub' })
   public async authorizeWithGithub(
-    @Args('schema') schema: AuthorizeWithGithubSchema,
-  ): Promise<JwtPairResponse> {
+    @Args('schema') schema: IAuthorizeWithGithubSchema,
+  ): Promise<IJwtPairResponse> {
     try {
       const pair = await this.githubAuthService.authorize(schema);
 
-      const response = new JwtPairResponse(pair);
+      const response = new IJwtPairResponse(pair);
 
       return response;
     } catch (err) {
@@ -76,7 +76,7 @@ export class AuthResolver {
 
   @Mutation(() => UserEntityResponse, { name: 'signUp' })
   public async signUp(
-    @Args('schema') schema: SignUpSchema,
+    @Args('schema') schema: ILocalSignUpSchema,
   ): Promise<UserEntityResponse> {
     try {
       const user = await this.localAuthService.signUp(schema);
@@ -93,14 +93,14 @@ export class AuthResolver {
     }
   }
 
-  @Mutation(() => JwtPairResponse, { name: 'signIn' })
+  @Mutation(() => IJwtPairResponse, { name: 'signIn' })
   public async signIn(
-    @Args('schema') schema: SignInSchema,
-  ): Promise<JwtPairResponse> {
+    @Args('schema') schema: ILocalSignInSchema,
+  ): Promise<IJwtPairResponse> {
     try {
       const pair = await this.localAuthService.singIn(schema);
 
-      const response = new JwtPairResponse(pair);
+      const response = new IJwtPairResponse(pair);
 
       return response;
     } catch (err) {

@@ -1,10 +1,10 @@
 import { JwtTypes } from '../enums/jwt-types.enum';
-import { JwtOptions } from '../interfaces/jwt-options.interface';
+import { IJwtOptions } from '../interfaces/jwt-options.interface';
 
-export class JwtOptionsFactory {
-  private static readonly instances = new Map<string, JwtOptions>();
+export class IJwtOptionsFactory {
+  private static readonly instances = new Map<string, IJwtOptions>();
 
-  public static register(type: JwtTypes, instance: JwtOptions): Promise<void> {
+  public static register(type: JwtTypes, instance: IJwtOptions): Promise<void> {
     if (this.instances.get(type)) {
       return;
     }
@@ -12,8 +12,8 @@ export class JwtOptionsFactory {
     this.instances.set(type, instance);
   }
 
-  public static getInstance(type: JwtTypes): JwtOptions {
-    const instance: JwtOptions = this.instances.get(type);
+  public static getInstance(type: JwtTypes): IJwtOptions {
+    const instance: IJwtOptions = this.instances.get(type);
 
     return instance;
   }

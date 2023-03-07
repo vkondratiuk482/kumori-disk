@@ -1,23 +1,23 @@
 import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
-import { CacheService } from 'src/cache/interfaces/cache-service.interface';
+import { ICacheService } from 'src/cache/interfaces/cache-service.interface';
 import { HttpMethod } from 'src/http/enums/http-method.enum';
 import { HTTP_CONSTANTS } from 'src/http/http.constants';
-import { HttpClient } from 'src/http/interfaces/http-client.interface';
+import { IHttpClient } from 'src/http/interfaces/http-client.interface';
 import { PaypalEnvironments } from '../enums/paypal-environments.enum';
 import { IncorrectPaypalAuthorizationResponseError } from '../errors/incorrect-paypal-authorization-response.error';
 import { PaypalAccessTokenNotCachedError } from '../errors/paypal-access-token-not-cached.error';
 import { PaypalAccessTokenNotFoundInCacheError } from '../errors/paypal-access-token-not-found-in-cache.error';
-import { PaymentService } from '../interfaces/payment-service.interface';
-import { PaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
-import { SubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
+import { IPaymentService } from '../interfaces/payment-service.interface';
+import { IPaypalAuthorizationResponse } from '../interfaces/paypal-authorization-response.interface';
+import { ISubscribeToPaymentPlan } from '../interfaces/subscribe-to-payment-plan.interface';
 import { PAYMENT_CONSTANTS } from '../payment.constant';
 import { PaymentPlanService } from './payment-plan.service';
 
 @Injectable()
 export class PaypalPaymentServiceImplementation
-  implements PaymentService, OnModuleInit
+  implements IPaymentService, OnModuleInit
 {
   private readonly domain: string;
 
@@ -25,9 +25,9 @@ export class PaypalPaymentServiceImplementation
     private readonly configService: ConfigService,
     private readonly paymentPlanService: PaymentPlanService,
     @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly cacheService: CacheService,
+    private readonly cacheService: ICacheService,
     @Inject(HTTP_CONSTANTS.APPLICATION.CLIENT_TOKEN)
-    private readonly httpClient: HttpClient,
+    private readonly httpClient: IHttpClient,
   ) {
     const environment =
       this.configService.get<PaypalEnvironments>('PAYPAL_ENV');
@@ -58,7 +58,7 @@ export class PaypalPaymentServiceImplementation
     }, expirationTimeInMs);
   }
 
-  public async subscribe(data: SubscribeToPaymentPlan): Promise<string> {
+  public async subscribe(data: ISubscribeToPaymentPlan): Promise<string> {
     return 'mock';
   }
 
@@ -87,7 +87,7 @@ export class PaypalPaymentServiceImplementation
     return expirationTimeInMs;
   }
 
-  private async authorizeWithException(): Promise<PaypalAuthorizationResponse> {
+  private async authorizeWithException(): Promise<IPaypalAuthorizationResponse> {
     const url = this.getUrlWithDomain('/v1/oauth2/token');
     const body = `${encodeURIComponent('grant_type')}=${encodeURIComponent(
       'client_credentials',
@@ -101,7 +101,7 @@ export class PaypalPaymentServiceImplementation
     };
     const method = HttpMethod.POST;
 
-    const response = await this.httpClient.request<PaypalAuthorizationResponse>(
+    const response = await this.httpClient.request<IPaypalAuthorizationResponse>(
       {
         url,
         body,

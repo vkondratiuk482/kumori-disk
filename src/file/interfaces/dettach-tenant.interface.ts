@@ -1,8 +1,8 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
-import { FileEntity } from './file-entity.interface';
+import { IFileEntity } from './file-entity.interface';
 
-export interface DettachTenant {
-  readonly files: FileEntity[];
+export interface IDettachTenant {
+  readonly files: IFileEntity[];
   readonly tenantId: string;
   readonly tenantType: FileConsumer;
 }

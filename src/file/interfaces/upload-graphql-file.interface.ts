@@ -1,7 +1,7 @@
-import { GraphQLFile } from './graphql-file.interface';
+import { IGraphQLFile } from './graphql-file.interface';
 
-export interface UploadGraphQLFile {
+export interface IUploadGraphQLFile {
   readonly path: string;
 
-  readonly file: Promise<GraphQLFile>;
+  readonly file: Promise<IGraphQLFile>;
 }

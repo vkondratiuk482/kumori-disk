@@ -1,3 +1,3 @@
-export interface AuthorizeWithGithub {
+export interface IAuthorizeWithGithub {
   readonly code: string;
 }

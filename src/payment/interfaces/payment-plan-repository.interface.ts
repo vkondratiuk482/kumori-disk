@@ -1,7 +1,7 @@
-import { PaymentPlanEntity } from './payment-plan-entity.interface';
+import { IPaymentPlanEntity } from './payment-plan-entity.interface';
 
-export interface PaymentPlanRepository {
-  findSingleById(id: string): Promise<PaymentPlanEntity>;
+export interface IPaymentPlanRepository {
+  findSingleById(id: string): Promise<IPaymentPlanEntity>;
 
-  findAll(): Promise<PaymentPlanEntity[]>;
+  findAll(): Promise<IPaymentPlanEntity[]>;
 }

@@ -1,19 +1,19 @@
-import { CreateUser } from './create-user.interface';
-import { UserEntity } from './user-entity.interface';
+import { ICreateUser } from './create-user.interface';
+import { IUserEntity } from './user-entity.interface';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-export interface UserRepository {
-  findById(id: string): Promise<UserEntity>;
+export interface IUserRepository {
+  findById(id: string): Promise<IUserEntity>;
 
-  findByEmail(email: string): Promise<UserEntity>;
+  findByEmail(email: string): Promise<IUserEntity>;
 
-  findByUsername(username: string): Promise<UserEntity>;
+  findByUsername(username: string): Promise<IUserEntity>;
 
   existsById(id: string): Promise<boolean>;
 
   existsByEmail(email: string): Promise<boolean>;
 
-  create(data: CreateUser): Promise<UserEntity>;
+  create(data: ICreateUser): Promise<IUserEntity>;
 
   updateConfirmationStatus(
     id: string,

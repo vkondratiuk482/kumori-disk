@@ -10,13 +10,13 @@ import {
 } from '@aws-sdk/client-s3';
 import { FileNotUploadedToStorageError } from '../errors/file-not-uploaded-to-storage.error';
 import { FileNotDownloadedError } from '../errors/file-not-downloaded.error';
-import { UploadFile } from '../interfaces/upload-file.interface';
-import { GenerateFileKey } from '../interfaces/generate-file-key.interface';
+import { IUploadFile } from '../interfaces/upload-file.interface';
+import { IGenerateFileKey } from '../interfaces/generate-file-key.interface';
 import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
 import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
 import { FILE_CONSTANTS } from '../file.constants';
 
-export class S3FileStorageServiceImplementation /*implements FileStorageService */ {
+export class S3FileStorageServiceImplementation /*implements IFileStorageService */ {
   private readonly bucket: string;
 
   constructor(
@@ -27,7 +27,7 @@ export class S3FileStorageServiceImplementation /*implements FileStorageService 
     this.bucket = configService.get<string>('BUCKET_NAME');
   }
 
-  public async uploadSingleWithException(file: UploadFile): Promise<string> {
+  public async uploadSingleWithException(file: IUploadFile): Promise<string> {
     const { ownerId, path, name, buffer } = file;
 
     const key = this.generateFileKey({
@@ -51,7 +51,7 @@ export class S3FileStorageServiceImplementation /*implements FileStorageService 
     }
   }
 
-  public async uploadManyWithException(file: UploadFile[]): Promise<string[]> {
+  public async uploadManyWithException(file: IUploadFile[]): Promise<string[]> {
     return [];
   }
 
@@ -136,7 +136,7 @@ export class S3FileStorageServiceImplementation /*implements FileStorageService 
     }
   }
 
-  private generateFileKey(data: GenerateFileKey): string {
+  private generateFileKey(data: IGenerateFileKey): string {
     const key = `${data.ownerId}/${data.path}/${data.name}`;
 
     return key;

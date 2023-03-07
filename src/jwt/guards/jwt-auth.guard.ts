@@ -11,8 +11,8 @@ import { JWT_CONSTANTS } from '../jwt.constants';
 import { JwtTypes } from '../enums/jwt-types.enum';
 import { UserService } from 'src/user/user.service';
 import { InvalidJwtError } from '../errors/invalid-jwt.error';
-import { JwtService } from '../interfaces/jwt-service.interface';
-import { JwtPayload } from '../interfaces/jwt-payload.interface';
+import { IJwtService } from '../interfaces/jwt-service.interface';
+import { IJwtPayload } from '../interfaces/jwt-payload.interface';
 import { InvalidAuthHeadersError } from 'src/auth/errors/invalid-auth-headers.error';
 import { AuthorizationHeadersNotProvidedError } from 'src/auth/errors/authorization-headers-not-provided.error';
 
@@ -20,7 +20,7 @@ import { AuthorizationHeadersNotProvidedError } from 'src/auth/errors/authorizat
 export class JwtAuthGuard implements CanActivate {
   constructor(
     @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly jwtService: JwtService,
+    private readonly jwtService: IJwtService,
     private readonly userService: UserService,
   ) {}
 
@@ -33,7 +33,7 @@ export class JwtAuthGuard implements CanActivate {
       const accessToken =
         JwtAuthGuard.extractTokenFromAuthorizationHeaders(authorizationHeaders);
 
-      const payload: JwtPayload = this.jwtService.verify(
+      const payload: IJwtPayload = this.jwtService.verify(
         accessToken,
         JwtTypes.Access,
       );

@@ -1,4 +1,4 @@
-export interface GithubSignUp {
+export interface IGithubILocalSignUp {
   readonly email: string;
 
   readonly username: string;

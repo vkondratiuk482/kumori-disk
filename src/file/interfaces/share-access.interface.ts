@@ -1,6 +1,6 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface ShareAccess {
+export interface IShareAccess {
   readonly ownerId: string;
   readonly ownerType: FileConsumer;
   readonly tenantId: string;

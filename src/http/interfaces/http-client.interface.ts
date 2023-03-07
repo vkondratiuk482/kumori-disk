@@ -1,5 +1,5 @@
-import { HttpRequest } from './http-request.interface';
+import { IHttpRequest } from './http-request.interface';
 
-export interface HttpClient {
-  request<T>(data: HttpRequest): Promise<T>;
+export interface IHttpClient {
+  request<T>(data: IHttpRequest): Promise<T>;
 }

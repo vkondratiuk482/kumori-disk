@@ -8,21 +8,21 @@ import { USER_CONSTANTS } from 'src/user/user.constants';
 import { AuthProviders } from '../enums/auth-providers.enum';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
-import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { GithubSignUp } from '../interfaces/github-sign-up.interface';
-import { GithubSignIn } from '../interfaces/github-sign-in.interface';
-import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
-import { GithubClient } from 'src/github/interfaces/github-client.interface';
+import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
+import { IGithubILocalSignUp } from '../interfaces/github-sign-up.interface';
+import { IGithubILocalSignIn } from '../interfaces/github-sign-in.interface';
+import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
+import { IGithubClient } from 'src/github/interfaces/github-client.interface';
 import { TRANSACTION_CONSTANTS } from 'src/transaction/transaction.constants';
 import { GithubIdNotLinkedError } from '../errors/github-id-not-linked.error';
-import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
+import { IMailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
 import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.error';
-import { AuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
+import { IAuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 import { IAuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
 import { ITransactionService } from 'src/transaction/interfaces/transaction-service.interface';
-import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
+import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
 
 @Injectable()
@@ -31,18 +31,18 @@ export class GithubAuthService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly jwtService: JwtService,
+    private readonly jwtService: IJwtService,
     @Inject(GITHUB_CONSTANTS.APPLICATION.CLIENT_TOKEN)
-    private readonly githubClient: GithubClient,
+    private readonly githubClient: IGithubClient,
     @Inject(CRYPTOGRAPHY_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly cryptographyService: CryptographyService,
+    private readonly cryptographyService: ICryptographyService,
     @Inject(MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly mailerService: MailerService,
+    private readonly mailerService: IMailerService,
     @Inject(AUTH_CONSTANTS.APPLICATION.USERS_AUTH_PROVIDERS_REPOSITORY_TOKEN)
     private readonly usersAuthProvidersRepository: IUsersAuthProvidersRepository,
     @Inject(AUTH_CONSTANTS.APPLICATION.PROVIDER_REPOSITORY_TOKEN)
     private readonly authProviderRepository: IAuthProviderRepository,
-    private readonly als: AsyncLocalStorage<Record<string, any>>,
+    private readonly als: AsyncLocalStorage<any>,
     @Inject(TRANSACTION_CONSTANTS.APPLICATION.SERVICE_TOKEN)
     private readonly transactionService: ITransactionService,
   ) {}
@@ -57,10 +57,10 @@ export class GithubAuthService {
     return url;
   }
 
-  public async authorize(payload: AuthorizeWithGithub): Promise<JwtPair> {
+  public async authorize(payload: IAuthorizeWithGithub): Promise<IJwtPair> {
     const transaction = await this.transactionService.start();
 
-    const callback = async (): Promise<JwtPair> => {
+    const callback = async (): Promise<IJwtPair> => {
       try {
         const accessToken = await this.githubClient.getAccessToken(
           payload.code,
@@ -107,10 +107,10 @@ export class GithubAuthService {
       }
     };
 
-    return this.als.run<Promise<JwtPair>, any[]>(transaction, callback);
+    return this.als.run<Promise<IJwtPair>, any[]>(transaction, callback);
   }
 
-  public async signUp(payload: GithubSignUp): Promise<JwtPair> {
+  public async signUp(payload: IGithubILocalSignUp): Promise<IJwtPair> {
     const password = this.cryptographyService.randomUUID();
     const hashedPassword = await this.cryptographyService.hash(password);
 
@@ -139,7 +139,7 @@ export class GithubAuthService {
     return this.jwtService.generatePair({ id: user.id });
   }
 
-  public async signIn(payload: GithubSignIn): Promise<JwtPair> {
+  public async signIn(payload: IGithubILocalSignIn): Promise<IJwtPair> {
     if (!payload.userGithubId) {
       throw new GithubIdNotLinkedError();
     }

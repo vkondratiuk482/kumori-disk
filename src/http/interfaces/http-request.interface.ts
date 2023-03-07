@@ -1,10 +1,10 @@
-import { HttpBody } from './http-body.interface';
+import { IHttpBody } from './http-body.interface';
 import { HttpMethod } from '../enums/http-method.enum';
 
-export interface HttpRequest {
+export interface IHttpRequest {
   readonly url: string;
 
-  readonly body?: HttpBody;
+  readonly body?: IHttpBody;
 
   readonly method: HttpMethod;
 

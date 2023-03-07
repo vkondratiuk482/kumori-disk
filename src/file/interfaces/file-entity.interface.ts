@@ -1,6 +1,6 @@
 import { FileConsumer } from '../enums/file-consumer.enum';
 
-export interface FileEntity {
+export interface IFileEntity {
   readonly id: string;
 
   readonly key: string;

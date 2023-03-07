@@ -1,6 +1,6 @@
 import { Field, HideField, ObjectType } from '@nestjs/graphql';
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
-import { UserEntity } from '../interfaces/user-entity.interface';
+import { IUserEntity } from '../interfaces/user-entity.interface';
 
 @ObjectType()
 export class UserEntityResponse {
@@ -25,7 +25,7 @@ export class UserEntityResponse {
   @HideField()
   public readonly planId: string;
 
-  constructor(entity: UserEntity) {
+  constructor(entity: IUserEntity) {
     Object.assign(this, entity);
   }
 }

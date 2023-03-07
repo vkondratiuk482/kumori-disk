@@ -1,6 +1,6 @@
 import { MimeType } from '../enums/mime-type.enum';
 
-export interface GenerateFileKey {
+export interface IGenerateFileKey {
   readonly ownerId: string;
 
   readonly path: string;

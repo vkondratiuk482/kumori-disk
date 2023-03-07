@@ -1,6 +1,6 @@
 import { UserConfirmationStatuses } from '../enums/user-confirmation-statuses.enum';
 
-export interface UserEntity {
+export interface IUserEntity {
   readonly id: string;
 
   readonly email: string;

@@ -1,7 +1,7 @@
-import { UserEntity } from 'src/user/interfaces/user-entity.interface';
+import { IUserEntity } from 'src/user/interfaces/user-entity.interface';
 
-export interface SubscribeToPaymentPlan {
-  readonly user: UserEntity;
+export interface ISubscribeToPaymentPlan {
+  readonly user: IUserEntity;
 
   readonly paymentPlanId: string;
 }

@@ -5,13 +5,13 @@ import { AUTH_CONSTANTS } from '../auth.constants';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 
-import { SignIn } from '../interfaces/sign-in.interface';
-import { JwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { JwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
-import { JwtService } from 'src/jwt/interfaces/jwt-service.interface';
-import { CacheService } from 'src/cache/interfaces/cache-service.interface';
-import { MailerService } from 'src/mailer/interfaces/mailer-service.interface';
-import { CryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
+import { ILocalSignIn } from '../interfaces/sign-in.interface';
+import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
+import { IJwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
+import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
+import { ICacheService } from 'src/cache/interfaces/cache-service.interface';
+import { IMailerService } from 'src/mailer/interfaces/mailer-service.interface';
+import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 import { MailIsInUseError } from '../errors/mail-is-in-use.error';
 import { EmailNotConfirmedError } from '../errors/email-not-confirmed.error';
@@ -19,9 +19,9 @@ import { PasswordsNotMatchingError } from '../errors/passwords-not-matching.erro
 import { EmailAlreadyConfirmedError } from '../errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from '../errors/invalid-confirmation-hash.error';
 
-import { UserEntity } from 'src/user/interfaces/user-entity.interface';
+import { IUserEntity } from 'src/user/interfaces/user-entity.interface';
 import { UserService } from '../../user/user.service';
-import { SignUp } from '../interfaces/sign-up.interface';
+import { ILocalSignUp } from '../interfaces/sign-up.interface';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
@@ -33,16 +33,16 @@ export class LocalAuthService {
     private readonly userService: UserService,
     private readonly configService: ConfigService,
     @Inject(MAILER_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly mailerService: MailerService,
+    private readonly mailerService: IMailerService,
     @Inject(CACHE_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly cacheService: CacheService,
+    private readonly cacheService: ICacheService,
     @Inject(CRYPTOGRAPHY_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly cryptographyService: CryptographyService,
+    private readonly cryptographyService: ICryptographyService,
     @Inject(JWT_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly jwtService: JwtService,
+    private readonly jwtService: IJwtService,
   ) {}
 
-  public async signUp(payload: SignUp): Promise<UserEntity> {
+  public async signUp(payload: ILocalSignUp): Promise<IUserEntity> {
     const emailExists = await this.userService.existsByEmail(payload.email);
 
     if (emailExists) {
@@ -78,7 +78,7 @@ export class LocalAuthService {
     return user;
   }
 
-  public async singIn(payload: SignIn): Promise<JwtPair> {
+  public async singIn(payload: ILocalSignIn): Promise<IJwtPair> {
     const user = await this.userService.findByEmailOrThrow(payload.email);
 
     if (user.confirmationStatus !== UserConfirmationStatuses.Confirmed) {
@@ -96,7 +96,7 @@ export class LocalAuthService {
       throw new PasswordsNotMatchingError();
     }
 
-    const jwtPayload: JwtPayload = {
+    const jwtPayload: IJwtPayload = {
       id: user.id,
     };
     const jwtPair = this.jwtService.generatePair(jwtPayload);

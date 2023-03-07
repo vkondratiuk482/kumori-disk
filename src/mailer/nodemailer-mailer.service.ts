@@ -1,23 +1,23 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Transporter } from 'nodemailer';
 import { MAILER_CONSTANTS } from './mailer.constants';
-import { SendMail } from './interfaces/send-mail.interface';
-import { MailerService } from './interfaces/mailer-service.interface';
-import { SendConfirmationMail } from './interfaces/send-confirmation-mail.interface';
-import { SendGithubGeneratedPasswordMail } from './interfaces/send-github-generated-password.interface';
+import { ISendMail } from './interfaces/send-mail.interface';
+import { IMailerService } from './interfaces/mailer-service.interface';
+import { ISendConfirmationMail } from './interfaces/send-confirmation-mail.interface';
+import { ISendGithubGeneratedPasswordMail } from './interfaces/send-github-generated-password.interface';
 
 @Injectable()
-export class NodemailerMailerServiceImplementation implements MailerService {
+export class NodemailerMailerServiceImplementation implements IMailerService {
   constructor(
     @Inject(MAILER_CONSTANTS.APPLICATION.NODEMAILER_TRANSPORTER_TOKEN)
     private readonly transporter: Transporter,
   ) {}
 
-  public async send(payload: SendMail): Promise<void> {
+  public async send(payload: ISendMail): Promise<void> {
     await this.transporter.sendMail(payload);
   }
 
-  public async sendConfirmation(payload: SendConfirmationMail): Promise<void> {
+  public async sendConfirmation(payload: ISendConfirmationMail): Promise<void> {
     const subject = MAILER_CONSTANTS.DOMAIN.CONFIRMATION_SUBJECT;
     const text = `${MAILER_CONSTANTS.DOMAIN.CONFIRMATION_BASE_TEXT} - ${payload.link}`;
 
@@ -25,7 +25,7 @@ export class NodemailerMailerServiceImplementation implements MailerService {
   }
 
   public async sendGithubGeneratedPassword(
-    payload: SendGithubGeneratedPasswordMail,
+    payload: ISendGithubGeneratedPasswordMail,
   ): Promise<void> {
     const subject = MAILER_CONSTANTS.DOMAIN.GITHUB_GENERATED_PASSWORD_SUBJECT;
     const text = `${MAILER_CONSTANTS.DOMAIN.GITHUB_GENERATED_PASSWORD_BASE_TEXT} - ${payload.password}`;

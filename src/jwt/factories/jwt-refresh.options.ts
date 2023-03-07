@@ -3,11 +3,11 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { JwtTypes } from '../enums/jwt-types.enum';
-import { JwtOptionsFactory } from './jwt-options.factory';
-import { JwtOptions } from '../interfaces/jwt-options.interface';
+import { IJwtOptionsFactory } from './jwt-options.factory';
+import { IJwtOptions } from '../interfaces/jwt-options.interface';
 
 @Injectable()
-export class JwtRefreshOptions implements JwtOptions {
+export class JwtRefreshOptions implements IJwtOptions {
   public readonly ttl: number;
   public readonly publicKey: string;
   public readonly privateKey: string;
@@ -21,6 +21,6 @@ export class JwtRefreshOptions implements JwtOptions {
     this.privateKey = fs.readFileSync(privateKeyPath, 'utf8');
     this.ttl = parseInt(configService.get<string>('JWT_REFRESH_TTL'));
 
-    JwtOptionsFactory.register(JwtTypes.Refresh, this);
+    IJwtOptionsFactory.register(JwtTypes.Refresh, this);
   }
 }

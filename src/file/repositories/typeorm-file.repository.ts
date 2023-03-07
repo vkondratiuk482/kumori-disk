@@ -5,14 +5,14 @@ import { DataSource, EntityManager, Repository } from 'typeorm';
 import { TypeOrmFileEntityImplementation } from '../entities/typeorm-file.entity';
 import { FileConsumer } from '../enums/file-consumer.enum';
 import { FileTenantKey } from '../enums/file-tenant-key.enum';
-import { AttachTenant } from '../interfaces/attach-tenant.interface';
-import { CreateFile } from '../interfaces/create-file.interface';
-import { DettachTenant } from '../interfaces/dettach-tenant.interface';
-import { FileConsumerRepositoryAndTenantKey } from '../interfaces/file-consumer-repository-and-tenant-key.interface';
-import { FileRepository } from '../interfaces/file-repository.interface';
+import { IAttachTenant } from '../interfaces/attach-tenant.interface';
+import { ICreateFile } from '../interfaces/create-file.interface';
+import { IDettachTenant } from '../interfaces/dettach-tenant.interface';
+import { IFileConsumerRepositoryAndTenantKey } from '../interfaces/file-consumer-repository-and-tenant-key.interface';
+import { IFileRepository } from '../interfaces/file-repository.interface';
 
 @Injectable()
-export class TypeOrmFileRepositoryImplementation implements FileRepository {
+export class TypeOrmFileRepositoryImplementation implements IFileRepository {
   constructor(
     @InjectDataSource() private readonly dataSource: DataSource,
     @InjectRepository(TypeOrmFileEntityImplementation)
@@ -47,7 +47,7 @@ export class TypeOrmFileRepositoryImplementation implements FileRepository {
   }
 
   public async createSingle(
-    data: CreateFile,
+    data: ICreateFile,
   ): Promise<TypeOrmFileEntityImplementation> {
     let result: TypeOrmFileEntityImplementation;
 
@@ -93,7 +93,7 @@ export class TypeOrmFileRepositoryImplementation implements FileRepository {
     return updated;
   }
 
-  public async attachTenant(data: AttachTenant): Promise<boolean> {
+  public async attachTenant(data: IAttachTenant): Promise<boolean> {
     try {
       const { repository: tenantRepository, tenantKey } =
         this.getRepositoryAndTenantKeyByFileConsumer(data.tenantType);
@@ -115,7 +115,7 @@ export class TypeOrmFileRepositoryImplementation implements FileRepository {
     }
   }
 
-  public async dettachTenant(data: DettachTenant): Promise<boolean> {
+  public async dettachTenant(data: IDettachTenant): Promise<boolean> {
     try {
       const { repository: tenantRepository, tenantKey } =
         this.getRepositoryAndTenantKeyByFileConsumer(data.tenantType);
@@ -150,7 +150,7 @@ export class TypeOrmFileRepositoryImplementation implements FileRepository {
   private getRepositoryAndTenantKeyByFileConsumer(
     consumer: FileConsumer,
     manager?: EntityManager,
-  ): FileConsumerRepositoryAndTenantKey {
+  ): IFileConsumerRepositoryAndTenantKey {
     if (!manager) {
       manager = this.dataSource.manager;
     }
