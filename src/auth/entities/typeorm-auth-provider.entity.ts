@@ -4,7 +4,7 @@ import { IAuthProviderEntity } from '../interfaces/auth-provider-entity.interfac
 import { TypeormUsersAuthProvidersEntity } from './typeorm-users-auth-providers.entity';
 
 @Entity('auth_provider')
-export class TypeormAuthProviderEntity ements IAuthProviderEntity {
+export class TypeormAuthProviderEntity implements IAuthProviderEntity {
   @PrimaryGeneratedColumn('uuid')
   public id: string;
 

@@ -24,6 +24,10 @@ import { IAuthProviderRepository } from '../interfaces/auth-provider-repository.
 import { ITransactionService } from 'src/transaction/interfaces/transaction-service.interface';
 import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
+import {
+  IsolatedTransaction,
+  ITransactionRunner,
+} from '@mokuteki/isolated-transactions';
 
 @Injectable()
 export class GithubAuthService {
@@ -44,7 +48,7 @@ export class GithubAuthService {
     private readonly authProviderRepository: IAuthProviderRepository,
     private readonly als: AsyncLocalStorage<any>,
     @Inject(TRANSACTION_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly transactionService: ITransactionService,
+    private readonly transactionRunner: ITransactionRunner<unknown>,
   ) {}
 
   public async getOAuthAuthorizeURL(): Promise<string> {
@@ -58,7 +62,9 @@ export class GithubAuthService {
   }
 
   public async authorize(payload: IAuthorizeWithGithub): Promise<IJwtPair> {
-    const transaction = await this.transactionService.start();
+    const isolatedTransaction = new IsolatedTransaction(this.transactionRunner);
+
+    const connection = await isolatedTransaction.start();
 
     const callback = async (): Promise<IJwtPair> => {
       try {
@@ -80,7 +86,7 @@ export class GithubAuthService {
             username: githubUser.login,
           });
 
-          await this.transactionService.commit();
+          await isolatedTransaction.commit();
 
           return jwtPair;
         }
@@ -97,17 +103,17 @@ export class GithubAuthService {
           userGithubId: usersAuthProviders.providerUserId,
         });
 
-        await this.transactionService.commit();
+        await isolatedTransaction.commit();
 
         return jwtPair;
       } catch (err) {
-        await this.transactionService.rollback();
+        await isolatedTransaction.rollback();
 
         throw err;
       }
     };
 
-    return this.als.run<Promise<IJwtPair>, any[]>(transaction, callback);
+    return isolatedTransaction.run<Promise<IJwtPair>>(connection, callback);
   }
 
   public async signUp(payload: IGithubILocalSignUp): Promise<IJwtPair> {

@@ -23,6 +23,7 @@ import { LinkGithubAccountSchema } from './schema/link-github-account.schema';
 import { LinkGithubAccountResponse } from './responses/link-github-account.response';
 import { IHttpClientRequestError } from 'src/http/errors/http-client-request.error';
 import { GetGithubOAuthURLResponse } from 'src/auth/responses/get-github-oauth-url.response';
+import { UserError } from './errors/user.error';
 
 @Resolver()
 export class UserResolver {
@@ -87,7 +88,7 @@ export class UserResolver {
       if (err instanceof FileNotAccessibleError) {
         throw new ForbiddenException(err);
       }
-      if (err instanceof UserNotFoundByIdError) {
+      if (err instanceof UserError) {
         throw new NotFoundException(err);
       }
 

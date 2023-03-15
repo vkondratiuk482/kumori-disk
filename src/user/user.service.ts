@@ -4,9 +4,6 @@ import { IFileFacade } from 'src/file/interfaces/file-facade.interface';
 import { IUploadFile } from 'src/file/interfaces/upload-file.interface';
 import { ICreateUser } from './interfaces/create-user.interface';
 import { IUserRepository } from './interfaces/user-repository.interface';
-import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
-import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
-import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
 import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
 import { IFile } from 'src/file/interfaces/file.interface';
 import { FileConsumer } from 'src/file/enums/file-consumer.enum';
@@ -23,6 +20,7 @@ import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enu
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
 import { IGithubClient } from 'src/github/interfaces/github-client.interface';
 import { ILinkGithubAccount } from './interfaces/link-github-account.interface';
+import { UserError } from './errors/user.error';
 
 @Injectable()
 export class UserService {
@@ -48,7 +46,7 @@ export class UserService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new UserNotFoundByIdError();
+      throw new UserError();
     }
 
     return user;
@@ -58,7 +56,7 @@ export class UserService {
     const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
-      throw new UserNotFoundByUsernameError();
+      throw new UserError();
     }
 
     return user;
@@ -74,7 +72,7 @@ export class UserService {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      throw new UserNotFoundByEmailError();
+      throw new UserError();
     }
 
     return user;

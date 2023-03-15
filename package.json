@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.188.0",
+    "@mokuteki/isolated-transactions": "^1.0.1",
     "@mokuteki/jwt": "^1.0.2",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.2.0",

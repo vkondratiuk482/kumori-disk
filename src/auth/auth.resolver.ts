@@ -12,13 +12,12 @@ import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
-import { UserNotFoundByEmailError } from '../user/errors/user-not-found-by-email.error';
+import { UserError } from 'src/user/errors/user.error';
 
 import { ILocalSignUpSchema } from './schema/sign-up.schema';
 import { ILocalSignInSchema } from './schema/sign-in.schema';
 
 import { LocalAuthService } from './services/local-auth.service';
-import { UserNotFoundByIdError } from 'src/user/errors/user-not-found-by-uuid.error';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { IJwtPairResponse } from './responses/jwt-pair.response';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
@@ -107,7 +106,7 @@ export class AuthResolver {
       if (err instanceof PasswordsNotMatchingError) {
         throw new UnauthorizedException(err);
       }
-      if (err instanceof UserNotFoundByEmailError) {
+      if (err instanceof UserError) {
         throw new NotFoundException(err);
       }
       if (err instanceof EmailNotConfirmedError) {
@@ -135,7 +134,7 @@ export class AuthResolver {
       ) {
         throw new ConflictException(err);
       }
-      if (err instanceof UserNotFoundByIdError) {
+      if (err instanceof UserError) {
         throw new NotFoundException(err);
       }
 
@@ -159,7 +158,7 @@ export class AuthResolver {
       if (err instanceof EmailAlreadyConfirmedError) {
         throw new ConflictException(err);
       }
-      if (err instanceof UserNotFoundByEmailError) {
+      if (err instanceof UserError) {
         throw new NotFoundException(err);
       }
 
