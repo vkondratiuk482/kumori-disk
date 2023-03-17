@@ -1,7 +1,4 @@
-export interface ITransactionService {
-  /**
-   * Get and store transaction inside of AsyncLocalStorage
-   */
+export interface ITransactionManager {
   start(): Promise<unknown>;
 
   commit(): Promise<void>;

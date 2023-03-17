@@ -1,17 +1,13 @@
-import { ITransactionRunner } from '@mokuteki/isolated-transactions';
 import { Injectable } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { DataSource, QueryRunner } from 'typeorm';
+import { ITransactionRunner } from '@mokuteki/propagated-transactions';
 
 @Injectable()
-export class TypeormTransactionService
+export class TypeormTransactionRunner
   implements ITransactionRunner<QueryRunner>
 {
-  constructor(
-    private readonly als: AsyncLocalStorage<QueryRunner>,
-    @InjectDataSource() private readonly dataSource: DataSource,
-  ) {}
+  constructor(@InjectDataSource() private readonly dataSource: DataSource) {}
 
   public async start(): Promise<QueryRunner> {
     const queryRunner = this.dataSource.createQueryRunner();

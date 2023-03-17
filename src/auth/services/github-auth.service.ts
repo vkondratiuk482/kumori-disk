@@ -2,7 +2,6 @@ import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
 import { AUTH_CONSTANTS } from '../auth.constants';
-import { AsyncLocalStorage } from 'node:async_hooks';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { USER_CONSTANTS } from 'src/user/user.constants';
 import { AuthProviders } from '../enums/auth-providers.enum';
@@ -21,13 +20,9 @@ import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.erro
 import { IAuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 import { IAuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
-import { ITransactionService } from 'src/transaction/interfaces/transaction-service.interface';
 import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
-import {
-  IsolatedTransaction,
-  ITransactionRunner,
-} from '@mokuteki/isolated-transactions';
+import { PropagatedTransaction } from '@mokuteki/propagated-transactions';
 
 @Injectable()
 export class GithubAuthService {
@@ -46,9 +41,8 @@ export class GithubAuthService {
     private readonly usersAuthProvidersRepository: IUsersAuthProvidersRepository,
     @Inject(AUTH_CONSTANTS.APPLICATION.PROVIDER_REPOSITORY_TOKEN)
     private readonly authProviderRepository: IAuthProviderRepository,
-    private readonly als: AsyncLocalStorage<any>,
-    @Inject(TRANSACTION_CONSTANTS.APPLICATION.SERVICE_TOKEN)
-    private readonly transactionRunner: ITransactionRunner<unknown>,
+    @Inject(TRANSACTION_CONSTANTS.APPLICATION.MANAGER_TOKEN)
+    private readonly tm: PropagatedTransaction<unknown>,
   ) {}
 
   public async getOAuthAuthorizeURL(): Promise<string> {
@@ -62,9 +56,7 @@ export class GithubAuthService {
   }
 
   public async authorize(payload: IAuthorizeWithGithub): Promise<IJwtPair> {
-    const isolatedTransaction = new IsolatedTransaction(this.transactionRunner);
-
-    const connection = await isolatedTransaction.start();
+    const connection = await this.tm.start();
 
     const callback = async (): Promise<IJwtPair> => {
       try {
@@ -86,7 +78,7 @@ export class GithubAuthService {
             username: githubUser.login,
           });
 
-          await isolatedTransaction.commit();
+          await this.tm.commit();
 
           return jwtPair;
         }
@@ -103,17 +95,17 @@ export class GithubAuthService {
           userGithubId: usersAuthProviders.providerUserId,
         });
 
-        await isolatedTransaction.commit();
+        await this.tm.commit();
 
         return jwtPair;
       } catch (err) {
-        await isolatedTransaction.rollback();
+        await this.tm.rollback();
 
         throw err;
       }
     };
 
-    return isolatedTransaction.run<Promise<IJwtPair>>(connection, callback);
+    return this.tm.run<Promise<IJwtPair>>(connection, callback);
   }
 
   public async signUp(payload: IGithubILocalSignUp): Promise<IJwtPair> {
