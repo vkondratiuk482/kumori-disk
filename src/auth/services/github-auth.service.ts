@@ -8,7 +8,7 @@ import { AuthProviders } from '../enums/auth-providers.enum';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
 import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
-import { IGithubILocalSignUp } from '../interfaces/github-sign-up.interface';
+import { IGithubLocalSignUp } from '../interfaces/github-sign-up.interface';
 import { IGithubILocalSignIn } from '../interfaces/github-sign-in.interface';
 import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { IGithubClient } from 'src/github/interfaces/github-client.interface';
@@ -108,7 +108,7 @@ export class GithubAuthService {
     return this.tm.run<Promise<IJwtPair>>(connection, callback);
   }
 
-  public async signUp(payload: IGithubILocalSignUp): Promise<IJwtPair> {
+  public async signUp(payload: IGithubLocalSignUp): Promise<IJwtPair> {
     const password = this.cryptographyService.randomUUID();
     const hashedPassword = await this.cryptographyService.hash(password);
 
