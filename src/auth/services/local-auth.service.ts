@@ -58,8 +58,7 @@ export class LocalAuthService {
       password: hashedPassword,
       username: payload.username,
       confirmationStatus: UserConfirmationStatuses.Pending,
-      diskSpace:
-        USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
+      diskSpace: USER_CONSTANTS.DOMAIN.DEFAULT_PLAN_AVAILABLE_SIZE_IN_BYTES,
     });
 
     const confirmationHash = this.cryptographyService.randomUUID();

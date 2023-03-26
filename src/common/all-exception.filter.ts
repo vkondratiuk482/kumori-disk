@@ -1,17 +1,12 @@
-import { ArgumentsHost, Catch, ExceptionFilter } from '@nestjs/common';
-import { FastifyReply } from 'fastify';
+import { GqlExceptionFilter } from '@nestjs/graphql';
+import { ArgumentsHost, Catch } from '@nestjs/common';
 import { ERROR_MAP } from './error-map';
 
 @Catch()
-export class AllExceptionFilter implements ExceptionFilter<Error> {
-  public async catch(error: Error, host: ArgumentsHost): Promise<void> {
-    const response = host.switchToHttp().getResponse<FastifyReply>();
-
+export class AllExceptionFilter implements GqlExceptionFilter<Error> {
+  public catch(error: Error, host: ArgumentsHost) {
     const exception = ERROR_MAP[error.message];
 
-    response.code(exception.getStatus()).send({
-      message: exception.message,
-      statusCode: exception.getStatus(),
-    });
+    return { message: exception.message, statusCode: exception.getStatus() };
   }
 }

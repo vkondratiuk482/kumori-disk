@@ -46,7 +46,7 @@ export class UserService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new UserError();
+      throw UserError.NotFound();
     }
 
     return user;
@@ -56,7 +56,7 @@ export class UserService {
     const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
-      throw new UserError();
+      throw UserError.NotFound();
     }
 
     return user;
@@ -72,7 +72,7 @@ export class UserService {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      throw new UserError();
+      throw UserError.NotFound();
     }
 
     return user;

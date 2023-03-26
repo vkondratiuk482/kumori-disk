@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  HttpException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -106,13 +107,9 @@ export class AuthResolver {
       if (err instanceof PasswordsNotMatchingError) {
         throw new UnauthorizedException(err);
       }
-      if (err instanceof UserError) {
-        throw new NotFoundException(err);
-      }
       if (err instanceof EmailNotConfirmedError) {
         throw new ForbiddenException(err);
       }
-
       throw new BadRequestException();
     }
   }
