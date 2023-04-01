@@ -10,13 +10,6 @@ type GetGithubOAuthURLResponse {
   url: String!
 }
 
-type UserEntityResponse {
-  id: String!
-  email: String!
-  username: String!
-  diskSpace: Float!
-}
-
 type IJwtPairResponse {
   accessToken: String!
   refreshToken: String!
@@ -24,6 +17,13 @@ type IJwtPairResponse {
 
 type ConfirmEmailResponse {
   confirmed: Boolean!
+}
+
+type UserEntityResponse {
+  id: String!
+  email: String!
+  username: String!
+  diskSpace: Float!
 }
 
 type ResendConfirmationEmailResponse {

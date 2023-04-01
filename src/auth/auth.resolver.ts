@@ -13,21 +13,20 @@ import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
 import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
-import { UserError } from 'src/user/errors/user.error';
 
 import { ILocalSignUpSchema } from './schema/sign-up.schema';
 import { ILocalSignInSchema } from './schema/sign-in.schema';
 
 import { LocalAuthService } from './services/local-auth.service';
-import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { IJwtPairResponse } from './responses/jwt-pair.response';
-import { ConfirmEmailResponse } from './responses/confirm-email.response';
-import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
-import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
 import { GithubAuthService } from './services/github-auth.service';
-import { IAuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { ConfirmEmailResponse } from './responses/confirm-email.response';
+import { UserEntityResponse } from 'src/user/responses/user-entity.response';
 import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
 import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error';
+import { IAuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
+import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
 
 @Resolver()
 export class AuthResolver {
@@ -62,7 +61,6 @@ export class AuthResolver {
 
       return response;
     } catch (err) {
-      console.log(err);
       if (
         err instanceof GithubIdNotLinkedError ||
         err instanceof GithubIdsDoNotMatchError
@@ -97,21 +95,11 @@ export class AuthResolver {
   public async signIn(
     @Args('schema') schema: ILocalSignInSchema,
   ): Promise<IJwtPairResponse> {
-    try {
-      const pair = await this.localAuthService.singIn(schema);
+    const pair = await this.localAuthService.singIn(schema);
 
-      const response = new IJwtPairResponse(pair);
+    const response = new IJwtPairResponse(pair);
 
-      return response;
-    } catch (err) {
-      if (err instanceof PasswordsNotMatchingError) {
-        throw new UnauthorizedException(err);
-      }
-      if (err instanceof EmailNotConfirmedError) {
-        throw new ForbiddenException(err);
-      }
-      throw new BadRequestException();
-    }
+    return response;
   }
 
   @Mutation(() => ConfirmEmailResponse, { name: 'confirmEmail' })
