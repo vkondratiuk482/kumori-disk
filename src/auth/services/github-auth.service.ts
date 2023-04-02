@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/user/user.service';
+import { AuthError } from '../errors/auth.error';
 import { AUTH_CONSTANTS } from '../auth.constants';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
 import { USER_CONSTANTS } from 'src/user/user.constants';
@@ -8,21 +9,19 @@ import { AuthProviders } from '../enums/auth-providers.enum';
 import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
 import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
+import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
+import { PropagatedTransaction } from '@mokuteki/propagated-transactions';
 import { IGithubLocalSignUp } from '../interfaces/github-sign-up.interface';
 import { IGithubILocalSignIn } from '../interfaces/github-sign-in.interface';
-import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
 import { IGithubClient } from 'src/github/interfaces/github-client.interface';
 import { TRANSACTION_CONSTANTS } from 'src/transaction/transaction.constants';
-import { GithubIdNotLinkedError } from '../errors/github-id-not-linked.error';
 import { IMailerService } from 'src/mailer/interfaces/mailer-service.interface';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
-import { GithubIdsDoNotMatchError } from '../errors/github-ids-do-not-match.error';
 import { IAuthorizeWithGithub } from '../interfaces/authorize-with-github.interface';
 import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
 import { IAuthProviderRepository } from '../interfaces/auth-provider-repository.interface';
 import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 import { IUsersAuthProvidersRepository } from '../interfaces/users-auth-providers-repository.interface';
-import { PropagatedTransaction } from '@mokuteki/propagated-transactions';
 
 @Injectable()
 export class GithubAuthService {
@@ -139,11 +138,11 @@ export class GithubAuthService {
 
   public async signIn(payload: IGithubILocalSignIn): Promise<IJwtPair> {
     if (!payload.userGithubId) {
-      throw new GithubIdNotLinkedError();
+      throw AuthError.GithubIdNotLinked();
     }
 
     if (payload.userGithubId !== String(payload.candidateGithubId)) {
-      throw new GithubIdsDoNotMatchError();
+      throw AuthError.GithubIdsDoNotMatch();
     }
 
     return this.jwtService.generatePair({ id: payload.userId });

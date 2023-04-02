@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import { JwtTypes } from '../enums/jwt-types.enum';
-import { IJwtOptionsFactory } from './jwt-options.factory';
+import { JwtOptionsFactory } from './jwt-options.factory';
 import { IJwtOptions } from '../interfaces/jwt-options.interface';
 
 @Injectable()
@@ -21,6 +21,6 @@ export class JwtAccessOptions implements IJwtOptions {
     this.privateKey = fs.readFileSync(privateKeyPath, 'utf8');
     this.ttl = parseInt(configService.get<string>('JWT_ACCESS_TTL'));
 
-    IJwtOptionsFactory.register(JwtTypes.Access, this);
+    JwtOptionsFactory.register(JwtTypes.Access, this);
   }
 }

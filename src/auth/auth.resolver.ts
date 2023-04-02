@@ -1,26 +1,12 @@
-import {
-  BadRequestException,
-  ConflictException,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
 import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
-
-import { MailIsInUseError } from './errors/mail-is-in-use.error';
-import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
-import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
-
-import { ILocalSignUpSchema } from './schema/sign-up.schema';
-import { ILocalSignInSchema } from './schema/sign-in.schema';
-
+import { LocalSignUpSchema } from './schema/sign-up.schema';
+import { LocalSignInSchema } from './schema/sign-in.schema';
+import { JwtPairResponse } from './responses/jwt-pair.response';
 import { LocalAuthService } from './services/local-auth.service';
-import { IJwtPairResponse } from './responses/jwt-pair.response';
 import { GithubAuthService } from './services/github-auth.service';
 import { ConfirmEmailResponse } from './responses/confirm-email.response';
 import { UserEntityResponse } from 'src/user/responses/user-entity.response';
-import { GithubIdNotLinkedError } from './errors/github-id-not-linked.error';
-import { GithubIdsDoNotMatchError } from './errors/github-ids-do-not-match.error';
-import { IAuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
+import { AuthorizeWithGithubSchema } from './schema/authorize-with-github.schema';
 import { GetGithubOAuthURLResponse } from './responses/get-github-oauth-url.response';
 import { ResendConfirmationEmailResponse } from './responses/resend-confirmation-email.response';
 
@@ -35,65 +21,42 @@ export class AuthResolver {
     name: 'getOAuthAuthorizeGithubURL',
   })
   public async getGithubOAuthURL(): Promise<GetGithubOAuthURLResponse> {
-    try {
-      const url = await this.githubAuthService.getOAuthAuthorizeURL();
+    const url = await this.githubAuthService.getOAuthAuthorizeURL();
 
-      const response = new GetGithubOAuthURLResponse(url);
+    const response = new GetGithubOAuthURLResponse(url);
 
-      return response;
-    } catch (err) {
-      throw new BadRequestException();
-    }
+    return response;
   }
 
-  @Mutation(() => IJwtPairResponse, { name: 'authorizeWithGithub' })
+  @Mutation(() => JwtPairResponse, { name: 'authorizeWithGithub' })
   public async authorizeWithGithub(
-    @Args('schema') schema: IAuthorizeWithGithubSchema,
-  ): Promise<IJwtPairResponse> {
-    try {
-      const pair = await this.githubAuthService.authorize(schema);
+    @Args('schema') schema: AuthorizeWithGithubSchema,
+  ): Promise<JwtPairResponse> {
+    const pair = await this.githubAuthService.authorize(schema);
 
-      const response = new IJwtPairResponse(pair);
+    const response = new JwtPairResponse(pair);
 
-      return response;
-    } catch (err) {
-      if (
-        err instanceof GithubIdNotLinkedError ||
-        err instanceof GithubIdsDoNotMatchError
-      ) {
-        throw new UnauthorizedException(err.message);
-      }
-
-      throw new BadRequestException();
-    }
+    return response;
   }
 
   @Mutation(() => UserEntityResponse, { name: 'signUp' })
   public async signUp(
-    @Args('schema') schema: ILocalSignUpSchema,
+    @Args('schema') schema: LocalSignUpSchema,
   ): Promise<UserEntityResponse> {
-    try {
-      const user = await this.localAuthService.signUp(schema);
+    const user = await this.localAuthService.signUp(schema);
 
-      const response = new UserEntityResponse(user);
+    const response = new UserEntityResponse(user);
 
-      return response;
-    } catch (err) {
-      if (err instanceof MailIsInUseError) {
-        throw new ConflictException(err);
-      }
-
-      throw new BadRequestException();
-    }
+    return response;
   }
 
-  @Mutation(() => IJwtPairResponse, { name: 'signIn' })
+  @Mutation(() => JwtPairResponse, { name: 'signIn' })
   public async signIn(
-    @Args('schema') schema: ILocalSignInSchema,
-  ): Promise<IJwtPairResponse> {
+    @Args('schema') schema: LocalSignInSchema,
+  ): Promise<JwtPairResponse> {
     const pair = await this.localAuthService.singIn(schema);
 
-    const response = new IJwtPairResponse(pair);
+    const response = new JwtPairResponse(pair);
 
     return response;
   }
@@ -102,22 +65,11 @@ export class AuthResolver {
   public async confirmEmail(
     @Args('hash') hash: string,
   ): Promise<ConfirmEmailResponse> {
-    try {
-      const confirmed = await this.localAuthService.confirmEmail(hash);
+    const confirmed = await this.localAuthService.confirmEmail(hash);
 
-      const response = new ConfirmEmailResponse(confirmed);
+    const response = new ConfirmEmailResponse(confirmed);
 
-      return response;
-    } catch (err) {
-      if (
-        err instanceof InvalidConfirmationHashError ||
-        err instanceof EmailAlreadyConfirmedError
-      ) {
-        throw new ConflictException(err);
-      }
-
-      throw new BadRequestException();
-    }
+    return response;
   }
 
   @Mutation(() => ResendConfirmationEmailResponse, {
@@ -126,18 +78,10 @@ export class AuthResolver {
   public async resendConfirmationEmail(
     @Args('email') email: string,
   ): Promise<ResendConfirmationEmailResponse> {
-    try {
-      const resent = await this.localAuthService.resendConfirmationEmail(email);
+    const resent = await this.localAuthService.resendConfirmationEmail(email);
 
-      const response = new ResendConfirmationEmailResponse(resent);
+    const response = new ResendConfirmationEmailResponse(resent);
 
-      return response;
-    } catch (err) {
-      if (err instanceof EmailAlreadyConfirmedError) {
-        throw new ConflictException(err);
-      }
-
-      throw new BadRequestException();
-    }
+    return response;
   }
 }

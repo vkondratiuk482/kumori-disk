@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { request } from 'undici';
-import { IHttpClientRequestError } from '../errors/http-client-request.error';
+import { HttpError } from '../errors/http.error';
 import { IUndiciRequest } from '../interfaces/undici-request.interface';
 
 @Injectable()
@@ -13,7 +13,7 @@ export class UndiciHttpService {
 
       return body;
     } catch (err) {
-      throw new IHttpClientRequestError();
+      throw HttpError.ClientRequestFailed();
     }
   }
 }

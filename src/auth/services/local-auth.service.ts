@@ -1,31 +1,23 @@
 import { ConfigService } from '@nestjs/config';
 import { Inject, Injectable } from '@nestjs/common';
-
+import { AuthError } from '../errors/auth.error';
 import { AUTH_CONSTANTS } from '../auth.constants';
+import { UserService } from '../../user/user.service';
 import { JWT_CONSTANTS } from 'src/jwt/jwt.constants';
-import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
-
+import { USER_CONSTANTS } from 'src/user/user.constants';
+import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
+import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
+import { ILocalSignUp } from '../interfaces/sign-up.interface';
 import { ILocalSignIn } from '../interfaces/sign-in.interface';
 import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
 import { IJwtPayload } from 'src/jwt/interfaces/jwt-payload.interface';
 import { IJwtService } from 'src/jwt/interfaces/jwt-service.interface';
+import { IUserEntity } from 'src/user/interfaces/user-entity.interface';
 import { ICacheService } from 'src/cache/interfaces/cache-service.interface';
 import { IMailerService } from 'src/mailer/interfaces/mailer-service.interface';
-import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
-
-import { MailIsInUseError } from '../errors/mail-is-in-use.error';
-import { EmailNotConfirmedError } from '../errors/email-not-confirmed.error';
-import { PasswordsNotMatchingError } from '../errors/passwords-not-matching.error';
-import { EmailAlreadyConfirmedError } from '../errors/email-already-confirmed.error';
-import { InvalidConfirmationHashError } from '../errors/invalid-confirmation-hash.error';
-
-import { IUserEntity } from 'src/user/interfaces/user-entity.interface';
-import { UserService } from '../../user/user.service';
-import { ILocalSignUp } from '../interfaces/sign-up.interface';
-import { MAILER_CONSTANTS } from 'src/mailer/mailer.constants';
-import { CACHE_CONSTANTS } from 'src/cache/cache.constants';
 import { CRYPTOGRAPHY_CONSTANTS } from 'src/cryptography/cryptography.constants';
-import { USER_CONSTANTS } from 'src/user/user.constants';
+import { UserConfirmationStatuses } from 'src/user/enums/user-confirmation-statuses.enum';
+import { ICryptographyService } from 'src/cryptography/interfaces/cryptography-service.interface';
 
 @Injectable()
 export class LocalAuthService {
@@ -46,7 +38,7 @@ export class LocalAuthService {
     const emailExists = await this.userService.existsByEmail(payload.email);
 
     if (emailExists) {
-      throw new MailIsInUseError();
+      throw AuthError.MailIsInUse();
     }
 
     const hashedPassword = await this.cryptographyService.hash(
@@ -81,7 +73,7 @@ export class LocalAuthService {
     const user = await this.userService.findByEmailOrThrow(payload.email);
 
     if (user.confirmationStatus !== UserConfirmationStatuses.Confirmed) {
-      throw new EmailNotConfirmedError();
+      throw AuthError.EmailNotConfirmed();
     }
 
     const password = payload.password;
@@ -92,7 +84,7 @@ export class LocalAuthService {
     );
 
     if (!passwordsMatch) {
-      throw new PasswordsNotMatchingError();
+      throw AuthError.PasswordsNotMatching();
     }
 
     const jwtPayload: IJwtPayload = {
@@ -107,7 +99,7 @@ export class LocalAuthService {
     const id = await this.cacheService.get<string>(hash);
 
     if (!id) {
-      throw new InvalidConfirmationHashError();
+      throw AuthError.InvalidConfirmationHash();
     }
 
     await this.cacheService.delete(hash);
@@ -117,7 +109,7 @@ export class LocalAuthService {
     const confirmedStatus = UserConfirmationStatuses.Confirmed;
 
     if (user.confirmationStatus === confirmedStatus) {
-      throw new EmailAlreadyConfirmedError();
+      throw AuthError.EmailAlreadyConfirmed();
     }
 
     const confirmed = await this.userService.updateConfirmationStatus(
@@ -133,7 +125,7 @@ export class LocalAuthService {
       const user = await this.userService.findByEmailOrThrow(email);
 
       if (user.confirmationStatus === UserConfirmationStatuses.Confirmed) {
-        throw new EmailAlreadyConfirmedError();
+        throw AuthError.EmailAlreadyConfirmed();
       }
 
       const hash = this.cryptographyService.randomUUID();

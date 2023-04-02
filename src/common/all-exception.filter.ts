@@ -1,14 +1,16 @@
-import { GqlArgumentsHost, GqlExceptionFilter } from '@nestjs/graphql';
-import { ArgumentsHost, Catch } from '@nestjs/common';
-import { HttpExceptionErrorMap } from './error-map';
+import { ArgumentsHost, BadRequestException, Catch } from '@nestjs/common';
+import { GqlExceptionFilter } from '@nestjs/graphql';
 import { GraphQLError } from 'graphql';
+import { DomainError } from './domain-error';
+import { HttpExceptionErrorMap } from './http-exception-error-map';
 
 @Catch()
-export class AllExceptionFilter implements GqlExceptionFilter<Error> {
-  public catch(error: Error, host: ArgumentsHost) {
-    const gqlHost = GqlArgumentsHost.create(host);
-
-    const exception = HttpExceptionErrorMap.get(error.message);
+export class AllExceptionFilter
+  implements GqlExceptionFilter<DomainError, GraphQLError>
+{
+  public catch(error: DomainError, host: ArgumentsHost): GraphQLError {
+    const exception =
+      HttpExceptionErrorMap.get(error.message) || new BadRequestException();
 
     const gqlError = new GraphQLError(error.message, {
       extensions: {
