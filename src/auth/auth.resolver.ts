@@ -1,16 +1,12 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
-  HttpException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 
 import { MailIsInUseError } from './errors/mail-is-in-use.error';
-import { EmailNotConfirmedError } from './errors/email-not-confirmed.error';
-import { PasswordsNotMatchingError } from './errors/passwords-not-matching.error';
 import { EmailAlreadyConfirmedError } from './errors/email-already-confirmed.error';
 import { InvalidConfirmationHashError } from './errors/invalid-confirmation-hash.error';
 
@@ -119,9 +115,6 @@ export class AuthResolver {
       ) {
         throw new ConflictException(err);
       }
-      if (err instanceof UserError) {
-        throw new NotFoundException(err);
-      }
 
       throw new BadRequestException();
     }
@@ -142,9 +135,6 @@ export class AuthResolver {
     } catch (err) {
       if (err instanceof EmailAlreadyConfirmedError) {
         throw new ConflictException(err);
-      }
-      if (err instanceof UserError) {
-        throw new NotFoundException(err);
       }
 
       throw new BadRequestException();

@@ -1,14 +1,21 @@
 import { GqlArgumentsHost, GqlExceptionFilter } from '@nestjs/graphql';
 import { ArgumentsHost, Catch } from '@nestjs/common';
-import { ERROR_MAP } from './error-map';
+import { HttpExceptionErrorMap } from './error-map';
+import { GraphQLError } from 'graphql';
 
 @Catch()
 export class AllExceptionFilter implements GqlExceptionFilter<Error> {
   public catch(error: Error, host: ArgumentsHost) {
     const gqlHost = GqlArgumentsHost.create(host);
 
-    const exception = ERROR_MAP[error.message];
+    const exception = HttpExceptionErrorMap.get(error.message);
 
-    return error;
+    const gqlError = new GraphQLError(error.message, {
+      extensions: {
+        code: exception.getStatus(),
+      },
+    });
+
+    return gqlError;
   }
 }
