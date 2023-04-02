@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AlsModule } from 'src/als/als.module';
-import { TransactionServiceProvider } from './providers/transaction-service.provider';
+import { TransactionRunnerProvider } from './providers/transaction-runner.provider';
+import { PropagatedTransactionProvider } from './providers/propagated-transaction.provider';
 
 @Module({
   imports: [AlsModule],
-  providers: [TransactionServiceProvider],
-  exports: [TransactionServiceProvider],
+  providers: [TransactionRunnerProvider, PropagatedTransactionProvider],
+  exports: [PropagatedTransactionProvider],
 })
 export class TransactionModule {}

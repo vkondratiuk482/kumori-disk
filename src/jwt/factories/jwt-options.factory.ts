@@ -1,7 +1,7 @@
 import { JwtTypes } from '../enums/jwt-types.enum';
 import { IJwtOptions } from '../interfaces/jwt-options.interface';
 
-export class IJwtOptionsFactory {
+export class JwtOptionsFactory {
   private static readonly instances = new Map<string, IJwtOptions>();
 
   public static register(type: JwtTypes, instance: IJwtOptions): Promise<void> {

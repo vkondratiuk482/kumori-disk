@@ -1,16 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { FileNotAccessibleError } from '../errors/file-not-accessible.error';
-import { IFileRepository } from '../interfaces/file-repository.interface';
-import { ICreateFile } from '../interfaces/create-file.interface';
-import { IAttachTenant } from '../interfaces/attach-tenant.interface';
-import { FileConsumer } from '../enums/file-consumer.enum';
-import { TenantNotAttachedError } from '../errors/tenant-not-attached.error';
-import { IDettachTenant } from '../interfaces/dettach-tenant.interface';
-import { TenantNotDettachedError } from '../errors/tenant-not-dettached.error';
-import { FileNotFoundError } from '../errors/file-not-found.error';
-import { IFileEntity } from '../interfaces/file-entity.interface';
-import { FileKeyNotUpdatedInDatabaseError } from '../errors/file-key-not-updated-in-database.error';
+import { FileError } from '../errors/file.error';
 import { FILE_CONSTANTS } from '../file.constants';
+import { FileConsumer } from '../enums/file-consumer.enum';
+import { ICreateFile } from '../interfaces/create-file.interface';
+import { IFileEntity } from '../interfaces/file-entity.interface';
+import { IAttachTenant } from '../interfaces/attach-tenant.interface';
+import { IDettachTenant } from '../interfaces/dettach-tenant.interface';
+import { IFileRepository } from '../interfaces/file-repository.interface';
 
 @Injectable()
 export class FileService {
@@ -27,13 +23,13 @@ export class FileService {
     const file = await this.fileRepository.findSingleById(id);
 
     if (!file) {
-      throw new FileNotFoundError();
+      throw FileError.NotFound();
     }
 
     const fileAccessible = this.fileAccessible(file, ownerId, ownerType);
 
     if (!fileAccessible) {
-      throw new FileNotAccessibleError();
+      throw FileError.NotAccessible();
     }
 
     return file;
@@ -53,7 +49,7 @@ export class FileService {
       const fileAccessible = this.fileAccessible(file, ownerId, ownerType);
 
       if (!fileAccessible) {
-        throw new FileNotAccessibleError();
+        throw FileError.NotAccessible();
       }
     }
 
@@ -72,19 +68,13 @@ export class FileService {
   ): Promise<boolean> {
     const updated = await this.fileRepository.updateKey(id, key);
 
-    if (!updated) {
-      throw new FileKeyNotUpdatedInDatabaseError();
-    }
-
     return updated;
   }
 
-  public async attachTenantWithException(data: IAttachTenant): Promise<boolean> {
+  public async attachTenantWithException(
+    data: IAttachTenant,
+  ): Promise<boolean> {
     const attached = await this.fileRepository.attachTenant(data);
-
-    if (!attached) {
-      throw new TenantNotAttachedError();
-    }
 
     return attached;
   }
@@ -93,10 +83,6 @@ export class FileService {
     data: IDettachTenant,
   ): Promise<boolean> {
     const dettached = await this.fileRepository.dettachTenant(data);
-
-    if (!dettached) {
-      throw new TenantNotDettachedError();
-    }
 
     return dettached;
   }

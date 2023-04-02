@@ -2,7 +2,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 import { IJwtPair } from 'src/jwt/interfaces/jwt-pair.interface';
 
 @ObjectType()
-export class IJwtPairResponse {
+export class JwtPairResponse {
   @Field()
   public readonly accessToken: string;
 

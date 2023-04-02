@@ -2,7 +2,7 @@ import { Field, InputType } from '@nestjs/graphql';
 import { IsEmail, IsString } from 'class-validator';
 
 @InputType()
-export class ILocalSignUpSchema {
+export class LocalSignUpSchema {
   @Field()
   @IsEmail()
   public readonly email: string;

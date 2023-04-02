@@ -10,20 +10,20 @@ type GetGithubOAuthURLResponse {
   url: String!
 }
 
-type UserEntityResponse {
-  id: String!
-  email: String!
-  username: String!
-  diskSpace: Float!
-}
-
-type IJwtPairResponse {
+type JwtPairResponse {
   accessToken: String!
   refreshToken: String!
 }
 
 type ConfirmEmailResponse {
   confirmed: Boolean!
+}
+
+type UserEntityResponse {
+  id: String!
+  email: String!
+  username: String!
+  diskSpace: Float!
 }
 
 type ResendConfirmationEmailResponse {
@@ -40,9 +40,9 @@ type Mutation {
   userShareAccess(schema: UserShareAccessSchema!): Boolean!
   userRevokeAccess(schema: UserRevokeAccessSchema!): Boolean!
   linkGithubAccount(schema: LinkGithubAccountSchema!): LinkGithubAccountResponse!
-  authorizeWithGithub(schema: IAuthorizeWithGithubSchema!): IJwtPairResponse!
-  signUp(schema: ILocalSignUpSchema!): UserEntityResponse!
-  signIn(schema: ILocalSignInSchema!): IJwtPairResponse!
+  authorizeWithGithub(schema: AuthorizeWithGithubSchema!): JwtPairResponse!
+  signUp(schema: LocalSignUpSchema!): UserEntityResponse!
+  signIn(schema: LocalSignInSchema!): JwtPairResponse!
   confirmEmail(hash: String!): ConfirmEmailResponse!
   resendConfirmationEmail(email: String!): ResendConfirmationEmailResponse!
 }
@@ -71,17 +71,17 @@ input LinkGithubAccountSchema {
   code: String!
 }
 
-input IAuthorizeWithGithubSchema {
+input AuthorizeWithGithubSchema {
   code: String!
 }
 
-input ILocalSignUpSchema {
+input LocalSignUpSchema {
   email: String!
   username: String!
   password: String!
 }
 
-input ILocalSignInSchema {
+input LocalSignInSchema {
   email: String!
   password: String!
 }

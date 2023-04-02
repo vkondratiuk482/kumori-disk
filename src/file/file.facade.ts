@@ -1,14 +1,14 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { IUploadFile } from './interfaces/upload-file.interface';
-import { IFileFacade } from './interfaces/file-facade.interface';
-import { IFileStorageService } from './interfaces/file-storage-service.interface';
+import { FileError } from './errors/file.error';
+import { FILE_CONSTANTS } from './file.constants';
 import { FileService } from './services/file.service';
-import { IShareAccess } from 'src/file/interfaces/share-access.interface';
-import { IRevokeAccess } from './interfaces/revoke-access.interface';
 import { ICopyFile } from './interfaces/copy-file.interface';
 import { IRenameFile } from './interfaces/rename-file.interface';
-import { FileNotUploadedError } from './errors/file-not-uploaded.error';
-import { FILE_CONSTANTS } from './file.constants';
+import { IUploadFile } from './interfaces/upload-file.interface';
+import { IFileFacade } from './interfaces/file-facade.interface';
+import { IRevokeAccess } from './interfaces/revoke-access.interface';
+import { IShareAccess } from 'src/file/interfaces/share-access.interface';
+import { IFileStorageService } from './interfaces/file-storage-service.interface';
 
 @Injectable()
 export class FileFacade implements IFileFacade {
@@ -35,7 +35,7 @@ export class FileFacade implements IFileFacade {
     } catch (err) {
       await this.fileStorage.deleteOne(key);
 
-      throw new FileNotUploadedError();
+      throw FileError.ActionNotPerformed();
     }
   }
 
@@ -55,7 +55,9 @@ export class FileFacade implements IFileFacade {
     return attached;
   }
 
-  public async revokeAccessWithException(data: IRevokeAccess): Promise<boolean> {
+  public async revokeAccessWithException(
+    data: IRevokeAccess,
+  ): Promise<boolean> {
     const files = await this.fileService.findManyByIdsAndOwnerWithException(
       data.fileIds,
       data.ownerId,

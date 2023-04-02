@@ -8,13 +8,10 @@ import {
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
-import { FileNotUploadedToStorageError } from '../errors/file-not-uploaded-to-storage.error';
-import { FileNotDownloadedError } from '../errors/file-not-downloaded.error';
+import { FileError } from '../errors/file.error';
+import { FILE_CONSTANTS } from '../file.constants';
 import { IUploadFile } from '../interfaces/upload-file.interface';
 import { IGenerateFileKey } from '../interfaces/generate-file-key.interface';
-import { FileNotCopiedInStorageError } from '../errors/file-not-copied-in-storage.error';
-import { FileNotRenamedInStorageError } from '../errors/file-not-renamed-in-storage.error';
-import { FILE_CONSTANTS } from '../file.constants';
 
 export class S3FileStorageService /*implements IFileStorageService */ {
   private readonly bucket: string;
@@ -47,7 +44,7 @@ export class S3FileStorageService /*implements IFileStorageService */ {
 
       return key;
     } catch (err) {
-      throw new FileNotUploadedToStorageError();
+      throw FileError.ActionNotPerformed();
     }
   }
 
@@ -72,7 +69,7 @@ export class S3FileStorageService /*implements IFileStorageService */ {
 
       return key;
     } catch (err) {
-      throw new FileNotCopiedInStorageError();
+      throw FileError.ActionNotPerformed();
     }
   }
 
@@ -100,7 +97,7 @@ export class S3FileStorageService /*implements IFileStorageService */ {
 
       return key;
     } catch (err) {
-      throw new FileNotRenamedInStorageError();
+      throw FileError.ActionNotPerformed();
     }
   }
 
@@ -117,7 +114,7 @@ export class S3FileStorageService /*implements IFileStorageService */ {
 
       return readStream;
     } catch (err) {
-      throw new FileNotDownloadedError();
+      throw FileError.ActionNotPerformed();
     }
   }
 

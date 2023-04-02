@@ -1,26 +1,24 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GraphQLModule } from '@nestjs/graphql';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MercuriusDriver, MercuriusDriverConfig } from '@nestjs/mercurius';
 import { ThrottlerModule, ThrottlerModuleOptions } from '@nestjs/throttler';
-
-import { join } from 'path';
-
+import { join } from 'node:path';
+import { AlsModule } from './als/als.module';
+import { JwtModule } from './jwt/jwt.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
-import { MailerModule } from './mailer/mailer.module';
-import { CryptographyModule } from './cryptography/cryptography.module';
-import { PaymentModule } from './payment/payment.module';
 import { HttpModule } from './http/http.module';
 import { CacheModule } from './cache/cache.module';
 import { EventModule } from './event/event.module';
-import { EventEmitterModule } from '@nestjs/event-emitter';
-import { JwtModule } from './jwt/jwt.module';
+import { MailerModule } from './mailer/mailer.module';
 import { GithubModule } from './github/github.module';
-import { AlsModule } from './als/als.module';
+import { PaymentModule } from './payment/payment.module';
 import { TransactionModule } from './transaction/transaction.module';
+import { CryptographyModule } from './cryptography/cryptography.module';
 
 @Module({
   imports: [

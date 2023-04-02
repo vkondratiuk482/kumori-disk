@@ -10,11 +10,10 @@ import {
 import { JWT_CONSTANTS } from '../jwt.constants';
 import { JwtTypes } from '../enums/jwt-types.enum';
 import { UserService } from 'src/user/user.service';
-import { InvalidJwtError } from '../errors/invalid-jwt.error';
+import { DomainError } from 'src/common/domain-error';
+import { AuthError } from 'src/auth/errors/auth.error';
 import { IJwtService } from '../interfaces/jwt-service.interface';
 import { IJwtPayload } from '../interfaces/jwt-payload.interface';
-import { InvalidAuthHeadersError } from 'src/auth/errors/invalid-auth-headers.error';
-import { AuthorizationHeadersNotProvidedError } from 'src/auth/errors/authorization-headers-not-provided.error';
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
@@ -41,11 +40,7 @@ export class JwtAuthGuard implements CanActivate {
 
       return exists;
     } catch (err) {
-      if (
-        err instanceof InvalidAuthHeadersError ||
-        err instanceof InvalidJwtError ||
-        err instanceof AuthorizationHeadersNotProvidedError
-      ) {
+      if (err instanceof DomainError) {
         throw new UnauthorizedException(err.message);
       }
 
@@ -57,14 +52,14 @@ export class JwtAuthGuard implements CanActivate {
     authorizationHeaders: string,
   ): string {
     if (!authorizationHeaders) {
-      throw new AuthorizationHeadersNotProvidedError();
+      throw AuthError.AuthorizationHeadersNotProvided();
     }
 
     const tokenType = authorizationHeaders.split(' ')[0];
     const token = authorizationHeaders.split(' ')[1];
 
     if (tokenType !== 'Bearer' || !token) {
-      throw new InvalidAuthHeadersError();
+      throw AuthError.InvalidAuthHeaders();
     }
 
     return token;

@@ -1,28 +1,25 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { IFileFacade } from 'src/file/interfaces/file-facade.interface';
-import { IUploadFile } from 'src/file/interfaces/upload-file.interface';
-import { ICreateUser } from './interfaces/create-user.interface';
-import { IUserRepository } from './interfaces/user-repository.interface';
-import { UserNotFoundByEmailError } from './errors/user-not-found-by-email.error';
-import { UserNotFoundByUsernameError } from './errors/user-not-found-by-username.error';
-import { UserNotFoundByIdError } from './errors/user-not-found-by-uuid.error';
-import { UserExceedsPersonalStorageLimitError } from 'src/file/errors/user-exceeds-personal-storage-limit.error';
-import { IFile } from 'src/file/interfaces/file.interface';
-import { FileConsumer } from 'src/file/enums/file-consumer.enum';
-import { IUserShareAccess } from './interfaces/user-share-access.interface';
-import { IUserRevokeAccess } from './interfaces/user-revoke-access.interface';
-import { IUserEntity } from './interfaces/user-entity.interface';
-import { IEventService } from 'src/event/interface/event-service.interface';
-import { IUserShareAccessEvent } from './interfaces/user-share-access-event.interface';
-import { IUserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
+import { UserError } from './errors/user.error';
 import { USER_CONSTANTS } from './user.constants';
 import { FILE_CONSTANTS } from 'src/file/file.constants';
+import { IFile } from 'src/file/interfaces/file.interface';
 import { EVENT_CONSTANTS } from 'src/event/event.constants';
-import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enum';
 import { GITHUB_CONSTANTS } from 'src/github/github.constants';
+import { IUserEntity } from './interfaces/user-entity.interface';
+import { ICreateUser } from './interfaces/create-user.interface';
+import { FileConsumer } from 'src/file/enums/file-consumer.enum';
+import { IFileFacade } from 'src/file/interfaces/file-facade.interface';
+import { IUploadFile } from 'src/file/interfaces/upload-file.interface';
+import { IUserRepository } from './interfaces/user-repository.interface';
+import { IUserShareAccess } from './interfaces/user-share-access.interface';
+import { IEventService } from 'src/event/interface/event-service.interface';
 import { IGithubClient } from 'src/github/interfaces/github-client.interface';
+import { IUserRevokeAccess } from './interfaces/user-revoke-access.interface';
 import { ILinkGithubAccount } from './interfaces/link-github-account.interface';
+import { UserConfirmationStatuses } from './enums/user-confirmation-statuses.enum';
+import { IUserShareAccessEvent } from './interfaces/user-share-access-event.interface';
+import { IUserRevokeAccessEvent } from './interfaces/user-revoke-access-event.interface';
 
 @Injectable()
 export class UserService {
@@ -48,7 +45,7 @@ export class UserService {
     const user = await this.userRepository.findById(id);
 
     if (!user) {
-      throw new UserNotFoundByIdError();
+      throw UserError.NotFound();
     }
 
     return user;
@@ -58,7 +55,7 @@ export class UserService {
     const user = await this.userRepository.findByUsername(username);
 
     if (!user) {
-      throw new UserNotFoundByUsernameError();
+      throw UserError.NotFound();
     }
 
     return user;
@@ -74,7 +71,7 @@ export class UserService {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user) {
-      throw new UserNotFoundByEmailError();
+      throw UserError.NotFound();
     }
 
     return user;
@@ -165,7 +162,7 @@ export class UserService {
     );
 
     if (exceedsPersonalLimit) {
-      throw new UserExceedsPersonalStorageLimitError();
+      throw UserError.ExceedsDiskSpace();
     }
 
     const file: IUploadFile = {
