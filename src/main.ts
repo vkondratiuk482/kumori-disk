@@ -10,7 +10,7 @@ import mercuriusUpload from 'mercurius-upload';
 import { UploadOptions } from 'graphql-upload';
 
 import { AppModule } from './app.module';
-import { AllExceptionFilter } from './common/all-exception.filter';
+import { ErrorToGraphQLExceptionFilter } from './common/error-to-graph.exception-filter';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestFastifyApplication>(
@@ -28,7 +28,7 @@ async function bootstrap(): Promise<void> {
   const port = config.get<number>('APP_PORT');
 
   app.useGlobalPipes(new ValidationPipe());
-  app.useGlobalFilters(new AllExceptionFilter());
+  app.useGlobalFilters(new ErrorToGraphQLExceptionFilter());
 
   await app.listen(port);
 }
